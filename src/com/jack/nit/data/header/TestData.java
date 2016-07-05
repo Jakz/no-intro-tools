@@ -7,23 +7,23 @@ import com.pixbits.io.BinaryBuffer;
 
 public class TestData extends Test
 {
-  private final int offset;
+  private final long offset;
   private final byte[] data;
-  private boolean isInverted;
+  private boolean isPositive;
   
-  TestData(int offset, byte[] data, boolean isInverted)
+  public TestData(long offset, byte[] data, boolean isPositive)
   {
     this.offset = offset;
     this.data = data;
-    this.isInverted = isInverted;
+    this.isPositive = isPositive;
   }
   
   @Override Predicate<BinaryBuffer> build()
   {
     return b -> {
       byte[] test = new byte[data.length];
-      b.read(test, offset);      
-      return Arrays.equals(data, test) ^ !isInverted;      
+      b.read(test, (int)offset);      
+      return Arrays.equals(data, test) ^ isPositive;      
     };
   }
 }

@@ -4,17 +4,19 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
+import com.jack.nit.data.header.Header;
+
 public class GameSet
 {
   public final String name;
   public final String description;
-  public final String header;
+  public final Header header;
   public final String version;
   public final String comment;
   
   private final Game[] games;
   
-  public GameSet(String name, String description, String header, String version, String comment, Game[] games)
+  public GameSet(String name, String description, Header header, String version, String comment, Game[] games)
   {
     this.name = name;
     this.description = description;

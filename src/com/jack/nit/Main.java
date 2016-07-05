@@ -17,7 +17,7 @@ public class Main
 {
   public static void main( String[] args )
   {
-    Path path = Paths.get("dats/nes.dat");
+    Path path = Settings.DATS_PATH.resolve("nes.dat");
     DatParser parser = new DatParser();
     
     try

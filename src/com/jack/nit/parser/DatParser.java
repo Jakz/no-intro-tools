@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,9 +14,14 @@ import java.util.Stack;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
+import org.xml.sax.SAXException;
+
+import com.jack.nit.Settings;
 import com.jack.nit.data.Game;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.Rom;
+import com.jack.nit.data.header.Header;
+import com.pixbits.io.XMLParser;
 import com.pixbits.parser.SimpleParser;
 import com.pixbits.parser.SimpleTreeBuilder;
 
@@ -69,7 +75,7 @@ public class DatParser
   public <T> T value(String k) { return (T)valueMap().get(k); }
   public void setValueForKey(String k, Object v) { valueMap().put(k, v); }
   
-  public GameSet load(Path file) throws IOException
+  public GameSet load(Path file) throws IOException, SAXException
   {
     try (InputStream fis = new BufferedInputStream(Files.newInputStream(file)))
     {
@@ -87,7 +93,18 @@ public class DatParser
       
       parser.parse();
       
-      set = new GameSet(value("name"), value("description"), value("header"), value("version"), value("comment"), games.toArray(new Game[games.size()]));
+      String headerFile = value("header");
+      Header header = null;
+      
+      if (headerFile != null)
+      {
+        Path headerPath = Settings.HEADERS_PATH.resolve(headerFile);
+        
+        XMLParser<Header> headerParser = new XMLParser<>(new HeaderParser());
+        header = headerParser.load(headerPath);
+      }
+      
+      set = new GameSet(value("name"), value("description"), header, value("version"), value("comment"), games.toArray(new Game[games.size()]));
       popState();
       
       return set;

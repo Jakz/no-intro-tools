@@ -7,7 +7,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-public abstract class XMLParser<T>
+public class XMLParser<T>
 {
   XMLHandler<T> handler;
   
