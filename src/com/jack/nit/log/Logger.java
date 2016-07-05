@@ -55,6 +55,10 @@ public abstract class Logger
   
   public static void log(Log type, String message, Object arg, Object... args)
   {
-    logger.doLog(type, String.format(message, arg, args));
+    Object[] data = new Object[1+args.length];
+    data[0] = arg;
+    System.arraycopy(args, 0, data, 1, args.length);
+    
+    logger.doLog(type, String.format(message, data));
   }
 }

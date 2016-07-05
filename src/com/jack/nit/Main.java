@@ -25,7 +25,7 @@ public class Main
     {
       GameSet set = parser.load(path);
       
-      Logger.log(Log.INFO, "Loaded set \'"+set.name+"\' ("+set.size()+" games, "+set.realSize()+" roms)");
+      Logger.log(Log.INFO1, "Loaded set \'"+set.name+"\' ("+set.size()+" games, "+set.realSize()+" roms)");
       
       Scanner scanner = new Scanner(set);
       scanner.computeHandles();
