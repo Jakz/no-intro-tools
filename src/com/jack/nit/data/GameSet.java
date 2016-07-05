@@ -16,6 +16,8 @@ public class GameSet
   
   private final Game[] games;
   
+  final private HashCache cache;
+
   public GameSet(String name, String description, Header header, String version, String comment, Game[] games)
   {
     this.name = name;
@@ -24,7 +26,10 @@ public class GameSet
     this.version = version;
     this.comment = comment;
     this.games = games;
+    this.cache = new HashCache(this);
   }
+  
+  public HashCache cache() { return cache; }
 
   public Game get(int index) { return games[index]; }
   public int size() { return games.length; }

@@ -35,15 +35,16 @@ import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 public class Scanner
 {
   final private GameSet set;
-  final private HashCache cache;
   final private PathMatcher archiveMatcher = FileSystems.getDefault().getPathMatcher("glob:*.{zip,rar,7z}");
   
-  public Scanner(GameSet set)
+  final private ScannerOptions options;
+  
+  public Scanner(GameSet set, ScannerOptions options)
   {
     this.set = set;
-    this.cache = new HashCache(set);
+    this.options = options;
   }
-  
+    
   private IInArchive openArchive(Path path) throws FormatUnrecognizedException
   {
     try (RandomAccessFileInStream rfile = new RandomAccessFileInStream(new RandomAccessFile(path.toFile(), "r")))
@@ -76,13 +77,8 @@ public class Scanner
     
     return files;
   }
-  
-  public RomReference isValidRom(long size, long crc)
-  {
-    return cache.isValidSize(size) ? cache.romForCrc(crc) : null;
-  }
-  
-  public Set<RomHandle> computeHandles() throws IOException
+
+  public RomHandlesSet computeHandles() throws IOException
   {
     Set<Path> paths = computeFileList();
     
@@ -93,10 +89,9 @@ public class Scanner
     final float count = paths.size();
     final AtomicInteger current = new AtomicInteger(0);
     
-    Set<RomHandle> handles = new HashSet<>();
-    
-    int[] counters = new int[2];
-        
+    List<RomHandle> binaryHandles = new ArrayList<>();
+    List<RomHandle> archiveHandles = new ArrayList<>();
+
     paths.forEach(StreamException.rethrowConsumer(path -> {
       Logger.logger.updateProgress(current.getAndIncrement() / count);
       
@@ -113,11 +108,8 @@ public class Scanner
             long uncompressedSize = (long)archive.getProperty(i, PropID.SIZE);
             String fileName = (String)archive.getProperty(i, PropID.PATH);
             
-            if (cache.isValidSize(uncompressedSize))
-            {
-              handles.add(new ArchiveHandle(path, archive.getArchiveFormat(), fileName, i));
-              ++counters[1];
-            }
+            if (set.cache().isValidSize(uncompressedSize) || !options.matchSize)
+              archiveHandles.add(new ArchiveHandle(path, archive.getArchiveFormat(), fileName, i));
             else
               skipped.add(fileName+" in "+path.getFileName());
           }
@@ -130,11 +122,8 @@ public class Scanner
       else
       {
         /* if size of the file is compatible with the romset add it to potential roms */
-        if (cache.isValidSize(Files.size(path)))
-        {
-          handles.add(new BinaryHandle(path));
-          ++counters[0];
-        }
+        if (set.cache().isValidSize(Files.size(path)) || !options.matchSize)
+          binaryHandles.add(new BinaryHandle(path));
         else
           skipped.add(path.getFileName().toString());
           
@@ -146,10 +135,10 @@ public class Scanner
     
     faultyArchives.forEach(p -> Logger.log(Log.WARNING, "File "+p.getFileName()+" is not a valid archive."));
 
-    Logger.log(Log.INFO1, "Found %d potential matches (%d binary, %d inside archives).", counters[0]+counters[1], counters[0], counters[1]);
+    Logger.log(Log.INFO1, "Found %d potential matches (%d binary, %d inside archives).", binaryHandles.size()+archiveHandles.size(), binaryHandles.size(), archiveHandles.size());
     Logger.log(Log.INFO3, "Skipped %d entries:", skipped.size());
     skipped.forEach(s -> Logger.log(Log.INFO3, "> %s", s));
 
-    return handles;
+    return new RomHandlesSet(binaryHandles, archiveHandles);
   }
 }
