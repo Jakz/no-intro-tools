@@ -18,4 +18,9 @@ public abstract class Logger
   {
     logger.doLog(type, message);
   }
+  
+  public static void log(Log type, String message, Object arg, Object... args)
+  {
+    logger.doLog(type, String.format(message, arg, args));
+  }
 }
