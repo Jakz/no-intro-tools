@@ -75,7 +75,7 @@ public class Scanner
     
     Set<Path> faultyArchives = new HashSet<>();
     
-    Logger.logger.startProgress("[INFO] Enumerating files...");
+    Logger.logger.startProgress("[INFO] Checking format of files...");
     final float count = paths.size();
     final AtomicInteger current = new AtomicInteger(0);
     
