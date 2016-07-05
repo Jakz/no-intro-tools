@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.jack.nit.Settings;
 import com.jack.nit.data.GameSet;
@@ -63,7 +64,7 @@ public class Scanner
 
     Arrays.stream(paths).map(StreamException.rethrowFunction(scanner::scan)).forEach(files::addAll);
     
-    Logger.log(Log.INFO, "found %d files to scan", files.size());
+    Logger.log(Log.INFO, "found %d files to scan in %d paths", files.size(), paths.length);
     
     return files;
   }
@@ -72,22 +73,35 @@ public class Scanner
   {
     Set<Path> paths = computeFileList();
     
+    Set<Path> faultyArchives = new HashSet<>();
+    
+    Logger.logger.startProgress("[INFO] Enumerating files...");
+    final float count = paths.size();
+    final AtomicInteger current = new AtomicInteger(0);
+    
     paths.forEach(path -> {
-      boolean shouldBeArchive = archiveMatcher.matches(path);
+      Logger.logger.updateProgress(current.getAndIncrement() / count);
+      
+      boolean shouldBeArchive = archiveMatcher.matches(path.getFileName());
       
       if (shouldBeArchive)
       {      
         try
         {
+          @SuppressWarnings("unused")
           ArchiveFormat format = checkArchiveValidity(path);
         }
         catch (FormatUnrecognizedException e)
         {
-          Logger.log(Log.ERROR, "File "+e.path.getFileName()+" doesn't look like a valid archive");
+          faultyArchives.add(path);
         }
       }
       
     });
+    
+    Logger.logger.endProgress();
+    
+    faultyArchives.forEach(p -> Logger.log(Log.WARNING, "File "+p.getFileName()+" is not a valid archive."));
     
     return null;
   }
