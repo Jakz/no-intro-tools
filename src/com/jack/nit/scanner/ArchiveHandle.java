@@ -122,8 +122,9 @@ public class ArchiveHandle extends RomHandle
       try
       {
         archive.extract(new int[] { indexInArchive }, false, callback);
+        callback.close();
       }
-      catch (SevenZipException e)
+      catch (IOException e)
       {
         e.printStackTrace();
       }
@@ -163,6 +164,8 @@ public class ArchiveHandle extends RomHandle
     {
       return pis;
     }
+    
+    public void close() throws IOException { pos.close(); }
   }
   
   private class ExtractCallback implements IArchiveExtractCallback
@@ -184,6 +187,8 @@ public class ArchiveHandle extends RomHandle
         e.printStackTrace();
       }
     }
+    
+    public void close() throws IOException { stream.close(); }
     
     public ISequentialOutStream getStream(int index, ExtractAskMode mode)
     {

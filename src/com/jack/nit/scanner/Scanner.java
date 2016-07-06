@@ -85,15 +85,15 @@ public class Scanner
     Set<Path> faultyArchives = new HashSet<>();
     Set<String> skipped = new HashSet<>();
     
-    Logger.logger.startProgress("[INFO] Checking format of files...");
+    Logger.logger.startProgress("[INFO] Finding files...");
     final float count = paths.size();
     final AtomicInteger current = new AtomicInteger(0);
     
-    List<RomHandle> binaryHandles = new ArrayList<>();
-    List<RomHandle> archiveHandles = new ArrayList<>();
+    List<BinaryHandle> binaryHandles = new ArrayList<>();
+    List<ArchiveHandle> archiveHandles = new ArrayList<>();
 
     paths.forEach(StreamException.rethrowConsumer(path -> {
-      Logger.logger.updateProgress(current.getAndIncrement() / count);
+      Logger.logger.updateProgress(current.getAndIncrement() / count, "");
       
       boolean shouldBeArchive = archiveMatcher.matches(path.getFileName());
       

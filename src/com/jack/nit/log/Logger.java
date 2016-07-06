@@ -7,7 +7,7 @@ public abstract class Logger
   protected abstract void doLog(Log type, String message);
   
   public abstract void startProgress(String message);
-  public abstract void updateProgress(float percent);
+  public abstract void updateProgress(float percent, String message);
   public abstract void endProgress();
   
   public static final Logger logger = new Logger()
@@ -24,7 +24,7 @@ public abstract class Logger
       System.out.println(message);
     }
     
-    @Override public void updateProgress(float percent)
+    @Override public void updateProgress(float percent, String message)
     {
       int toPrint = (int)(percent*PROGRESS_LENGTH);
       
@@ -36,7 +36,7 @@ public abstract class Logger
       for (; i < PROGRESS_LENGTH; ++i)
         System.out.print(" ");
       
-      System.out.printf("] %d%% ", (int)(percent*100));
+      System.out.printf("] %3d%% %100s", (int)(percent*100), message);
     }
     
     @Override public void endProgress()
@@ -50,6 +50,8 @@ public abstract class Logger
 
   public static void log(Log type, String message)
   {
+    if (type == Log.INFO2 || type == Log.INFO3)
+      return;
     logger.doLog(type, message);
   }
   
@@ -59,6 +61,6 @@ public abstract class Logger
     data[0] = arg;
     System.arraycopy(args, 0, data, 1, args.length);
     
-    logger.doLog(type, String.format(message, data));
+    log(type, String.format(message, data));
   }
 }

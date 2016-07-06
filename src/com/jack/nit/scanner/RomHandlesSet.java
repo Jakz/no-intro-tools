@@ -4,10 +4,10 @@ import java.util.List;
 
 public class RomHandlesSet
 {
-  final List<RomHandle> binaries;
-  final List<RomHandle> archives;
+  final List<BinaryHandle> binaries;
+  final List<ArchiveHandle> archives;
   
-  RomHandlesSet(List<RomHandle> binaries, List<RomHandle> archives)
+  RomHandlesSet(List<BinaryHandle> binaries, List<ArchiveHandle> archives)
   {
     this.binaries = binaries;
     this.archives = archives;
