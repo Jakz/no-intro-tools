@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
@@ -23,14 +25,16 @@ import com.jack.nit.data.RomReference;
 import com.jack.nit.log.Logger;
 import com.pixbits.stream.StreamException;
 
+import net.sf.sevenzipjbinding.PropID;
+
 public class Verifier
 {
   private final ScannerOptions options;
   private final HashCache cache;
   private final GameSet set;
-  
+  private final boolean multiThreaded;
   private final byte[] buffer = new byte[8192];
-
+  
   private float total;
   private AtomicInteger current = new AtomicInteger();;
   
@@ -40,6 +44,7 @@ public class Verifier
     this.options = options;
     this.set = set;
     this.cache = set.cache();
+    this.multiThreaded = options.multiThreaded;
   }
   
   public List<RomFoundReference> verify(RomHandlesSet handles) throws IOException
@@ -59,16 +64,20 @@ public class Verifier
     return found;
   }
   
-  private RomReference verifyRawInputStream(InputStream is) throws IOException, NoSuchAlgorithmException
+  private RomReference verifyRawInputStream(RomHandle handle, InputStream is) throws IOException, NoSuchAlgorithmException
   {
-    InputStream fis = is;
+    final byte[] buffer = multiThreaded ? new byte[8192] : this.buffer;
+
+    boolean computeRealCRC = !handle.isArchive();
+    
+    InputStream fis = new BufferedInputStream(is);
     CheckedInputStream crc = null;
     MessageDigest md5 = null;
     MessageDigest sha1 = null;
     
     RomReference rom = null;
     
-    if (options.matchCRC)
+    if (computeRealCRC)
     {
       crc = new CheckedInputStream(is, new CRC32());
       fis = crc;
@@ -89,8 +98,14 @@ public class Verifier
     for (; fis.read(buffer) > 0; );
 
     //TODO: maybe there are multple roms with same CRC32
-    if (options.matchCRC)
+    if (computeRealCRC)
       rom = cache.romForCrc(crc.getChecksum().getValue());
+    else if (handle.isArchive())
+    {
+      ArchiveHandle.ArchivePipedInputStream pis = (ArchiveHandle.ArchivePipedInputStream)is;
+      rom = cache.romForCrc((long)(int)pis.getArchive().getProperty(pis.getIndexInArchive(), PropID.CRC));
+    }
+      
     
     if (options.matchMD5 && rom != null)
     {
@@ -108,24 +123,32 @@ public class Verifier
         rom = null;
     }
     
+    if (crc != null)
+      crc.close();
+    
     return rom;
   }
   
   private List<RomFoundReference> verifyNoHeader(List<? extends RomHandle> handles) throws IOException
   {
-    List<RomFoundReference> found = new ArrayList<>();
+    List<RomFoundReference> found = null;
+    Stream<? extends RomHandle> stream = handles.stream();
     
-    handles.stream().forEach(StreamException.rethrowConsumer(path -> {
+    if (multiThreaded)
+      stream = stream.parallel();
+        
+    found = stream.map(StreamException.rethrowFunction(path -> {
       Logger.logger.updateProgress(current.getAndIncrement() / total, path.file().getFileName().toString());
-      
-      try (InputStream is = new BufferedInputStream(path.getInputStream()))
+      RomFoundReference ref = null;
+      try (InputStream is = path.getInputStream())
       {
-        RomReference rom = verifyRawInputStream(is);
+        RomReference rom = verifyRawInputStream(path, is);
         
         if (rom != null)
-          found.add(new RomFoundReference(rom, path));
+          ref = new RomFoundReference(rom, path);
       }
-    }));
+      return ref;
+    })).filter(r -> r != null).collect(Collectors.toList());
 
     return found;
   }

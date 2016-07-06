@@ -135,14 +135,32 @@ public class ArchiveHandle extends RomHandle
     return callback.stream.getInputStream();
   }
   
+  public static class ArchivePipedInputStream extends PipedInputStream
+  {
+    private final IInArchive archive;
+    private final int indexInArchive;
+    
+    public ArchivePipedInputStream(IInArchive archive, int indexInArchive)
+    {
+      super(1024*8);
+      this.archive = archive;
+      this.indexInArchive = indexInArchive;
+    }
+
+    public int getIndexInArchive() { return indexInArchive; }
+    public IInArchive getArchive() { return archive; }
+  }
+  
   private class ExtractStream implements ISequentialOutStream
   {
-    private PipedInputStream pis;
+    private ArchivePipedInputStream pis;
     private PipedOutputStream pos;
+    
+
             
-    ExtractStream() throws IOException
+    ExtractStream(IInArchive archive, int indexInArchive) throws IOException
     {
-      pis = new PipedInputStream(1024 * 8);
+      pis = new ArchivePipedInputStream(archive, indexInArchive);
       pos = new PipedOutputStream(pis);
     }
     
@@ -180,7 +198,7 @@ public class ArchiveHandle extends RomHandle
       this.index = index;
       try
       {
-        this.stream = new ExtractStream();
+        this.stream = new ExtractStream(archive, index);
       }
       catch (IOException e)
       {

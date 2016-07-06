@@ -57,10 +57,10 @@ public class BinaryHandle extends RomHandle
   {
     throw new UnsupportedOperationException("a binary rompath doesn't have an internal filename");
   }
-  
+
   @Override
   public InputStream getInputStream() throws IOException
   {
-    return new BufferedInputStream(Files.newInputStream(file));
+    return Files.newInputStream(file);
   }
 }

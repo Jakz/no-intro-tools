@@ -15,12 +15,20 @@ import com.jack.nit.scanner.Scanner;
 import com.jack.nit.scanner.ScannerOptions;
 import com.jack.nit.scanner.Verifier;
 
+import net.sf.sevenzipjbinding.SevenZip;
+import net.sf.sevenzipjbinding.SevenZipNativeInitializationException;
+
 /**
  * Hello world!
  *
  */
 public class Main 
 {
+  private static void initializeSevenZip() throws SevenZipNativeInitializationException
+  {
+    SevenZip.initSevenZipFromPlatformJAR();
+  }
+
   public static void main( String[] args )
   {
     Path path = Settings.DATS_PATH.resolve("gba.dat");
@@ -28,6 +36,8 @@ public class Main
     
     try
     {
+      initializeSevenZip();
+      
       GameSet set = parser.load(path);
       
       Logger.log(Log.INFO1, "Loaded set \'"+set.name+"\' ("+set.size()+" games, "+set.realSize()+" roms)");
@@ -44,6 +54,10 @@ public class Main
       Logger.log(Log.INFO1, "Found %d verified roms", found.size());
       found.forEach(r -> Logger.log(Log.INFO3, "> %s", r.rom.game.name));
       
+    }
+    catch (SevenZipNativeInitializationException e)
+    {
+      Logger.log(Log.ERROR, "Failed to initialize SevenZip library to manage archives, exiting.");
     }
     catch (Exception e)
     {

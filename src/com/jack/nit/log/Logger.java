@@ -36,7 +36,7 @@ public abstract class Logger
       for (; i < PROGRESS_LENGTH; ++i)
         System.out.print(" ");
       
-      System.out.printf("] %3d%% %100s", (int)(percent*100), message);
+      System.out.printf("] %3d%% %s", (int)(percent*100), message);
     }
     
     @Override public void endProgress()

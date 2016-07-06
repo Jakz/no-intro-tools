@@ -12,6 +12,6 @@ public class Settings
 
   public static Path[] resolveRomPathsForSet(GameSet set)
   {
-    return new Path[] { Paths.get("/Volumes/Temp") };
+    return new Path[] { Paths.get("/Volumes/RAMDisk") };
   }
 }

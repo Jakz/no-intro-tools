@@ -71,7 +71,7 @@ public class Scanner
     boolean includeSubfolders = true;
     final FolderScanner scanner = new FolderScanner(includeSubfolders);
 
-    Arrays.stream(paths).map(StreamException.rethrowFunction(scanner::scan)).forEach(files::addAll);
+    Arrays.stream(paths).parallel().map(StreamException.rethrowFunction(scanner::scan)).forEach(files::addAll);
     
     Logger.log(Log.INFO1, "found %d files to scan in %d paths", files.size(), paths.length);
     
@@ -92,7 +92,7 @@ public class Scanner
     List<BinaryHandle> binaryHandles = new ArrayList<>();
     List<ArchiveHandle> archiveHandles = new ArrayList<>();
 
-    paths.forEach(StreamException.rethrowConsumer(path -> {
+    paths.stream().forEach(StreamException.rethrowConsumer(path -> {
       Logger.logger.updateProgress(current.getAndIncrement() / count, "");
       
       boolean shouldBeArchive = archiveMatcher.matches(path.getFileName());
@@ -127,8 +127,7 @@ public class Scanner
         else
           skipped.add(path.getFileName().toString());
           
-      }
-      
+      }    
     }));
     
     Logger.logger.endProgress();
