@@ -7,13 +7,18 @@ import java.util.List;
 
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.RomFoundReference;
+import com.jack.nit.data.header.Header;
+import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
 import com.jack.nit.parser.DatParser;
+import com.jack.nit.parser.HeaderParser;
+import com.jack.nit.parser.XMDBParser;
 import com.jack.nit.scanner.RomHandlesSet;
 import com.jack.nit.scanner.Scanner;
 import com.jack.nit.scanner.ScannerOptions;
 import com.jack.nit.scanner.Verifier;
+import com.pixbits.io.XMLParser;
 
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.SevenZipNativeInitializationException;
@@ -32,16 +37,14 @@ public class Main
   public static void main( String[] args )
   {
     Path path = Settings.DATS_PATH.resolve("gba.dat");
-    DatParser parser = new DatParser();
     
     try
     {
       initializeSevenZip();
       
-      GameSet set = parser.load(path);
-      
-      Logger.log(Log.INFO1, "Loaded set \'"+set.name+"\' ("+set.size()+" games, "+set.realSize()+" roms)");
-      
+      GameSet set = Operations.loadGameSet(path);
+      CloneSet clones = Operations.loadCloneSetFromXMDB(set, Settings.DATS_PATH.resolve("gba.xmdb")) ;
+
       ScannerOptions options = new ScannerOptions();
       
       Scanner scanner = new Scanner(set, options);

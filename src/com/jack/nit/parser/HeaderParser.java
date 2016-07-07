@@ -46,15 +46,15 @@ public class HeaderParser extends XMLHandler<Header>
     {
       tests = new ArrayList<>();
       
-      map("start_offset", longHexAttributeOrDefault(attr, "start_offset", 0));
-      map("end_offset", longHexAttributeOrDefault(attr, "end_offset", Rule.EOF));
-      map("operation", Rule.Type.valueOf(this.stringAttributeOrDefault(attr, "operation", "none")));
+      map("start_offset", longHexAttributeOrDefault("start_offset", 0));
+      map("end_offset", longHexAttributeOrDefault("end_offset", Rule.EOF));
+      map("operation", Rule.Type.valueOf(this.stringAttributeOrDefault("operation", "none")));
     }
     else if (name.equals("data"))
     {
-      map("offset", longHexAttributeOrDefault(attr, "offset", 0));
-      map("value", hexByteArray(attr, "value"));
-      map("result", boolOrDefault(attr, "result", true));
+      map("offset", longHexAttributeOrDefault("offset", 0));
+      map("value", hexByteArray("value"));
+      map("result", boolOrDefault("result", true));
     }
   }
 

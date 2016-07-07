@@ -3,75 +3,90 @@ package com.jack.nit.parser;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
+
+import javax.lang.model.UnknownEntityException;
 
 import org.xml.sax.Attributes;
 
+import com.jack.nit.data.Game;
 import com.jack.nit.data.GameSet;
+import com.jack.nit.data.Rom;
 import com.jack.nit.data.header.Header;
 import com.jack.nit.data.header.Rule;
 import com.jack.nit.data.header.Test;
 import com.jack.nit.data.header.TestData;
 import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.data.xmdb.GameClone;
+import com.jack.nit.data.xmdb.Zone;
+import com.jack.nit.log.Log;
+import com.jack.nit.log.Logger;
 import com.pixbits.io.XMLHandler;
 
 public class XMDBParser extends XMLHandler<CloneSet>
 {
   List<GameClone> clones;
   GameSet set;
+  Game[] zones;
+  List<Game> clone;
   
-  XMDBParser(GameSet set)
+  public XMDBParser(GameSet set)
   {
     this.set = set;
   }
   
   @Override protected void end(String name)
   {
-    /*if (name.equals("name") || name.equals("author") || name.equals("version"))
-      mapOuter(name, asString());
-    else if (name.equals("detector"))
+    if (name.equals("zoned"))
     {
-      if (rules.size() == 0) throw new IllegalArgumentException("header must contain at least one rule");
-      header = new Header(value("name"), valueOrDefault("author", ""), valueOrDefault("version", ""), rules.toArray(new Rule[rules.size()]));
+      GameClone clone = new GameClone(this.clone.toArray(new Game[this.clone.size()]), zones);
+      clones.add(clone);
     }
-    else if (name.equals("rule"))
-    {
-      rules.add(new Rule(value("operation"), value("start_offset"), value("end_offset"), tests.toArray(new Test[tests.size()])));
-    }
-    else if (name.equals("data"))
-    {
-      tests.add(new TestData(value("offset"), value("value"), value("result")));
-    }*/
   }
   
   @Override protected void start(String name, Attributes attr)
   {
-    /*if (name.equals("bias"))
-    
-    
-    if (name.equals("detector"))
+    if (name.equals("parents"))
     {
-      rules = new ArrayList<>();
+      clones = new ArrayList<>();
     }
-    else if (name.equals("rule"))
+    else if (name.equals("zoned"))
     {
-      tests = new ArrayList<>();
+      zones = new Game[Zone.values().length];
+      clone = new ArrayList<>();
+    }
+    else if (name.equals("bias"))
+    {
+      Game game = set.get(attrString("name"));
+      Zone zone = Zone.forTinyName(attrString("zone"));
       
-      map("start_offset", longHexAttributeOrDefault(attr, "start_offset", 0));
-      map("end_offset", longHexAttributeOrDefault(attr, "end_offset", Rule.EOF));
-      map("operation", Rule.Type.valueOf(this.stringAttributeOrDefault(attr, "operation", "none")));
+      if (game == null)
+      {
+        Logger.log(Log.WARNING, "Zoned clone '"+attrString("name")+" is not present in corresponding game set");
+        return;
+      }
+      if (zone == null)
+        throw new NoSuchElementException("zone found in zoned rom is not valid: "+attrString("zone"));
+      
+      zones[zone.ordinal()] = game;
     }
-    else if (name.equals("data"))
+    else if (name.equals("clone"))
     {
-      map("offset", longHexAttributeOrDefault(attr, "offset", 0));
-      map("value", hexByteArray(attr, "value"));
-      map("result", boolOrDefault(attr, "result", true));
-    }*/
+      Game game = set.get(attrString("name"));
+
+      if (game == null)
+      {
+        Logger.log(Log.WARNING, "Game clone '"+attrString("name")+" is not present in corresponding game set");
+        return;
+      }
+              
+      clone.add(game);
+    }
   }
 
   @Override public CloneSet get()
   {
-    return new CloneSet(clones.toArray(new GameClone[clones.size()]));
+    return new CloneSet(set, clones.toArray(new GameClone[clones.size()]));
   }
 
 }

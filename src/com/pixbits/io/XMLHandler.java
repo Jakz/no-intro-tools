@@ -17,6 +17,8 @@ public abstract class XMLHandler<T> extends DefaultHandler
   private final Stack<Map<String,Object>> stack = new Stack<>();
   
   private final HexBinaryAdapter hexConverter = new HexBinaryAdapter();
+  
+  private Attributes currentAttributes = null;
 
   protected String asString() { return buffer.toString().replaceAll("[\r\n]"," ").trim(); }
   
@@ -51,14 +53,17 @@ public abstract class XMLHandler<T> extends DefaultHandler
   
   @Override public final void startElement(String namespaceURI, String name, String qName, Attributes attr) throws SAXException
   {
+    currentAttributes = attr;
     clearBuffer();
     stack.push(new HashMap<>());
     start(name, attr);
   }
   
-  protected long longAttributeOrDefault(Attributes attr, String key, long value)
+  protected String attrString(String key) { return currentAttributes.getValue(key); }
+  
+  protected long longAttributeOrDefault(String key, long value)
   {
-    String o = attr.getValue(key);
+    String o = currentAttributes.getValue(key);
     
     if (o == null)
       return value;
@@ -68,20 +73,20 @@ public abstract class XMLHandler<T> extends DefaultHandler
       return Long.valueOf(o);
   }
   
-  protected byte[] hexByteArray(Attributes attr, String key)
+  protected byte[] hexByteArray(String key)
   {
-    return hexConverter.unmarshal(attr.getValue(key));
+    return hexConverter.unmarshal(currentAttributes.getValue(key));
   }
   
-  protected boolean boolOrDefault(Attributes attr, String key, boolean value)
+  protected boolean boolOrDefault(String key, boolean value)
   {
-    String o = attr.getValue(key);
+    String o = currentAttributes.getValue(key);
     return o != null ? Boolean.valueOf(key) : value; 
   }
   
-  protected long longHexAttributeOrDefault(Attributes attr, String key, long value)
+  protected long longHexAttributeOrDefault(String key, long value)
   {
-    String o = attr.getValue(key);
+    String o = currentAttributes.getValue(key);
     
     if (o == null)
       return value;
@@ -91,9 +96,9 @@ public abstract class XMLHandler<T> extends DefaultHandler
       return Long.valueOf(o, 16);
   }
   
-  protected String stringAttributeOrDefault(Attributes attr, String key, String value)
+  protected String stringAttributeOrDefault(String key, String value)
   {
-    String o = attr.getValue(key);
+    String o = currentAttributes.getValue(key);
     return o != null ? o : value;
   }
   

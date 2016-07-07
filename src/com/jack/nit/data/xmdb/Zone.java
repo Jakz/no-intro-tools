@@ -11,8 +11,12 @@ public enum Zone
   SPAIN("S"),
   GERMANY("G"),
   FRANCE("F"),
-  ITALY("I")
-  
+  ITALY("I"),
+  AUSTRALIA("A"),
+  NETHERLANDS("Ne"),
+  DENMARK("Da"),
+  KOREA("K"),
+  CHINA("Cn")
   ;
   
   private static final Map<String, Zone> tinyCodeMap = new HashMap<>();
@@ -29,4 +33,6 @@ public enum Zone
     for (Zone zone : Zone.values())
       tinyCodeMap.put(zone.tinyCode, zone);
   }
+  
+  public static Zone forTinyName(String tinyName) { return tinyCodeMap.get(tinyName); }
 }
