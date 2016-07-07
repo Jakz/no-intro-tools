@@ -82,23 +82,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<!-- mvn package appbundle:bundle -->
-			  <groupId>sh.tak.appbundler</groupId>
-			  <artifactId>appbundle-maven-plugin</artifactId>
-			  <version>1.0.4</version>
-			  <configuration>
-			    <mainClass>com.jack.nit.Main</mainClass>
-			  </configuration>
-			  <executions>
-			    <execution>
-			      <phase>package</phase>
-			      <goals>
-			        <goal>bundle</goal>
-			      </goals>
-			    </execution>
-			  </executions>
-			</plugin>
 		</plugins>
 	</build>
 
