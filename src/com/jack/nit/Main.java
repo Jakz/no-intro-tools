@@ -65,8 +65,8 @@ public class Main
       Renamer renamer = new Renamer(options);
       renamer.rename(found);
       
-      RomHandle[] compress = found.stream().limit(5).map(rh -> rh.handle).toArray(i -> new RomHandle[i]);
-      Compressor7Zip.createArchive(Paths.get("/Users/jack/Desktop/romset/gb/Archive.7z"), compress, 5, true);
+      RomHandle[] compress = found.stream().limit(2).map(rh -> rh.handle).toArray(i -> new RomHandle[i]);
+      Compressor7Zip.createArchive(Paths.get("/Volumes/RAMDisk/Archive.7z"), compress, 5, true);
       
     }
     catch (SevenZipNativeInitializationException e)

@@ -23,6 +23,7 @@ import com.pixbits.stream.StreamException;
 
 import net.sf.sevenzipjbinding.IInArchive;
 import net.sf.sevenzipjbinding.PropID;
+import net.sf.sevenzipjbinding.PropertyInfo;
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 
@@ -87,7 +88,7 @@ public class Scanner
     List<ArchiveHandle> archiveHandles = new ArrayList<>();
 
     paths.stream().forEach(StreamException.rethrowConsumer(path -> {
-      Logger.logger.updateProgress(current.getAndIncrement() / count, "");
+      //Logger.logger.updateProgress(current.getAndIncrement() / count, "");
       
       boolean shouldBeArchive = archiveMatcher.matches(path.getFileName());
       
@@ -96,17 +97,35 @@ public class Scanner
         try (IInArchive archive = openArchive(path))
         {
           int itemCount = archive.getNumberOfItems();
-          
-          for (int i = 0; i < itemCount; ++i)
+
+          //boolean isSolid = (boolean)archive.getArchiveProperty(PropID.SOLID);
+          //System.out.println("Solid: "+isSolid);
+
+          /*System.out.println("Archive: "+path.getFileName());
+          for (int i = 0; i < archive.getNumberOfArchiveProperties(); ++i)
           {
-            long size = (long)archive.getProperty(i, PropID.SIZE);
-            long compressedSize = (long)archive.getProperty(i, PropID.PACKED_SIZE);
-            String fileName = (String)archive.getProperty(i, PropID.PATH);
-            
-            if (set.cache().isValidSize(size) || !options.matchSize)
-              archiveHandles.add(new ArchiveHandle(path, archive.getArchiveFormat(), fileName, i, size, compressedSize));
-            else
-              skipped.add(fileName+" in "+path.getFileName());
+            System.out.println(archive.getArchivePropertyInfo(i).propID + ": " + archive.getArchiveProperty(archive.getArchivePropertyInfo(i).propID));
+          }
+          
+          System.out.println("Item prop");
+          for (int i = 0; i < archive.getNumberOfProperties(); ++i)
+          {
+            System.out.println(archive.getPropertyInfo(i).propID + ": " + archive.getProperty(0, archive.getPropertyInfo(i).propID));
+          }*/
+
+          if (true)
+          {   
+            for (int i = 0; i < itemCount; ++i)
+            {
+              long size = (long)archive.getProperty(i, PropID.SIZE);
+              long compressedSize = (long)archive.getProperty(i, PropID.PACKED_SIZE);
+              String fileName = (String)archive.getProperty(i, PropID.PATH);
+              
+              if (set.cache().isValidSize(size) || !options.matchSize)
+                archiveHandles.add(new ArchiveHandle(path, archive.getArchiveFormat(), fileName, i, size, compressedSize));
+              else
+                skipped.add(fileName+" in "+path.getFileName());
+            }
           }
         }
         catch (FormatUnrecognizedException e)

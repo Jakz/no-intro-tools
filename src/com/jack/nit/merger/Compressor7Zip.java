@@ -87,6 +87,7 @@ public class Compressor7Zip
     archive = SevenZip.openOutArchive7z();
     archive.setLevel(level);
     archive.setSolid(true);
+    archive.setTrace(true);
     archive.setSolidFiles(handles.length);
     archive.setSolidSize(Arrays.stream(handles).mapToLong(RomHandle::size).sum());
     archive.setThreadCount(0);

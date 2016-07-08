@@ -46,6 +46,7 @@ public class Renamer
         Path finalPath = rr.handle.file().getParent().resolve(finalName);
 
         Files.move(rr.handle.file(), finalPath);
+        rr.handle.relocate(finalPath);
       }
     }));
     
