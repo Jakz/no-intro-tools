@@ -1,6 +1,9 @@
 package com.pixbits.stream;
 
-import java.util.function.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public final class StreamException
 {

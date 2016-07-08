@@ -1,0 +1,99 @@
+<!ELEMENT romsets (set+)>
+<!ELEMENT set (options,parents)>
+<!ATTLIST set
+ name CDATA #REQUIRED
+ version CDATA #REQUIRED>
+<!ELEMENT options (ext|flag|hackflag|ignore)*>
+<!ELEMENT ext EMPTY>
+<!ATTLIST ext text CDATA #REQUIRED>
+<!ELEMENT flag EMPTY>
+<!ATTLIST flag reg CDATA #REQUIRED>
+<!ELEMENT hackflag EMPTY>
+<!ATTLIST hackflag reg CDATA #REQUIRED>
+<!ELEMENT ignore EMPTY>
+<!ATTLIST ignore reg CDATA #REQUIRED>
+<!ELEMENT parents (parent|zoned)*>
+<!ELEMENT parent (clone|group)+>
+<!ATTLIST parent name CDATA #REQUIRED>
+<!ELEMENT clone EMPTY>
+<!ATTLIST clone name CDATA #REQUIRED>
+<!ELEMENT group EMPTY>
+<!ATTLIST group reg CDATA #REQUIRED>
+<!ELEMENT zoned (bias+,(clone|group)*)>
+<!ATTLIST zoned type (normal|deferred) "normal">
+<!ELEMENT bias EMPTY>
+<!ATTLIST bias
+ zone CDATA #REQUIRED
+ name CDATA #REQUIRED>
+
+
+<!ELEMENT settings (biaspriority,romset,compression,ram,misc,windows,program,paths)>
+<!ELEMENT biaspriority (zone+)>
+<!ELEMENT zone EMPTY>
+<!ATTLIST zone
+ name CDATA #REQUIRED>
+<!ELEMENT romset EMPTY>
+<!ATTLIST romset
+ name CDATA #REQUIRED
+ version CDATA #REQUIRED>
+<!ELEMENT compression EMPTY>
+<!ATTLIST compression
+ source (none|7z|zip|rar|ace) "none"
+ output (7z|zip|rar|ace) "7z">
+<!ELEMENT ram EMPTY>
+<!ATTLIST ram mb CDATA "">
+<!ELEMENT windows (main,log)>
+<!ELEMENT main EMPTY>
+<!ELEMENT log EMPTY>
+<!ATTLIST main
+ x CDATA #REQUIRED
+ y CDATA #REQUIRED>
+<!ATTLIST log
+ x CDATA #REQUIRED
+ y CDATA #REQUIRED
+ width CDATA #REQUIRED
+ height CDATA #REQUIRED>
+<!ELEMENT misc EMPTY>
+<!ATTLIST misc
+ language CDATA #REQUIRED
+ background (true|false) "false"
+ minimal (true|false) "false"
+ arguments (true|false) "false">
+<!ELEMENT program EMPTY>
+<!ATTLIST program
+ sevenzip CDATA ""
+ rar CDATA ""
+ ace CDATA ""
+ working CDATA "">
+<!ELEMENT paths (setpath*)>
+<!ELEMENT setpath EMPTY>
+<!ATTLIST setpath
+ name CDATA #REQUIRED
+ source CDATA ""
+ output CDATA ""
+ have CDATA "">
+
+
+<!ELEMENT languages (language+)>
+<!ELEMENT language (font,size,zonetext+,text+)>
+<!ATTLIST language name CDATA #REQUIRED>
+<!ELEMENT font EMPTY>
+<!ATTLIST font
+ face CDATA #REQUIRED
+ size CDATA #REQUIRED>
+<!ELEMENT size EMPTY>
+<!ATTLIST size
+ scale-x CDATA #REQUIRED
+ scale-y CDATA #REQUIRED>
+<!ELEMENT text EMPTY>
+<!ATTLIST text
+ n CDATA #REQUIRED
+ t CDATA #REQUIRED>
+<!ELEMENT zonetext EMPTY>
+<!ATTLIST zonetext
+ n CDATA #REQUIRED
+ t CDATA #REQUIRED>
+
+
+<!ENTITY t "true">
+<!ENTITY f "false">

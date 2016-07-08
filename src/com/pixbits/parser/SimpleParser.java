@@ -2,8 +2,8 @@ package com.pixbits.parser;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class SimpleParser

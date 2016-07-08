@@ -11,6 +11,7 @@ import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
 import com.jack.nit.parser.DatParser;
 import com.jack.nit.parser.XMDBParser;
+import com.pixbits.io.XMLEmbeddedDTD;
 import com.pixbits.io.XMLParser;
 
 public class Operations
@@ -26,8 +27,9 @@ public class Operations
   
   public static CloneSet loadCloneSetFromXMDB(GameSet set, Path path) throws IOException, SAXException
   {
+    XMLEmbeddedDTD resolver = new XMLEmbeddedDTD("GoodMerge.dtd", "com/jack/nit/parser/GoodMerge.dtd");    
     XMDBParser xparser = new XMDBParser(set);
-    XMLParser<CloneSet> xmdbParser = new XMLParser<>(xparser);
+    XMLParser<CloneSet> xmdbParser = new XMLParser<>(xparser, resolver);
 
     CloneSet cloneSet = xmdbParser.load(path);
     

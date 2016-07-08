@@ -8,25 +8,19 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.jack.nit.Settings;
 import com.jack.nit.data.GameSet;
-import com.jack.nit.data.HashCache;
-import com.jack.nit.data.RomReference;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
-import com.pixbits.io.FileUtils;
 import com.pixbits.io.FolderScanner;
 import com.pixbits.stream.StreamException;
 
-import net.sf.sevenzipjbinding.ArchiveFormat;
 import net.sf.sevenzipjbinding.IInArchive;
 import net.sf.sevenzipjbinding.PropID;
 import net.sf.sevenzipjbinding.SevenZip;

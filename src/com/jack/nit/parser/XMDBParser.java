@@ -1,21 +1,13 @@
 package com.jack.nit.parser;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-
-import javax.lang.model.UnknownEntityException;
 
 import org.xml.sax.Attributes;
 
 import com.jack.nit.data.Game;
 import com.jack.nit.data.GameSet;
-import com.jack.nit.data.Rom;
-import com.jack.nit.data.header.Header;
-import com.jack.nit.data.header.Rule;
-import com.jack.nit.data.header.Test;
-import com.jack.nit.data.header.TestData;
 import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.data.xmdb.GameClone;
 import com.jack.nit.data.xmdb.Zone;
