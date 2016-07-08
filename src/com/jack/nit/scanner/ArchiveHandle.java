@@ -33,17 +33,27 @@ public class ArchiveHandle extends RomHandle
   public final int indexInArchive;
   public final String internalName;
   public final ArchiveFormat format;
+  public final long size;
+  public final long compressedSize;
   
-  public ArchiveHandle(Path file, ArchiveFormat format, String internalName, Integer indexInArchive)
+  private IInArchive archive;
+  
+  public ArchiveHandle(Path file, ArchiveFormat format, String internalName, Integer indexInArchive, long size, long compressedSize)
   {
     this.file = file.normalize();
     this.internalName = internalName;
     this.indexInArchive = indexInArchive;
     this.format = format;  
+    this.size = size;
+    this.compressedSize = compressedSize;
+    this.archive = null;
   }
     
   protected IInArchive open()
   {
+    if (archive != null)
+      return archive;
+    
     try
     {
       RandomAccessFileInStream rfile = new RandomAccessFileInStream(new RandomAccessFile(file.toFile(), "r"));
@@ -57,42 +67,47 @@ public class ArchiveHandle extends RomHandle
     return null;
   }
   
+  public final void forceOpen()
+  {
+    if (archive == null)
+      archive = open();
+  }
+  
+  public final void forceClose()
+  {
+    try
+    {
+      archive.close();
+      archive = null;
+    }
+    catch (IOException e)
+    {
+      e.printStackTrace();
+    }
+    finally
+    {
+      archive = null;
+    }
+  }
+  
   @Override public final boolean isArchive() { return true; }
   
   @Override public Path file() { return file; }
+  @Override public String fileName() { return internalName; }
+  
   @Override public String toString() { return file.getFileName().toString() + " ("+internalName+")"; }
   @Override public String plainName() { return file.getFileName().toString().substring(0, file.getFileName().toString().lastIndexOf('.')); }
   @Override public String plainInternalName() { return internalName.substring(0, internalName.toString().lastIndexOf('.')); }
   @Override public String getInternalExtension() { return internalName.substring(internalName.toString().lastIndexOf('.')+1); }
-
-  @Override public String getExtension() { throw new RuntimeException("foo"); }
   
   @Override public long size()
   {
-    try (IInArchive archive = open())
-    {
-      Long size = (Long)archive.getProperty(indexInArchive, PropID.PACKED_SIZE);
-      return size != null ? size : 0;
-    }
-    catch (IOException e)
-    {
-      e.printStackTrace();
-      return 0;
-    }
+    return size;
   }
   
-  @Override public long uncompressedSize()
+  @Override public long compressedSize()
   {
-    try (IInArchive archive = open())
-    {
-      Long size = (Long)archive.getProperty(indexInArchive, PropID.SIZE);
-      return size != null ? size : 0;
-    }
-    catch (IOException e)
-    {
-      e.printStackTrace();
-      return 0;
-    }
+    return compressedSize;
   }
 
   public boolean renameInternalFile(String newName)
@@ -103,7 +118,7 @@ public class ArchiveHandle extends RomHandle
   @Override
   public RomHandle relocate(Path file)
   {
-    return new ArchiveHandle(file, format, this.internalName, this.indexInArchive);
+    return new ArchiveHandle(file, format, this.internalName, this.indexInArchive, size, compressedSize);
   }
   
   @Override

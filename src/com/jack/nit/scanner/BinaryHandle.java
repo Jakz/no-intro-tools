@@ -15,8 +15,9 @@ public class BinaryHandle extends RomHandle
     this.file = file.normalize();
   }
   
-  @Override
-  public Path file() { return file; }
+  @Override public Path file() { return file; }
+  @Override public String fileName() { return file().toString(); }
+  
   @Override
   public String toString() { return file.getFileName().toString(); }
   @Override
@@ -36,14 +37,10 @@ public class BinaryHandle extends RomHandle
     }
   }
   
-  @Override public long uncompressedSize() { return size(); }
+  @Override public long compressedSize() { return size(); }
   
   @Override public boolean isArchive() { return false; }
-  @Override public String getExtension() {
-    String filename = file.getFileName().toString();
-    int lastdot = filename.lastIndexOf('.');
-    return lastdot != -1 ? filename.substring(lastdot+1) : "";
-  }
+
   @Override public String getInternalExtension() { return getExtension(); }
   
   @Override

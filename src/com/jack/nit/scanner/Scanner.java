@@ -105,11 +105,12 @@ public class Scanner
           
           for (int i = 0; i < itemCount; ++i)
           {
-            long uncompressedSize = (long)archive.getProperty(i, PropID.SIZE);
+            long size = (long)archive.getProperty(i, PropID.SIZE);
+            long compressedSize = (long)archive.getProperty(i, PropID.PACKED_SIZE);
             String fileName = (String)archive.getProperty(i, PropID.PATH);
             
-            if (set.cache().isValidSize(uncompressedSize) || !options.matchSize)
-              archiveHandles.add(new ArchiveHandle(path, archive.getArchiveFormat(), fileName, i));
+            if (set.cache().isValidSize(size) || !options.matchSize)
+              archiveHandles.add(new ArchiveHandle(path, archive.getArchiveFormat(), fileName, i, size, compressedSize));
             else
               skipped.add(fileName+" in "+path.getFileName());
           }
