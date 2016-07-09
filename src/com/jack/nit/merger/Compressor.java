@@ -117,10 +117,12 @@ public class Compressor
     }
   }
   
-  public void createArchive(Path dest, RomHandle[] handles) throws FileNotFoundException, SevenZipException
+  public void createArchive(Path dest, RomHandle... handles) throws FileNotFoundException, SevenZipException
   {
     RandomAccessFile raf = new RandomAccessFile(dest.toFile(), "rw");
-    
+        
+    Logger.logger.startProgress("Creating archive "+dest.toString());
+
     switch (options.archiveFormat)
     {
       case _7ZIP:
@@ -142,5 +144,7 @@ public class Compressor
         break;
       }
     }
+    
+    Logger.logger.endProgress();
   }
 }

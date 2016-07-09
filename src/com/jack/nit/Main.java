@@ -33,14 +33,6 @@ public class Main
 
   public static void main( String[] args )
   {
-    /*Set<Point> pts = new HashSet<Point>();
-    Stream<Point> stream = RandomPointSpliterator.stream();
-    Stream<Point> truncated = stream.limit(50);
-    truncated = truncated.distinct();
-    System.out.println("trying");
-    truncated.forEach(pts::add);
-    System.out.println("Size should match 50 == "+pts.size());*/
-    
     Path path = Settings.DATS_PATH.resolve("gba.dat");
     
     try
