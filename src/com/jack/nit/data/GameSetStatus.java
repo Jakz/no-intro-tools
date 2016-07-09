@@ -10,7 +10,7 @@ public class GameSetStatus
   final public CloneSet clones;
   final public RomFoundReference[] found;
   
-  GameSetStatus(GameSet set, CloneSet clones, RomFoundReference[] found)
+  public GameSetStatus(GameSet set, CloneSet clones, RomFoundReference[] found)
   {
     this.set = set;
     this.clones = clones;

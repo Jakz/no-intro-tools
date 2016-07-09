@@ -18,14 +18,16 @@ public class GameClone
   }
   
   public String getTitleForBias(BiasSet bias)
-  {
+  {    
+    //TODO: skip name if game is not found
+    
     // find first occurring game for the zone list requested
     for (Zone zone : bias.getZones())
       if (zones[zone.ordinal()] != null)
-        return zones[zone.ordinal()].name;
+        return zones[zone.ordinal()].normalizedTitle();
     
     // otherwise just return any title
-    return games[0].name;
+    return games[0].normalizedTitle();
   }
   
   public Game get(Zone zone) { return zones[zone.ordinal()]; }

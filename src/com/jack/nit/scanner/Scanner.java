@@ -61,7 +61,7 @@ public class Scanner
   public Set<Path> computeFileList() throws IOException
   {
     Set<Path> files = new TreeSet<>();
-    Path[] paths = Settings.resolveRomPathsForSet(set);
+    Path[] paths = options.dataPath;
     
     boolean includeSubfolders = true;
     final FolderScanner scanner = new FolderScanner(includeSubfolders);

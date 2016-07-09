@@ -20,12 +20,20 @@ import com.jack.nit.data.Game;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.Rom;
 import com.jack.nit.data.header.Header;
+import com.jack.nit.scanner.Options;
 import com.pixbits.io.XMLParser;
 import com.pixbits.parser.SimpleParser;
 import com.pixbits.parser.SimpleTreeBuilder;
 
 public class DatParser
 {
+  private final Options options;
+  
+  public DatParser(Options options)
+  {
+    this.options = options;
+  }
+  
   private enum Status
   {
     NOWHERE,
@@ -96,11 +104,9 @@ public class DatParser
       Header header = null;
       
       if (headerFile != null)
-      {
-        Path headerPath = Settings.HEADERS_PATH.resolve(headerFile);
-        
+      {        
         XMLParser<Header> headerParser = new XMLParser<>(new HeaderParser());
-        header = headerParser.load(headerPath);
+        header = headerParser.load(options.headerPath);
       }
       
       set = new GameSet(value("name"), value("description"), header, value("version"), value("comment"), games.toArray(new Game[games.size()]));

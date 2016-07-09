@@ -5,11 +5,13 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import com.jack.nit.data.GameSet;
+import com.jack.nit.data.GameSetStatus;
 import com.jack.nit.data.RomFoundReference;
 import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
 import com.jack.nit.merger.Compressor;
+import com.jack.nit.merger.Merger;
 import com.jack.nit.scanner.Renamer;
 import com.jack.nit.scanner.RomHandle;
 import com.jack.nit.scanner.RomHandlesSet;
@@ -33,16 +35,15 @@ public class Main
 
   public static void main( String[] args )
   {
-    Path path = Settings.DATS_PATH.resolve("gba.dat");
+    Options options = new Options();
     
     try
     {
       initializeSevenZip();
       
-      GameSet set = Operations.loadGameSet(path);
-      CloneSet clones = Operations.loadCloneSetFromXMDB(set, Settings.DATS_PATH.resolve("gba.xmdb")) ;
+      GameSet set = Operations.loadGameSet(options);
+      CloneSet clones = Operations.loadCloneSetFromXMDB(set, options.cloneDatPath) ;
 
-      Options options = new Options();
       
       Scanner scanner = new Scanner(set, options);
       RomHandlesSet handles = scanner.computeHandles();
@@ -56,6 +57,11 @@ public class Main
       
       Renamer renamer = new Renamer(options);
       renamer.rename(found);
+      
+      GameSetStatus status = new GameSetStatus(set, clones, found.toArray(new RomFoundReference[found.size()]));
+      
+      Merger merger = new Merger(status, options);
+      merger.merge(options.mergePath);
       
       /*RomHandle[] compress = found.stream().limit(2).map(rh -> rh.handle).toArray(i -> new RomHandle[i]);
       

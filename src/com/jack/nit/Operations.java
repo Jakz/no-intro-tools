@@ -11,15 +11,16 @@ import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
 import com.jack.nit.parser.DatParser;
 import com.jack.nit.parser.XMDBParser;
+import com.jack.nit.scanner.Options;
 import com.pixbits.io.XMLEmbeddedDTD;
 import com.pixbits.io.XMLParser;
 
 public class Operations
 {
-  public static GameSet loadGameSet(Path path) throws IOException, SAXException
+  public static GameSet loadGameSet(Options options) throws IOException, SAXException
   {
-    DatParser parser = new DatParser();
-    GameSet set = parser.load(path);
+    DatParser parser = new DatParser(options);
+    GameSet set = parser.load(options.datPath);
     Logger.log(Log.INFO1, "Loaded set \'"+set.name+"\' ("+set.size()+" games, "+set.realSize()+" roms)");
 
     return set;

@@ -28,6 +28,7 @@ public class CloneSet
     });  
   }
   
+  public GameClone get(Game game) { return cloneMap.get(game); }
   public GameClone get(int index) { return clones[index]; }
   public int size() { return clones.length; }
   
