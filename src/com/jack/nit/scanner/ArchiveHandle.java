@@ -7,6 +7,8 @@ import java.io.PipedOutputStream;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
 
+import com.jack.nit.Settings;
+
 import net.sf.sevenzipjbinding.ArchiveFormat;
 import net.sf.sevenzipjbinding.ExtractAskMode;
 import net.sf.sevenzipjbinding.ExtractOperationResult;
@@ -147,7 +149,7 @@ public class ArchiveHandle extends RomHandle
     
     public ArchivePipedInputStream(IInArchive archive, int indexInArchive)
     {
-      super(1024*8);
+      super(Settings.PIPED_BUFFER_SIZE);
       this.archive = archive;
       this.indexInArchive = indexInArchive;
     }

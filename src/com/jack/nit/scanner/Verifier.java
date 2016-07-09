@@ -25,7 +25,7 @@ import net.sf.sevenzipjbinding.PropID;
 
 public class Verifier
 {
-  private final ScannerOptions options;
+  private final Options options;
   private final HashCache cache;
   private final GameSet set;
   private final boolean multiThreaded;
@@ -35,7 +35,7 @@ public class Verifier
   private AtomicInteger current = new AtomicInteger();;
   
   
-  public Verifier(ScannerOptions options, GameSet set)
+  public Verifier(Options options, GameSet set)
   {
     this.options = options;
     this.set = set;

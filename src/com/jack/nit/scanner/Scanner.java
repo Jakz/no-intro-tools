@@ -32,9 +32,9 @@ public class Scanner
   final private GameSet set;
   final private PathMatcher archiveMatcher = FileSystems.getDefault().getPathMatcher("glob:*.{zip,rar,7z}");
   
-  final private ScannerOptions options;
+  final private Options options;
   
-  public Scanner(GameSet set, ScannerOptions options)
+  public Scanner(GameSet set, Options options)
   {
     this.set = set;
     this.options = options;
@@ -118,7 +118,8 @@ public class Scanner
             for (int i = 0; i < itemCount; ++i)
             {
               long size = (long)archive.getProperty(i, PropID.SIZE);
-              long compressedSize = (long)archive.getProperty(i, PropID.PACKED_SIZE);
+              Long lcompressedSize = (Long)archive.getProperty(i, PropID.PACKED_SIZE);
+              long compressedSize = lcompressedSize != null ? lcompressedSize : -1;
               String fileName = (String)archive.getProperty(i, PropID.PATH);
               
               if (set.cache().isValidSize(size) || !options.matchSize)

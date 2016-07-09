@@ -12,9 +12,14 @@ public abstract class Logger
   
   public static final Logger logger = new Logger()
   {
+    int lastProgress;
+    
     @Override protected void doLog(Log type, String message)
     {
-      System.out.println("["+type+"] "+message);
+      if (type == Log.DEBUG)
+        System.err.println("["+type+"] "+message);
+      else
+        System.out.println("["+type+"] "+message);
     }
     
     final static int PROGRESS_LENGTH = 40;
@@ -22,21 +27,29 @@ public abstract class Logger
     @Override public void startProgress(String message)
     {
       System.out.println(message);
+      lastProgress = -1;
     }
     
     @Override public void updateProgress(float percent, String message)
     {
       int toPrint = (int)(percent*PROGRESS_LENGTH);
+      int ipercent = (int)(percent*100);
       
-      System.out.print("\r[");
-      
-      int i = 0;
-      for (; i < toPrint; ++i)
-        System.out.print(".");
-      for (; i < PROGRESS_LENGTH; ++i)
-        System.out.print(" ");
-      
-      System.out.printf("] %3d%% %s", (int)(percent*100), message);
+      if (ipercent != lastProgress)
+      {
+        lastProgress = ipercent;
+        
+        System.out.print("\r[");
+
+        
+        int i = 0;
+        for (; i < toPrint; ++i)
+          System.out.print(".");
+        for (; i < PROGRESS_LENGTH; ++i)
+          System.out.print(" ");
+        
+        System.out.printf("] %3d%% %s", ipercent, message);
+      }
     }
     
     @Override public void endProgress()

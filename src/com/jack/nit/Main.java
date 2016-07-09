@@ -9,12 +9,12 @@ import com.jack.nit.data.RomFoundReference;
 import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
-import com.jack.nit.merger.Compressor7Zip;
+import com.jack.nit.merger.Compressor;
 import com.jack.nit.scanner.Renamer;
 import com.jack.nit.scanner.RomHandle;
 import com.jack.nit.scanner.RomHandlesSet;
 import com.jack.nit.scanner.Scanner;
-import com.jack.nit.scanner.ScannerOptions;
+import com.jack.nit.scanner.Options;
 import com.jack.nit.scanner.Verifier;
 
 import net.sf.sevenzipjbinding.SevenZip;
@@ -50,7 +50,7 @@ public class Main
       GameSet set = Operations.loadGameSet(path);
       CloneSet clones = Operations.loadCloneSetFromXMDB(set, Settings.DATS_PATH.resolve("gba.xmdb")) ;
 
-      ScannerOptions options = new ScannerOptions();
+      Options options = new Options();
       
       Scanner scanner = new Scanner(set, options);
       RomHandlesSet handles = scanner.computeHandles();
@@ -65,13 +65,16 @@ public class Main
       Renamer renamer = new Renamer(options);
       renamer.rename(found);
       
-      RomHandle[] compress = found.stream().limit(2).map(rh -> rh.handle).toArray(i -> new RomHandle[i]);
-      Compressor7Zip.createArchive(Paths.get("/Volumes/RAMDisk/Archive.7z"), compress, 5, true);
+      /*RomHandle[] compress = found.stream().limit(2).map(rh -> rh.handle).toArray(i -> new RomHandle[i]);
+      
+      Compressor compressor = new Compressor(options);
+      
+      compressor.createArchive(Paths.get("/Volumes/RAMDisk/Archive.7z"), compress);*/
       
     }
     catch (SevenZipNativeInitializationException e)
     {
-      Logger.log(Log.ERROR, "Failed to initialize SevenZip library to manage archives, exiting.");
+      Logger.log(Log.ERROR, "Failed to initialize SevenZip library to manage archives, exiting:\n\t"+e.getMessage());
     }
     catch (Exception e)
     {

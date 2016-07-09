@@ -6,5 +6,6 @@ public enum Log
   INFO2,
   INFO3,
   WARNING,
-  ERROR
+  ERROR,
+  DEBUG
 };
