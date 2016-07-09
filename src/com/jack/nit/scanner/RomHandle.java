@@ -26,6 +26,8 @@ public abstract class RomHandle
   
   public abstract String getInternalExtension();
   public abstract InputStream getInputStream() throws IOException;
+  
+  public abstract long crc();
   public abstract long size();
   public abstract long compressedSize();
 }

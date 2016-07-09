@@ -11,7 +11,6 @@ import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
 import com.jack.nit.parser.DatParser;
 import com.jack.nit.parser.XMDBParser;
-import com.jack.nit.scanner.Options;
 import com.pixbits.io.XMLEmbeddedDTD;
 import com.pixbits.io.XMLParser;
 

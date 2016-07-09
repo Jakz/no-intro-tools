@@ -13,6 +13,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jdk.version>1.8</jdk.version>
     <zip7.version>9.20-2.00beta</zip7.version>	
+    <argparse4j.version>0.7.0</argparse4j.version>
   </properties>
 
 	<build>
@@ -96,5 +97,10 @@
 		    <artifactId>sevenzipjbinding-all-platforms</artifactId>
 		    <version>${zip7.version}</version>
 		</dependency>
+		<dependency>
+      <groupId>net.sourceforge.argparse4j</groupId>
+      <artifactId>argparse4j</artifactId>
+      <version>${argparse4j.version}</version>
+    </dependency>
   </dependencies>
 </project>

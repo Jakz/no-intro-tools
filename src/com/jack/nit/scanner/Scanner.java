@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.jack.nit.Options;
 import com.jack.nit.Settings;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.log.Log;
@@ -121,9 +122,10 @@ public class Scanner
               Long lcompressedSize = (Long)archive.getProperty(i, PropID.PACKED_SIZE);
               long compressedSize = lcompressedSize != null ? lcompressedSize : -1;
               String fileName = (String)archive.getProperty(i, PropID.PATH);
+              long crc = (Integer)archive.getProperty(i, PropID.CRC);
               
               if (set.cache().isValidSize(size) || !options.matchSize)
-                archiveHandles.add(new ArchiveHandle(path, archive.getArchiveFormat(), fileName, i, size, compressedSize));
+                archiveHandles.add(new ArchiveHandle(path, archive.getArchiveFormat(), fileName, i, size, compressedSize, crc));
               else
                 skipped.add(fileName+" in "+path.getFileName());
             }

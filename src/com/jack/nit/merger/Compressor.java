@@ -6,9 +6,9 @@ import java.io.RandomAccessFile;
 import java.nio.file.Path;
 import java.util.Arrays;
 
+import com.jack.nit.Options;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
-import com.jack.nit.scanner.Options;
 import com.jack.nit.scanner.RomHandle;
 
 import net.sf.sevenzipjbinding.ArchiveFormat;

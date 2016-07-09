@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import com.pixbits.io.FileUtils;
+
 public class BinaryHandle extends RomHandle
 {
   public final Path file;
@@ -37,6 +39,12 @@ public class BinaryHandle extends RomHandle
   }
   
   @Override public long compressedSize() { return size(); }
+  
+  @Override public long crc()
+  {
+    try { return FileUtils.calculateCRCFast(file()); } catch (IOException e) { e.printStackTrace(); return -1; }
+  }
+  
   
   @Override public boolean isArchive() { return false; }
 

@@ -1,4 +1,4 @@
-package com.jack.nit.scanner;
+package com.jack.nit;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -48,8 +48,8 @@ public class Options
   public Options()
   {
     matchSize = true;
-    matchSHA1 = true;
-    matchMD5 = true;
+    matchSHA1 = false;
+    matchMD5 = false;
     multiThreaded = true;
     
     mergeMode = MergeMode.SINGLE_ARCHIVE_PER_CLONE;
@@ -58,16 +58,17 @@ public class Options
     useSolidArchives = true;
     compressionLevel = 9;
     
-    datPath = Paths.get("dats/gba.dat");
+    datPath = Paths.get("dats/gb.dat");
     headerPath = null;
-    cloneDatPath = Paths.get("dats/gba.xmdb");
+    cloneDatPath = Paths.get("dats/gb.xmdb");
     
-    dataPath = new Path[] { Paths.get("/Users/jack/Desktop/romset/gb") };
-    mergePath = Paths.get("/Users/jack/Desktop/romset/merge");
+    dataPath = new Path[] { Paths.get("/Volumes/RAMDisk/gb") };
+    mergePath = Paths.get("/Volumes/RAMDisk/merge");
     
     zonePriority = new BiasSet(Zone.ITALY, Zone.EUROPE, Zone.USA, Zone.JAPAN);
-
   }
   
-  boolean doesMergeInPlace() { return dataPath.equals(mergePath); } 
+  public boolean verifyJustCRC() { return !(matchSHA1 || matchMD5); }
+  
+  public boolean doesMergeInPlace() { return dataPath.equals(mergePath); } 
 }

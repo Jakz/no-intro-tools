@@ -19,9 +19,7 @@ public class XMLEmbeddedDTD implements EntityResolver
   }
   
   @Override public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException
-  {
-    System.out.println(systemId);
-    
+  {    
     if (systemId.endsWith(dtdName))
       return new InputSource(this.getClass().getClassLoader().getResourceAsStream(dtdPath));
     

@@ -15,12 +15,12 @@ import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
 import org.xml.sax.SAXException;
 
+import com.jack.nit.Options;
 import com.jack.nit.Settings;
 import com.jack.nit.data.Game;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.Rom;
 import com.jack.nit.data.header.Header;
-import com.jack.nit.scanner.Options;
 import com.pixbits.io.XMLParser;
 import com.pixbits.parser.SimpleParser;
 import com.pixbits.parser.SimpleTreeBuilder;

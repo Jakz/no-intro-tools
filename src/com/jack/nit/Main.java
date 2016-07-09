@@ -16,11 +16,13 @@ import com.jack.nit.scanner.Renamer;
 import com.jack.nit.scanner.RomHandle;
 import com.jack.nit.scanner.RomHandlesSet;
 import com.jack.nit.scanner.Scanner;
-import com.jack.nit.scanner.Options;
 import com.jack.nit.scanner.Verifier;
 
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.SevenZipNativeInitializationException;
+import net.sourceforge.argparse4j.inf.ArgumentParser;
+import net.sourceforge.argparse4j.inf.ArgumentParserException;
+import net.sourceforge.argparse4j.inf.Namespace;
 
 /**
  * Hello world!
@@ -33,12 +35,16 @@ public class Main
     SevenZip.initSevenZipFromPlatformJAR();
   }
 
-  public static void main( String[] args )
+  public static void main(String[] args)
   {
+    ArgumentParser arguments = Arguments.generateParser();
+
     Options options = new Options();
     
     try
     {
+      Namespace rargs = arguments.parseArgs(args);
+      
       initializeSevenZip();
       
       GameSet set = Operations.loadGameSet(options);
@@ -69,6 +75,10 @@ public class Main
       
       compressor.createArchive(Paths.get("/Volumes/RAMDisk/Archive.7z"), compress);*/
       
+    }
+    catch (ArgumentParserException e)
+    {
+      arguments.handleError(e);
     }
     catch (SevenZipNativeInitializationException e)
     {

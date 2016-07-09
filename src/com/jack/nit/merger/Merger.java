@@ -10,12 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.jack.nit.Options;
 import com.jack.nit.data.GameSetStatus;
 import com.jack.nit.data.RomFoundReference;
 import com.jack.nit.data.xmdb.GameClone;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
-import com.jack.nit.scanner.Options;
 import com.jack.nit.scanner.RomHandle;
 import com.pixbits.stream.StreamException;
 

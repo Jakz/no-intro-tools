@@ -27,10 +27,11 @@ public class ArchiveHandle extends RomHandle
   public final ArchiveFormat format;
   public final long size;
   public final long compressedSize;
+  public final long crc;
   
   private IInArchive archive;
   
-  public ArchiveHandle(Path file, ArchiveFormat format, String internalName, Integer indexInArchive, long size, long compressedSize)
+  public ArchiveHandle(Path file, ArchiveFormat format, String internalName, Integer indexInArchive, long size, long compressedSize, long crc)
   {
     this.file = file.normalize();
     this.internalName = internalName;
@@ -39,6 +40,7 @@ public class ArchiveHandle extends RomHandle
     this.size = size;
     this.compressedSize = compressedSize;
     this.archive = null;
+    this.crc = crc;
   }
     
   protected IInArchive open()
@@ -92,15 +94,11 @@ public class ArchiveHandle extends RomHandle
   @Override public String plainInternalName() { return internalName.substring(0, internalName.toString().lastIndexOf('.')); }
   @Override public String getInternalExtension() { return internalName.substring(internalName.toString().lastIndexOf('.')+1); }
   
-  @Override public long size()
-  {
-    return size;
-  }
+  @Override public long size() { return size; }
+  @Override public long compressedSize() { return compressedSize; }
+  @Override public long crc() { return crc; }
   
-  @Override public long compressedSize()
-  {
-    return compressedSize;
-  }
+  
 
   public boolean renameInternalFile(String newName)
   {       
@@ -110,7 +108,7 @@ public class ArchiveHandle extends RomHandle
   @Override
   public RomHandle relocate(Path file)
   {
-    return new ArchiveHandle(file, format, this.internalName, this.indexInArchive, size, compressedSize);
+    return new ArchiveHandle(file, format, this.internalName, this.indexInArchive, size, compressedSize, crc);
   }
   
   @Override
@@ -131,9 +129,13 @@ public class ArchiveHandle extends RomHandle
         archive.extract(new int[] { indexInArchive }, false, callback);
         callback.close();
       }
+      catch (ExtractionCanceledException e)
+      {
+        
+      }
       catch (IOException e)
       {
-        e.printStackTrace();
+         e.printStackTrace();
       }
     };
     
@@ -179,7 +181,10 @@ public class ArchiveHandle extends RomHandle
       }
       catch (IOException e)
       {
-        e.printStackTrace();
+        if (e.getMessage().equals("Pipe closed")) //FIXME: unreliable
+          throw new ExtractionCanceledException();
+        else
+          e.printStackTrace();
       }
       
       return data.length;

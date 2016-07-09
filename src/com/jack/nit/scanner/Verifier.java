@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
+import com.jack.nit.Options;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.HashCache;
 import com.jack.nit.data.RomFoundReference;
@@ -70,6 +71,7 @@ public class Verifier
     CheckedInputStream crc = null;
     MessageDigest md5 = null;
     MessageDigest sha1 = null;
+    boolean realRead = false;
     
     RomReference rom = null;
     
@@ -77,21 +79,28 @@ public class Verifier
     {
       crc = new CheckedInputStream(is, new CRC32());
       fis = crc;
+      realRead = true;
     }
     
     if (options.matchMD5)
     {
       md5 = MessageDigest.getInstance("MD5");
       fis = new DigestInputStream(fis, md5);
+      realRead = true;
     }
     
     if (options.matchSHA1)
     {
       sha1 = MessageDigest.getInstance("SHA-1");
       fis = new DigestInputStream(fis, sha1);
+      realRead = true;
     }
     
-    for (; fis.read(buffer) > 0; );
+    
+    if (realRead)
+      for (; fis.read(buffer) > 0; );
+    else
+      is.close();
 
     //TODO: maybe there are multple roms with same CRC32
     if (computeRealCRC)
@@ -125,6 +134,12 @@ public class Verifier
     return rom;
   }
   
+  private RomReference verifyJustCRC(RomHandle handle)
+  {
+    RomReference rom = cache.romForCrc(handle.crc());
+    return rom;
+  }
+  
   private List<RomFoundReference> verifyNoHeader(List<? extends RomHandle> handles) throws IOException
   {
     List<RomFoundReference> found = null;
@@ -136,13 +151,23 @@ public class Verifier
     found = stream.map(StreamException.rethrowFunction(path -> {
       Logger.logger.updateProgress(current.getAndIncrement() / total, path.file().getFileName().toString());
       RomFoundReference ref = null;
-      try (InputStream is = path.getInputStream())
+      RomReference rom = null;
+      
+      if (options.verifyJustCRC())
       {
-        RomReference rom = verifyRawInputStream(path, is);
-        
-        if (rom != null)
-          ref = new RomFoundReference(rom, path);
+        rom = verifyJustCRC(path);
       }
+      else
+      {
+        try (InputStream is = path.getInputStream())
+        {
+          rom = verifyRawInputStream(path, is);
+        }
+      }
+
+      if (rom != null)
+        ref = new RomFoundReference(rom, path);
+      
       return ref;
     })).filter(r -> r != null).collect(Collectors.toList());
 
