@@ -2,13 +2,17 @@ package com.jack.nit.merger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.jack.nit.Options;
 import com.jack.nit.data.GameSetStatus;
@@ -19,17 +23,23 @@ import com.jack.nit.log.Logger;
 import com.jack.nit.scanner.RomHandle;
 import com.pixbits.stream.StreamException;
 
+import net.sf.sevenzipjbinding.IInArchive;
+import net.sf.sevenzipjbinding.PropID;
+import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.SevenZipException;
+import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 
 public class Merger
 {
   GameSetStatus set;
   Options options;
+  Compressor compressor;
   
   public Merger(GameSetStatus set, Options options)
   {
     this.set = set;
     this.options = options;
+    this.compressor = new Compressor(options);
   }
   
   public void merge(Path dest) throws FileNotFoundException, SevenZipException
@@ -56,16 +66,18 @@ public class Merger
   private void mergeToSingleArchive(Path dest) throws FileNotFoundException, SevenZipException
   {
     RomHandle[] handles = Arrays.stream(set.found).map(rfr -> rfr.handle).toArray(i -> new RomHandle[i]);
-    Compressor compressor = new Compressor(options);
-    compressor.createArchive(dest, handles);
+    
+    String archiveName = options.datPath.getFileName().toString();
+    archiveName = archiveName.substring(0, archiveName.indexOf('.')) + options.archiveFormat.extension;
+    
+    compressor.createArchive(dest.resolve(archiveName), handles);
   }
   
   private void mergeToOneArchivePerGame(Path dest) throws FileNotFoundException, SevenZipException
   {
-    RomHandle[] handles = Arrays.stream(set.found).map(rfr -> rfr.handle).toArray(i -> new RomHandle[i]);
-    Compressor compressor = new Compressor(options);
-    
-    Arrays.stream(handles).forEach(StreamException.rethrowConsumer(h -> compressor.createArchive(dest, h)));
+    Arrays.stream(set.found).forEach(StreamException.rethrowConsumer(rfr -> {
+      createArchive(dest.resolve(rfr.rom.game.name+options.archiveFormat.extension), new ArchiveInfo(rfr.rom.game.name, rfr.handle));
+    }));    
   }
   
   private class ArchiveInfo
@@ -112,18 +124,20 @@ public class Merger
     }
     
     Logger.log(Log.INFO1, "Merger is going to create %d archives.", clones.size()+handles.size());
-    
-    Compressor compressor = new Compressor(options);
-    
+        
     clones.values().forEach(
       StreamException.rethrowConsumer(a -> 
-        compressor.createArchive(dest.resolve(a.name+options.archiveFormat.extension), a.handles.toArray(new RomHandle[a.handles.size()]))
+        createArchive(dest.resolve(a.name+options.archiveFormat.extension), a)
       )
     );
     
-    
+    handles.forEach(
+      StreamException.rethrowConsumer(a -> 
+        createArchive(dest.resolve(a.name+options.archiveFormat.extension), a)
+      )
+    );
   }
-  
+    
   private void mergeUncompressed(Path dest)
   {
     Arrays.stream(set.found).forEach(StreamException.rethrowConsumer(rfr -> {
@@ -140,5 +154,48 @@ public class Merger
         // extract from archive to dest
       }
     }));
+  }
+  
+  private void createArchive(Path dest, ArchiveInfo info) throws FileNotFoundException, SevenZipException
+  {
+    if (!isArchiveAlreadyUpToDate(dest,info))
+      compressor.createArchive(dest, info.handles.toArray(new RomHandle[info.handles.size()]));
+    else
+      Logger.log(Log.INFO2, "Skipping creation of %s, already up to date.", dest.getFileName().toString());
+  }
+  
+  private boolean isArchiveAlreadyUpToDate(Path dest, ArchiveInfo info)
+  {
+    try
+    {
+      if (options.alwaysRewriteArchives || !Files.exists(dest))
+        return false;
+    
+      try (RandomAccessFileInStream rfile = new RandomAccessFileInStream(new RandomAccessFile(dest.toFile(), "r")))
+      {
+        try (IInArchive archive =  SevenZip.openInArchive(null, rfile))
+        {         
+          if (archive.getNumberOfItems() != info.handles.size() && !options.keepUnrecognizedFilesInArchives)
+            return false;
+          else
+          {
+            Map<Long, String> crcs = new HashMap<>();
+            
+            int count = archive.getNumberOfItems();
+            for (int i = 0; i < count; ++i)
+              crcs.put((long)(int)archive.getProperty(i, PropID.CRC), (String)archive.getProperty(i, PropID.PATH));
+            
+            return info.handles.stream().allMatch(h -> h.fileName().equals(crcs.get(h.crc())));
+          }  
+        }
+      }
+    }
+    catch (IOException e)
+    {
+      return false;
+    }
+    
+    
+    
   }
 }

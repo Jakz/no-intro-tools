@@ -10,10 +10,12 @@ import com.pixbits.io.FileUtils;
 public class BinaryHandle extends RomHandle
 {
   public final Path file;
+  private long crc;
 
   public BinaryHandle(Path file)
   {
     this.file = file.normalize();
+    this.crc = -1;
   }
   
   @Override public Path file() { return file; }
@@ -42,7 +44,18 @@ public class BinaryHandle extends RomHandle
   
   @Override public long crc()
   {
-    try { return FileUtils.calculateCRCFast(file()); } catch (IOException e) { e.printStackTrace(); return -1; }
+    if (crc != -1)
+      return crc;
+    else
+      try
+      { 
+        crc = FileUtils.calculateCRCFast(file()); 
+        return crc;
+      } catch (IOException e) 
+      { 
+        e.printStackTrace(); 
+        return -1;
+      }
   }
   
   

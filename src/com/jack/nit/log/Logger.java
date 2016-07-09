@@ -1,21 +1,30 @@
 package com.jack.nit.log;
 
+import com.jack.nit.Options;
+
 public abstract class Logger
-{
-  private boolean timeEnabled;
-  
+{  
   protected abstract void doLog(Log type, String message);
   
   public abstract void startProgress(String message);
   public abstract void updateProgress(float percent, String message);
   public abstract void endProgress();
   
-  public static final Logger logger = new Logger()
+  public static class MyLogger extends Logger
   {
     int lastProgress;
+    final int logLevel;
+    
+    MyLogger(Options options)
+    {
+      this.logLevel = options.logLevel.ordinal();
+    }
     
     @Override protected void doLog(Log type, String message)
     {
+      if (type.ordinal() > logLevel)
+        return;
+      
       if (type == Log.DEBUG)
         System.err.println("["+type+"] "+message);
       else
@@ -60,11 +69,18 @@ public abstract class Logger
       System.out.println("] 100%");
     }
   };
+  
+  public static Logger logger;
+  
+  public static void init(Options options)
+  {
+    logger = new MyLogger(options);
+  }
 
   public static void log(Log type, String message)
   {
-    if (type == Log.INFO2 || type == Log.INFO3)
-      return;
+    //if (type == Log.INFO2 || type == Log.INFO3)
+    //  return;
     logger.doLog(type, message);
   }
   

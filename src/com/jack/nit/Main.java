@@ -37,15 +37,18 @@ public class Main
 
   public static void main(String[] args)
   {
-    ArgumentParser arguments = Arguments.generateParser();
-
-    Options options = new Options();
+    ArgumentParser arguments = Args.generateParser();
     
     try
     {
-      Namespace rargs = arguments.parseArgs(args);
+      //Namespace rargs = arguments.parseArgs(args);
+            
+      Options options = new Options();
+      
+      //System.out.println(rargs);
       
       initializeSevenZip();
+      Logger.init(options);
       
       GameSet set = Operations.loadGameSet(options);
       CloneSet clones = Operations.loadCloneSetFromXMDB(set, options.cloneDatPath) ;
@@ -76,10 +79,10 @@ public class Main
       compressor.createArchive(Paths.get("/Volumes/RAMDisk/Archive.7z"), compress);*/
       
     }
-    catch (ArgumentParserException e)
+    /*catch (ArgumentParserException e)
     {
       arguments.handleError(e);
-    }
+    }*/
     catch (SevenZipNativeInitializationException e)
     {
       Logger.log(Log.ERROR, "Failed to initialize SevenZip library to manage archives, exiting:\n\t"+e.getMessage());
