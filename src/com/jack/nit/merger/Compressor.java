@@ -82,14 +82,6 @@ public class Compressor
 
     @Override public void setCompleted(long complete) throws SevenZipException
     {
-      try
-      {
-        System.out.println("COMPRESSED: "+complete+" AVAIL: "+currentStream.available());
-      }
-      catch (IOException e)
-      {
-        e.printStackTrace();
-      }
       Logger.logger.updateProgress(complete/(float)totalSize, "");
     }
 
@@ -98,7 +90,7 @@ public class Compressor
     {
       try
       { 
-        System.out.println("closing stream: "+success);
+        System.out.println("closing extract stream: "+success);
         currentStream.close();
       }
       catch (IOException e)
@@ -120,6 +112,29 @@ public class Compressor
       
       return item;
     }
+    
+    class MyISequentialInStream extends InputStreamSequentialInStream
+    {
+      MyISequentialInStream(InputStream is)
+      {
+        super(is);
+      }
+      
+      @Override public int read(byte[] data) throws SevenZipException
+      {
+        int i = super.read(data);
+        
+        System.out.println("MySequentialInStream::read "+i+" "+Thread.currentThread().getName());
+        
+        return i;
+      }
+      
+      @Override public void close() throws IOException
+      {
+        System.out.println("MyISequentialInStream::close");
+        super.close();
+      }
+    }
 
     @Override
     public ISequentialInStream getStream(int index) throws SevenZipException
@@ -128,7 +143,7 @@ public class Compressor
       try
       {
         currentStream = handles[index].getInputStream();
-        return new InputStreamSequentialInStream(currentStream);
+        return new MyISequentialInStream(currentStream);
       }
       catch (IOException e)
       {

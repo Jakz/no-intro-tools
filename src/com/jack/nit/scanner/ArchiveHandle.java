@@ -2,8 +2,8 @@ package com.jack.nit.scanner;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import com.pixbits.io.PipedInputStream;
+import com.pixbits.io.PipedOutputStream;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
 
@@ -128,7 +128,7 @@ public class ArchiveHandle extends RomHandle
       try
       {
         archive.extract(new int[] { indexInArchive }, false, callback);
-        //callback.close();
+        callback.close();
       }
       catch (ExtractionCanceledException e)
       {
@@ -158,6 +158,13 @@ public class ArchiveHandle extends RomHandle
       this.archive = archive;
       this.indexInArchive = indexInArchive;
     }
+    
+    @Override public synchronized int read(byte[] data) throws IOException
+    {
+      int i = super.read(data);
+      System.out.println("PipedInput::read "+i+" "+Thread.currentThread().getName());
+      return i;
+    }
 
     public int getIndexInArchive() { return indexInArchive; }
     public IInArchive getArchive() { return archive; }
@@ -167,19 +174,18 @@ public class ArchiveHandle extends RomHandle
   {
     private ArchivePipedInputStream pis;
     private PipedOutputStream pos;
-    
-
-            
+  
     ExtractStream(IInArchive archive, int indexInArchive) throws IOException
     {
       pis = new ArchivePipedInputStream(archive, indexInArchive);
       pos = new PipedOutputStream(pis);
     }
     
-    @Override public int write(byte[] data)
+    @Override public synchronized int write(byte[] data)
     { 
       try
       {
+        System.out.println("PipedOutput::write "+data.length+" "+Thread.currentThread().getName());
         pos.write(data);
       }
       catch (IOException e)
@@ -195,7 +201,9 @@ public class ArchiveHandle extends RomHandle
       return pis;
     }
     
-    public void close() throws IOException { pos.close(); }
+    public void close() throws IOException { 
+      pos.close();
+    }
   }
   
   private class ExtractCallback implements IArchiveExtractCallback
@@ -234,15 +242,7 @@ public class ArchiveHandle extends RomHandle
     
     public void setOperationResult(ExtractOperationResult result) throws SevenZipException
     {
-      try
-      {
-        System.out.println("Extract stream closed");
-        stream.close();
-      }
-      catch (IOException e)
-      {
-        e.printStackTrace();
-      }
+       System.out.println("Extract Stream finished");
     }
     
     public void setCompleted(long completeValue) throws SevenZipException
@@ -252,7 +252,7 @@ public class ArchiveHandle extends RomHandle
 
     public void setTotal(long total) throws SevenZipException
     {
-      System.out.println("EXTRACTED: "+total);
+      //System.out.println("EXTRACTED: "+total);
     }
   }
   
