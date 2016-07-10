@@ -14,6 +14,7 @@ public abstract class Logger
   {
     int lastProgress;
     final int logLevel;
+    boolean showProgress = false;
     
     MyLogger(Options options)
     {
@@ -31,7 +32,7 @@ public abstract class Logger
         System.out.println("["+type+"] "+message);
     }
     
-    final static int PROGRESS_LENGTH = 40;
+    final static int PROGRESS_LENGTH = 20;
         
     @Override public void startProgress(String message)
     {
@@ -39,11 +40,13 @@ public abstract class Logger
       lastProgress = -1;
     }
     
-    @Override public void updateProgress(float percent, String message)
+    @Override public synchronized void updateProgress(float percent, String message)
     {
+      if (!showProgress) return;
+      
       int toPrint = (int)(percent*PROGRESS_LENGTH);
       int ipercent = (int)(percent*100);
-      
+            
       if (ipercent != lastProgress)
       {
         lastProgress = ipercent;
@@ -57,7 +60,8 @@ public abstract class Logger
         for (; i < PROGRESS_LENGTH; ++i)
           System.out.print(" ");
         
-        System.out.printf("] %3d%% %s", ipercent, message);
+        System.out.printf("] %3d%% %s", ipercent, message.length() < 40 ? message : (message.substring(0, 36)+"..."));
+        System.out.flush();
       }
     }
     

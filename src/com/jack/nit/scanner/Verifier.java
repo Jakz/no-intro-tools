@@ -148,8 +148,9 @@ public class Verifier
     if (multiThreaded)
       stream = stream.parallel();
         
-    found = stream.map(StreamException.rethrowFunction(path -> {
+    found = stream.map(StreamException.rethrowFunction(path -> {      
       Logger.logger.updateProgress(current.getAndIncrement() / total, path.file().getFileName().toString());
+      
       RomFoundReference ref = null;
       RomReference rom = null;
       
@@ -167,10 +168,10 @@ public class Verifier
 
       if (rom != null)
         ref = new RomFoundReference(rom, path);
-      
+            
       return ref;
     })).filter(r -> r != null).collect(Collectors.toList());
-
+    
     return found;
   }
 }

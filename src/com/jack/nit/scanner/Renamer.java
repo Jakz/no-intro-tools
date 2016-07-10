@@ -1,9 +1,11 @@
 package com.jack.nit.scanner;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -53,8 +55,8 @@ public class Renamer
       return v;
     }));
     
-    if (options.multiThreaded)
-      stream = stream.parallel();
+    if (false && options.multiThreaded)
+      stream = stream.parallel(); //FIXME: this will create problems caused by Files.move which will make parallel tasks fail on relocate of path
     
     stream.forEach(StreamException.rethrowConsumer(rr -> {
       if (rr.handle.isArchive() && mappedFiles.get(rr.handle.file()).size() > 1)
@@ -65,11 +67,23 @@ public class Renamer
         
       Path finalName = Paths.get(renamer.apply(rr.rom)+"."+rr.handle.getExtension());
       Path currentName = rr.handle.file().getFileName();
-      
+
       if (!finalName.equals(currentName))
       {
         Path finalPath = rr.handle.file().getParent().resolve(finalName);
-
+        Map<Path, Set<RomFoundReference>> aaa = mappedFiles;
+        
+        if (Files.exists(finalPath) && mappedFiles.containsKey(finalPath))
+        {
+          Logger.log(Log.DEBUG, "Renaming found reference for %s to a temporary name to avoid name clashing with another found reference which should have its name.", finalName.toString());
+          Path temporaryFile = Files.createTempFile(finalPath.getParent(), "", "."+rr.handle.getExtension());
+          Files.move(finalPath, temporaryFile, StandardCopyOption.REPLACE_EXISTING);
+          Set<RomFoundReference> references = mappedFiles.get(finalPath);
+          references.forEach(rfr -> rfr.handle.relocate(temporaryFile));
+          mappedFiles.remove(finalPath);
+          mappedFiles.put(temporaryFile, references);
+        }
+                    
         Files.move(rr.handle.file(), finalPath);
         rr.handle.relocate(finalPath);
       }

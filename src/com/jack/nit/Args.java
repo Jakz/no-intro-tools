@@ -13,6 +13,7 @@ public class Args
   
   public final static String NO_MULTI_THREAD = "no-multi-thread";
   public final static String MERGE_MODE = "merge-mode";
+  public final static String IN_PLACE_MERGE = "force-merge-in-place";
   public final static String NO_SHA1_CHECK = "no-sha1";
   public final static String NO_MD5_CHECK = "no-md5";
   public final static String NO_SIZE_CHECK = "no-size";
@@ -54,6 +55,13 @@ public class Args
     parser.addArgument("--keep-unrecognized-files", "-kuf")
       .dest(KEEP_UNRECOGNIZED_FILES)
       .help("keep unrecognized files in already present archives")
+      .action(Arguments.storeConst())
+      .setConst(true)
+      .setDefault(false);
+    
+    parser.addArgument("--force-merge-in-place", "-mip")
+      .dest(IN_PLACE_MERGE)
+      .help("override merge path to be the same of rom path")
       .action(Arguments.storeConst())
       .setConst(true)
       .setDefault(false);

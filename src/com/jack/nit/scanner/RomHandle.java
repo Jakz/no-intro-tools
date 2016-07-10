@@ -14,7 +14,7 @@ public abstract class RomHandle
   
   public abstract String plainName();
   public abstract String plainInternalName();
-  public abstract RomHandle relocate(Path file);
+  public abstract void relocate(Path file);
   public abstract RomHandle relocateInternal(String internalName);
   public abstract boolean isArchive();
   

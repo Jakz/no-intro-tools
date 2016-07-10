@@ -65,7 +65,7 @@ public class Merger
   
   private void mergeToSingleArchive(Path dest) throws FileNotFoundException, SevenZipException
   {
-    RomHandle[] handles = Arrays.stream(set.found).map(rfr -> rfr.handle).toArray(i -> new RomHandle[i]);
+    RomHandle[] handles = set.found.stream().map(rfr -> rfr.handle).toArray(i -> new RomHandle[i]);
     
     String archiveName = options.datPath.getFileName().toString();
     archiveName = archiveName.substring(0, archiveName.indexOf('.')) + options.archiveFormat.extension;
@@ -75,7 +75,7 @@ public class Merger
   
   private void mergeToOneArchivePerGame(Path dest) throws FileNotFoundException, SevenZipException
   {
-    Arrays.stream(set.found).forEach(StreamException.rethrowConsumer(rfr -> {
+    set.found.forEach(StreamException.rethrowConsumer(rfr -> {
       createArchive(dest.resolve(rfr.rom.game.name+options.archiveFormat.extension), new ArchiveInfo(rfr.rom.game.name, rfr.handle));
     }));    
   }
@@ -140,7 +140,7 @@ public class Merger
     
   private void mergeUncompressed(Path dest)
   {
-    Arrays.stream(set.found).forEach(StreamException.rethrowConsumer(rfr -> {
+    set.found.forEach(StreamException.rethrowConsumer(rfr -> {
       RomHandle handle = rfr.handle;
       
       // TODO: manage src dest as same path
@@ -158,25 +158,68 @@ public class Merger
   
   private void createArchive(Path dest, ArchiveInfo info) throws FileNotFoundException, SevenZipException
   {
-    if (!isArchiveAlreadyUpToDate(dest,info))
-      compressor.createArchive(dest, info.handles.toArray(new RomHandle[info.handles.size()]));
-    else
-      Logger.log(Log.INFO2, "Skipping creation of %s, already up to date.", dest.getFileName().toString());
+    ArchiveStatus status = checkExistingArchiveStatus(dest, info);
+    
+    switch (status)
+    {
+      case UP_TO_DATE:
+        Logger.log(Log.INFO2, "Skipping creation of %s, already up to date.", dest.getFileName().toString());
+        break;
+      case CREATE:
+        compressor.createArchive(dest, info.handles.toArray(new RomHandle[info.handles.size()]));
+        break;
+      case UPDATE:
+      {
+        
+        break;
+      }
+      case ERROR:
+        Logger.log(Log.ERROR, "Error on checking status of existing archive %s", dest.getFileName().toString());
+        break;
+    }
   }
   
-  private boolean isArchiveAlreadyUpToDate(Path dest, ArchiveInfo info)
+  private enum ArchiveStatus
+  {
+    UP_TO_DATE,
+    CREATE,
+    UPDATE,
+    ERROR
+  };
+  
+  private ArchiveStatus checkExistingArchiveStatus(Path dest, ArchiveInfo info)
   {
     try
     {
       if (options.alwaysRewriteArchives || !Files.exists(dest))
-        return false;
+        return ArchiveStatus.CREATE;
     
       try (RandomAccessFileInStream rfile = new RandomAccessFileInStream(new RandomAccessFile(dest.toFile(), "r")))
       {
         try (IInArchive archive =  SevenZip.openInArchive(null, rfile))
         {         
           if (archive.getNumberOfItems() != info.handles.size() && !options.keepUnrecognizedFilesInArchives)
-            return false;
+          {
+            if (options.doesMergeInPlace())
+            {
+              // if merge is in place and archive exists then all files inside the archive should be present also in ArchiveInfo
+              Map<Long, String> crcs = new HashMap<>();
+              info.handles.stream().forEach(handle -> crcs.put(handle.crc(), handle.fileName()));
+
+              int count = archive.getNumberOfItems();
+              for (int i = 0; i < count; ++i)
+              {
+                long crc = (long)(int)archive.getProperty(i, PropID.CRC);
+                String filename = (String)archive.getProperty(i, PropID.PATH);
+                if (!filename.equals(crcs.get(crc)))
+                  return ArchiveStatus.ERROR;
+              }
+              
+              return ArchiveStatus.UPDATE;
+            }
+            else
+              return ArchiveStatus.CREATE;
+          }
           else
           {
             Map<Long, String> crcs = new HashMap<>();
@@ -185,17 +228,47 @@ public class Merger
             for (int i = 0; i < count; ++i)
               crcs.put((long)(int)archive.getProperty(i, PropID.CRC), (String)archive.getProperty(i, PropID.PATH));
             
-            return info.handles.stream().allMatch(h -> h.fileName().equals(crcs.get(h.crc())));
+            return info.handles.stream().allMatch(h -> h.fileName().equals(crcs.get(h.crc()))) ? ArchiveStatus.UP_TO_DATE : ArchiveStatus.CREATE;
           }  
         }
       }
     }
     catch (IOException e)
     {
-      return false;
+      return ArchiveStatus.ERROR;
     }
+  }
+  
+  private class ExistingArchive
+  {
+    final Path file;
+    final Set<RomHandle> handles;
     
+    ExistingArchive(Path file)
+    {
+      this.file = file;
+      this.handles = new HashSet<>();
+    }
+  };
+  
+  public Map<Path,ExistingArchive> computeInPlaceStatus()
+  {
+    Map<Path, ExistingArchive> archives = new HashMap<>();
     
+    set.found.forEach(rfr -> {
+      if (rfr.handle.isArchive())
+      {
+        archives.compute(rfr.handle.file(), (path,archive) -> {
+          if (archive == null)
+            archive = new ExistingArchive(path);
+          else
+            archive.handles.add(rfr.handle);
+          
+          return archive;
+        });
+      }
+    });
     
+    return archives;
   }
 }

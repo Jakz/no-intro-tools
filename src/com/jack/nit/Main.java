@@ -67,10 +67,10 @@ public class Main
       Renamer renamer = new Renamer(options);
       renamer.rename(found);
       
-      GameSetStatus status = new GameSetStatus(set, clones, found.toArray(new RomFoundReference[found.size()]));
+      GameSetStatus status = new GameSetStatus(set, clones, found);
       
       Merger merger = new Merger(status, options);
-      merger.merge(options.mergePath);
+      merger.merge(options.mergePath());
       
       /*RomHandle[] compress = found.stream().limit(2).map(rh -> rh.handle).toArray(i -> new RomHandle[i]);
       

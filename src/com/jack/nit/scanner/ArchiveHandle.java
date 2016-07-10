@@ -21,7 +21,7 @@ import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 
 public class ArchiveHandle extends RomHandle
 {
-  public final Path file;
+  private Path file;
   public final int indexInArchive;
   public final String internalName;
   public final ArchiveFormat format;
@@ -106,9 +106,9 @@ public class ArchiveHandle extends RomHandle
   }
   
   @Override
-  public RomHandle relocate(Path file)
+  public void relocate(Path file)
   {
-    return new ArchiveHandle(file, format, this.internalName, this.indexInArchive, size, compressedSize, crc);
+    this.file = file;
   }
   
   @Override
@@ -124,10 +124,11 @@ public class ArchiveHandle extends RomHandle
     final ExtractCallback callback = new ExtractCallback(archive, indexInArchive); 
     
     Runnable r = () -> {
+      System.out.println("Extract Thread Started");
       try
       {
         archive.extract(new int[] { indexInArchive }, false, callback);
-        callback.close();
+        //callback.close();
       }
       catch (ExtractionCanceledException e)
       {
@@ -137,9 +138,11 @@ public class ArchiveHandle extends RomHandle
       {
          e.printStackTrace();
       }
+      System.out.println("Extract Thread Stopped");
     };
     
     new Thread(r).start();
+    
     
     return callback.stream.getInputStream();
   }
@@ -181,10 +184,7 @@ public class ArchiveHandle extends RomHandle
       }
       catch (IOException e)
       {
-        if (e.getMessage().equals("Pipe closed")) //FIXME: unreliable
-          throw new ExtractionCanceledException();
-        else
-          e.printStackTrace();
+        e.printStackTrace();
       }
       
       return data.length;
@@ -234,7 +234,15 @@ public class ArchiveHandle extends RomHandle
     
     public void setOperationResult(ExtractOperationResult result) throws SevenZipException
     {
-
+      try
+      {
+        System.out.println("Extract stream closed");
+        stream.close();
+      }
+      catch (IOException e)
+      {
+        e.printStackTrace();
+      }
     }
     
     public void setCompleted(long completeValue) throws SevenZipException
@@ -244,7 +252,7 @@ public class ArchiveHandle extends RomHandle
 
     public void setTotal(long total) throws SevenZipException
     {
-      
+      System.out.println("EXTRACTED: "+total);
     }
   }
   

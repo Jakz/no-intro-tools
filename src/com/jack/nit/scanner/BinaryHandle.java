@@ -9,7 +9,7 @@ import com.pixbits.io.FileUtils;
 
 public class BinaryHandle extends RomHandle
 {
-  public final Path file;
+  private Path file;
   private long crc;
 
   public BinaryHandle(Path file)
@@ -64,9 +64,9 @@ public class BinaryHandle extends RomHandle
   @Override public String getInternalExtension() { return getExtension(); }
   
   @Override
-  public RomHandle relocate(Path file)
+  public void relocate(Path file)
   {
-    return new BinaryHandle(file);
+    this.file = file;
   }
   
   @Override

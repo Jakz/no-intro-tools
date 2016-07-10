@@ -7,5 +7,5 @@ import com.jack.nit.data.GameSet;
 
 public class Settings
 {
-  public static int PIPED_BUFFER_SIZE = 1024*64;
+  public static int PIPED_BUFFER_SIZE = 8192;
 }

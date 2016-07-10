@@ -2,6 +2,7 @@ package com.jack.nit.merger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -64,6 +65,8 @@ public class Compressor
     private final RomHandle[] handles;
     private final long totalSize;
     private final ItemDecorator<T> decorator;
+    private int currentItem = -1;
+    private InputStream currentStream = null;
     
     CreateCallback(RomHandle[] handles, ItemDecorator<T> decorator)
     {
@@ -79,13 +82,29 @@ public class Compressor
 
     @Override public void setCompleted(long complete) throws SevenZipException
     {
+      try
+      {
+        System.out.println("COMPRESSED: "+complete+" AVAIL: "+currentStream.available());
+      }
+      catch (IOException e)
+      {
+        e.printStackTrace();
+      }
       Logger.logger.updateProgress(complete/(float)totalSize, "");
     }
 
     @Override
-    public void setOperationResult(boolean operationResultOk) throws SevenZipException
+    public void setOperationResult(boolean success) throws SevenZipException
     {
-      // progress callback 
+      try
+      { 
+        System.out.println("closing stream: "+success);
+        currentStream.close();
+      }
+      catch (IOException e)
+      {
+        e.printStackTrace();
+      }
     }
 
     @Override
@@ -105,9 +124,11 @@ public class Compressor
     @Override
     public ISequentialInStream getStream(int index) throws SevenZipException
     {
+      currentItem = index;
       try
       {
-        return new InputStreamSequentialInStream(handles[index].getInputStream());
+        currentStream = handles[index].getInputStream();
+        return new InputStreamSequentialInStream(currentStream);
       }
       catch (IOException e)
       {

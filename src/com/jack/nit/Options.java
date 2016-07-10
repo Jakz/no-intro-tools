@@ -37,6 +37,8 @@ public class Options
   public final boolean matchMD5;
   public final boolean multiThreaded;
   
+  
+  private final boolean forceMergeInPlace;
   public final MergeMode mergeMode;
   public final ArchiveFormat archiveFormat;
   public final boolean useSolidArchives;
@@ -49,7 +51,7 @@ public class Options
   public final Path cloneDatPath;
   
   public final Path[] dataPath;
-  public final Path mergePath;
+  private final Path mergePath;
   
   public final BiasSet zonePriority;
   
@@ -77,6 +79,8 @@ public class Options
         mergeMode = MergeMode.SINGLE_ARCHIVE_PER_CLONE; break;
     }
     
+    forceMergeInPlace = args.getBoolean(Args.IN_PLACE_MERGE);
+    
     archiveFormat = ArchiveFormat._7ZIP;
     
     useSolidArchives = !args.getBoolean(Args.NO_SOLID_ARCHIVES);
@@ -98,7 +102,7 @@ public class Options
   
   public Options()
   {
-    logLevel = Log.INFO3;
+    logLevel = Log.DEBUG;
     
     matchSize = true;
     matchSHA1 = false;
@@ -106,6 +110,7 @@ public class Options
     multiThreaded = true;
     
     mergeMode = MergeMode.SINGLE_ARCHIVE_PER_SET;
+    forceMergeInPlace = true;
     
     archiveFormat = ArchiveFormat._7ZIP;
     useSolidArchives = true;
@@ -125,5 +130,6 @@ public class Options
   
   public boolean verifyJustCRC() { return !(matchSHA1 || matchMD5); }
   
-  public boolean doesMergeInPlace() { return dataPath.equals(mergePath); } 
+  public Path mergePath() { return mergePath; }
+  public boolean doesMergeInPlace() { return forceMergeInPlace || dataPath.equals(mergePath); } 
 }

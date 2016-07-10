@@ -8,9 +8,9 @@ public class GameSetStatus
 {
   final public GameSet set;
   final public CloneSet clones;
-  final public RomFoundReference[] found;
+  final public List<RomFoundReference> found;
   
-  public GameSetStatus(GameSet set, CloneSet clones, RomFoundReference[] found)
+  public GameSetStatus(GameSet set, CloneSet clones, List<RomFoundReference> found)
   {
     this.set = set;
     this.clones = clones;
