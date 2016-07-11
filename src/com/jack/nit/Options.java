@@ -45,6 +45,7 @@ public class Options
   public final int compressionLevel;
   public final boolean alwaysRewriteArchives;
   public final boolean keepUnrecognizedFilesInArchives;
+  public final boolean cleanMergePathAfterMerge;
   
   public final Path datPath;
   public final Path headerPath;
@@ -87,6 +88,7 @@ public class Options
     compressionLevel = args.getInt(Args.COMPRESSION_LEVEL);
     alwaysRewriteArchives = args.getBoolean(Args.ALWAYS_REWRITE_ARCHIVES);
     keepUnrecognizedFilesInArchives = args.getBoolean(Args.KEEP_UNRECOGNIZED_FILES);
+    cleanMergePathAfterMerge = true;
     
     datPath =  Paths.get(args.getString(Args.DAT_PATH));
     headerPath = args.get(Args.HEADER_PATH) != null ? Paths.get(args.getString(Args.HEADER_PATH)) : null;
@@ -117,12 +119,15 @@ public class Options
     compressionLevel = 9;
     alwaysRewriteArchives = false;
     keepUnrecognizedFilesInArchives = false;
+    cleanMergePathAfterMerge = true;
     
     datPath = Paths.get("dats/gb.dat");
     headerPath = null;
     cloneDatPath = Paths.get("dats/gb.xmdb");
     
-    dataPath = new Path[] { Paths.get("/Volumes/RAMDisk/gb") };
+    //dataPath = new Path[] { Paths.get("/Volumes/RAMDisk/gb") };
+    dataPath = new Path[] { Paths.get("/Users/jack/Desktop/romset/gb") };
+
     mergePath = Paths.get("/Volumes/RAMDisk/merge");
     
     zonePriority = new BiasSet(Zone.ITALY, Zone.EUROPE, Zone.USA, Zone.JAPAN);
@@ -130,6 +135,7 @@ public class Options
   
   public boolean verifyJustCRC() { return !(matchSHA1 || matchMD5); }
   
-  public Path mergePath() { return mergePath; }
+  //TODO: not correct, if merge in place it should be original path of rom or force 1 data path max
+  public Path mergePath() { return forceMergeInPlace ? dataPath[0] : mergePath; }
   public boolean doesMergeInPlace() { return forceMergeInPlace || dataPath.equals(mergePath); } 
 }

@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.GameSetStatus;
 import com.jack.nit.data.xmdb.CloneSet;
+import com.jack.nit.exceptions.FatalErrorException;
+import com.jack.nit.exceptions.RomPathNotFoundException;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
 import com.jack.nit.merger.Compressor;
@@ -66,14 +68,14 @@ public class Main
       
       Renamer renamer = new Renamer(options);
       renamer.rename(set.foundRoms().collect(Collectors.toList()));
-      
-      if (true)
-        return;
-      
+
       GameSetStatus status = new GameSetStatus(set, clones);
       
       Merger merger = new Merger(status, options);
       merger.merge(options.mergePath());
+      
+      if (options.cleanMergePathAfterMerge)
+        Operations.cleanMergePath(set, options);
       
       Operations.printStatistics(status, options);
       
@@ -88,9 +90,17 @@ public class Main
     {
       arguments.handleError(e);
     }*/
+    catch (FatalErrorException e)
+    {
+      Logger.log(Log.ERROR, e.getMessage());
+    }
+    catch (RomPathNotFoundException e)
+    {
+      Logger.log(Log.ERROR, "unable to find specified rom path: "+e.path);
+    }
     catch (SevenZipNativeInitializationException e)
     {
-      Logger.log(Log.ERROR, "Failed to initialize SevenZip library to manage archives, exiting:\n\t"+e.getMessage());
+      Logger.log(Log.ERROR, "failed to initialize SevenZip library to manage archives, exiting:\n\t"+e.getMessage());
     }
     catch (Exception e)
     {

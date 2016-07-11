@@ -1,5 +1,6 @@
 package com.jack.nit.scanner;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.FileSystems;
@@ -17,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.jack.nit.Options;
 import com.jack.nit.Settings;
 import com.jack.nit.data.GameSet;
+import com.jack.nit.exceptions.RomPathNotFoundException;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
 import com.pixbits.io.FolderScanner;
@@ -66,8 +68,19 @@ public class Scanner
     
     boolean includeSubfolders = true;
     final FolderScanner scanner = new FolderScanner(includeSubfolders);
-
-    Arrays.stream(paths).parallel().map(StreamException.rethrowFunction(scanner::scan)).forEach(files::addAll);
+    
+    Arrays.stream(paths).parallel()
+      .map(StreamException.rethrowFunction(p -> {
+        try 
+        {
+          return scanner.scan(p);
+        }
+        catch (FileNotFoundException e)
+        {
+          throw new RomPathNotFoundException(p);
+        }
+          
+      })).forEach(files::addAll);
     
     Logger.log(Log.INFO1, "found %d files to scan in %d paths", files.size(), paths.length);
     

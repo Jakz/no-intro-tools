@@ -1,5 +1,6 @@
 package com.pixbits.io;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.DirectoryStream;
@@ -40,7 +41,9 @@ public class FolderScanner
   
   public Set<Path> scan(Path root) throws IOException
   {
-    if (Files.isDirectory(root))
+    if (!Files.exists(root))
+      throw new FileNotFoundException("unable to find path: "+root.toString());
+    else if (Files.isDirectory(root))
       innerScan(root);
     
     return files;

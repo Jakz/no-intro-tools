@@ -12,12 +12,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.jack.nit.Options;
 import com.jack.nit.data.GameSetStatus;
 import com.jack.nit.data.Rom;
 import com.jack.nit.data.xmdb.GameClone;
+import com.jack.nit.exceptions.FatalErrorException;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
 import com.jack.nit.scanner.RomHandle;
@@ -28,6 +30,8 @@ import net.sf.sevenzipjbinding.PropID;
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.SevenZipException;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
+
+//TODO: relocation after move/compress doesn't apply to internal name for now but it should
 
 public class Merger
 {
@@ -48,11 +52,12 @@ public class Merger
   {
     try
     {
-      Files.createDirectories(dest);
+      if (!options.doesMergeInPlace())
+        Files.createDirectories(dest);
     }
     catch (IOException e)
     {
-      throw new FileNotFoundException("unable to create destination path for merging at "+dest.toString());
+      throw new FatalErrorException("unable to create destination path for merging at "+dest.toString());
     }
 
     switch (options.mergeMode)
@@ -80,31 +85,18 @@ public class Merger
     }
     
     compressor.createArchive(dest.resolve(archiveName), handles);
+    Arrays.stream(handles).forEach(h -> h.relocate(dest));
   }
   
   private void mergeToOneArchivePerGame(Path dest) throws FileNotFoundException, SevenZipException
   {
     found.forEach(StreamException.rethrowConsumer(rom -> {
-      createArchive(dest.resolve(rom.game().name+options.archiveFormat.extension), new ArchiveInfo(rom.game().name, rom.handle()));
+      //TODO: manage games with multiple roms per game
+      final Path finalPath = dest.resolve(rom.game().name+options.archiveFormat.extension);
+      final ArchiveInfo archive = new ArchiveInfo(rom.game().name, rom.handle());
+      createArchive(finalPath, archive);
+      archive.relocate(finalPath);
     }));    
-  }
-  
-  private class ArchiveInfo
-  {
-    public final String name;
-    public final List<RomHandle> handles;
-    
-    ArchiveInfo(String name)
-    {
-      this.name = name;
-      this.handles = new ArrayList<>();
-    }
-    
-    ArchiveInfo(String name, RomHandle... handles)
-    {
-      this(name);
-      this.handles.addAll(Arrays.asList(handles));
-    }
   }
   
   private void mergeToCloneArchives(Path dest) throws FileNotFoundException, SevenZipException
@@ -134,17 +126,16 @@ public class Merger
     
     Logger.log(Log.INFO1, "Merger is going to create %d archives.", clones.size()+handles.size());
         
-    clones.values().forEach(
-      StreamException.rethrowConsumer(a -> 
-        createArchive(dest.resolve(a.name+options.archiveFormat.extension), a)
-      )
-    );
+    Consumer<ArchiveInfo> compress = StreamException.rethrowConsumer(a -> { 
+        final Path path = dest.resolve(a.name+options.archiveFormat.extension);
+        createArchive(path, a);
+        a.relocate(path);
+    });
     
-    handles.forEach(
-      StreamException.rethrowConsumer(a -> 
-        createArchive(dest.resolve(a.name+options.archiveFormat.extension), a)
-      )
-    );
+    // TODO: parallel?
+    
+    clones.values().forEach(compress);
+    handles.forEach(compress);
   }
     
   private void mergeUncompressed(Path dest)
@@ -156,7 +147,9 @@ public class Merger
       // just copy the file
       if (!handle.isArchive())
       {
-        Files.copy(handle.file(), dest.resolve(handle.file().getFileName()));
+        Path path = dest.resolve(handle.file().getFileName());
+        Files.copy(handle.file(), path);
+        handle.relocate(path);
       }
       else
       {

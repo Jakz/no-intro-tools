@@ -1,7 +1,11 @@
 package com.jack.nit;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.xml.sax.SAXException;
@@ -13,8 +17,10 @@ import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
 import com.jack.nit.parser.DatParser;
 import com.jack.nit.parser.XMDBParser;
+import com.pixbits.io.FolderScanner;
 import com.pixbits.io.XMLEmbeddedDTD;
 import com.pixbits.io.XMLParser;
+import com.pixbits.stream.StreamException;
 
 public class Operations
 {
@@ -50,6 +56,20 @@ public class Operations
       Logger.log("  %d total games", set.clones.size());
     Logger.log("  %d found roms (%d%%)", found, (found*100)/set.set.size());
     Logger.log("  %d missing roms", set.set.size() - found);
+  }
+  
+  public static void cleanMergePath(GameSet set, Options options) throws IOException
+  {
+    Logger.log(Log.INFO1, "Cleaning merge path from unneeded files");
     
+    FolderScanner scanner = new FolderScanner(true);
+    
+    Set<Path> romFiles = set.foundRoms().map(r -> r.handle().file()).collect(Collectors.toSet());
+    
+    Set<Path> files = scanner.scan(options.mergePath());
+    
+    files.removeAll(romFiles);
+    
+    files.forEach(StreamException.rethrowConsumer(f -> Files.delete(f)));
   }
 }
