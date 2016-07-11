@@ -3,6 +3,8 @@ package com.jack.nit;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
+import net.sourceforge.argparse4j.inf.Subparser;
+import net.sourceforge.argparse4j.inf.Subparsers;
 
 public class Args
 {
@@ -24,20 +26,15 @@ public class Args
   public final static String CLONE_PATH = "clone-path";
   public final static String DEST_PATH = "dest-path";
 
-  
-  static ArgumentParser generateParser()
+  private static void generateVerifierParser(ArgumentParser parser)
   {
-    ArgumentParser parser = ArgumentParsers.newArgumentParser("no-intro-tools")
-        .defaultHelp(true)
-        .description("Verify, rename and merge ROMS for no-intro DATs");
-    
     parser.addArgument("--compression-level", "-cl")
       .dest(COMPRESSION_LEVEL)
       .type(Integer.class)
       .help("compression level for creation of archives from 0 (store) to 9 (ultra)")
       .metavar("n")
       .setDefault(5);
-    
+  
     parser.addArgument("--no-solid-archives", "-nsa")
       .dest(NO_SOLID_ARCHIVES)
       .help("disable creation of solid archives")
@@ -122,6 +119,38 @@ public class Args
       .dest(HEADER_PATH)
       .type(String.class)
       .help("Path to optional header file for DAT");
+  }
+  
+  static void generateDatCreateParser(ArgumentParser parser)
+  {
+    parser.addArgument("--out", "-o")
+      .dest("out-file")
+      .type(String.class)
+      .setDefault("created.dat")
+      .help("Path to created DAT file");
+    
+    parser.addArgument("infiles")
+      .dest("in-files")
+      .type(String.class)
+      .nargs("+")
+      .required(true)
+      .help("Paths to folders or archives to scan to generate DAT");
+  }
+  
+  static ArgumentParser generateParser()
+  {
+    ArgumentParser parser = ArgumentParsers.newArgumentParser("no-intro-tools")
+        .defaultHelp(true)
+        .description("Verify, rename and merge ROMS for no-intro DATs");
+    
+    Subparsers subparsers = parser.addSubparsers();
+    
+    Subparser verifierParser = subparsers.addParser("verify").help("verify and organize roms");
+    generateVerifierParser(verifierParser);
+
+    Subparser createDatParser = subparsers.addParser("create-dat").help("create DAT from existing files");
+    generateDatCreateParser(createDatParser);
+ 
     
     return parser;
   }

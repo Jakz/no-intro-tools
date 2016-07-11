@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.jack.nit.scanner.RomHandle;
+import com.jack.nit.handles.RomHandle;
 
 class ArchiveInfo
 {

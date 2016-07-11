@@ -17,6 +17,11 @@ import com.jack.nit.Options;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.HashCache;
 import com.jack.nit.data.Rom;
+import com.jack.nit.digest.DigestInfo;
+import com.jack.nit.digest.DigestOptions;
+import com.jack.nit.digest.Digester;
+import com.jack.nit.handles.ArchiveHandle;
+import com.jack.nit.handles.RomHandle;
 import com.jack.nit.log.Logger;
 import com.pixbits.stream.StreamException;
 
@@ -28,10 +33,11 @@ public class Verifier
   private final HashCache cache;
   private final GameSet set;
   private final boolean multiThreaded;
-  private final byte[] buffer = new byte[8192];
   
   private float total;
-  private AtomicInteger current = new AtomicInteger();;
+  private AtomicInteger current = new AtomicInteger();
+  
+  private final Digester digester;
   
   
   public Verifier(Options options, GameSet set)
@@ -40,6 +46,7 @@ public class Verifier
     this.set = set;
     this.cache = set.cache();
     this.multiThreaded = options.multiThreaded;
+    this.digester = new Digester(new DigestOptions(true, options.matchMD5, options.matchSHA1, options.multiThreaded));
   }
   
   public int verify(RomHandlesSet handles) throws IOException
@@ -60,80 +67,16 @@ public class Verifier
   
   private Rom verifyRawInputStream(RomHandle handle, InputStream is) throws IOException, NoSuchAlgorithmException
   {
-    final byte[] buffer = multiThreaded ? new byte[8192] : this.buffer;
-
-    boolean computeRealCRC = !handle.isArchive();
+    DigestInfo info = digester.digest(handle, is);
     
-    InputStream fis = new BufferedInputStream(is);
-    CheckedInputStream crc = null;
-    MessageDigest md5 = null;
-    MessageDigest sha1 = null;
-    boolean realRead = false;
+    Rom rom = cache.romForCrc(info.crc);
     
-    Rom rom = null;
-    
-    if (computeRealCRC)
-    {
-      crc = new CheckedInputStream(is, new CRC32());
-      fis = crc;
-      realRead = true;
-    }
-    
-    if (options.matchMD5)
-    {
-      md5 = MessageDigest.getInstance("MD5");
-      fis = new DigestInputStream(fis, md5);
-      realRead = true;
-    }
-    
-    if (options.matchSHA1)
-    {
-      sha1 = MessageDigest.getInstance("SHA-1");
-      fis = new DigestInputStream(fis, sha1);
-      realRead = true;
-    }
-    
-    
-    if (realRead)
-      for (; fis.read(buffer) > 0; );
-    else
-      is.close();
-
-    //TODO: maybe there are multple roms with same CRC32
-    if (computeRealCRC)
-      rom = cache.romForCrc(crc.getChecksum().getValue());
-    else if (handle.isArchive())
-    {
-      ArchiveHandle.ArchivePipedInputStream pis = (ArchiveHandle.ArchivePipedInputStream)is;
-      rom = cache.romForCrc((long)(int)pis.getArchive().getProperty(pis.getIndexInArchive(), PropID.CRC));
-    }
-      
-    
-    if (options.matchMD5 && rom != null)
-    {
-      byte[] computedMD5 = md5.digest();
-      
-      if (!Arrays.equals(computedMD5, rom.md5))
-        rom = null;
-    }
-    
-    if (options.matchSHA1 && rom != null)
-    {
-      byte[] computedSHA1 = sha1.digest();
-      
-      if (!Arrays.equals(computedSHA1, rom.sha1))
-        rom = null;
-    }
-    
-    if (crc != null)
-      crc.close();
-    
-    return rom;
+    return rom != null && (info.md5 == null || Arrays.equals(info.md5, rom.md5)) && (info.sha1 == null || Arrays.equals(info.sha1, rom.sha1)) ? rom : null;
   }
   
   private Rom verifyJustCRC(RomHandle handle)
   {
-    return cache.romForCrc(handle.crc());
+    return cache.romForCrc(digester.digestOnlyCRC(handle).crc);
   }
   
   private int verifyNoHeader(List<? extends RomHandle> handles) throws IOException

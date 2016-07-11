@@ -20,9 +20,9 @@ import com.jack.nit.data.GameSetStatus;
 import com.jack.nit.data.Rom;
 import com.jack.nit.data.xmdb.GameClone;
 import com.jack.nit.exceptions.FatalErrorException;
+import com.jack.nit.handles.RomHandle;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
-import com.jack.nit.scanner.RomHandle;
 import com.pixbits.stream.StreamException;
 
 import net.sf.sevenzipjbinding.IInArchive;
@@ -209,6 +209,9 @@ public class Merger
   {
     try
     {
+      if (info.name.startsWith("Taz-Mania"))
+        System.out.println("aaaa");
+      
       if (options.alwaysRewriteArchives || !Files.exists(dest))
         return ArchiveStatus.CREATE;
     

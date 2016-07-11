@@ -1,4 +1,4 @@
-package com.jack.nit.scanner;
+package com.jack.nit.handles;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +8,7 @@ import java.io.RandomAccessFile;
 import java.nio.file.Path;
 
 import com.jack.nit.Settings;
+import com.jack.nit.scanner.ExtractionCanceledException;
 
 import net.sf.sevenzipjbinding.ArchiveFormat;
 import net.sf.sevenzipjbinding.ExtractAskMode;

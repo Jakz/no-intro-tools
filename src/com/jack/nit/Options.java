@@ -112,7 +112,7 @@ public class Options
     multiThreaded = true;
     
     mergeMode = MergeMode.SINGLE_ARCHIVE_PER_CLONE;
-    forceMergeInPlace = true;
+    forceMergeInPlace = false;
     
     archiveFormat = ArchiveFormat._7ZIP;
     useSolidArchives = true;
@@ -125,8 +125,8 @@ public class Options
     headerPath = null;
     cloneDatPath = Paths.get("dats/gb.xmdb");
     
-    //dataPath = new Path[] { Paths.get("/Volumes/RAMDisk/gb") };
-    dataPath = new Path[] { Paths.get("/Users/jack/Desktop/romset/gb") };
+    dataPath = new Path[] { Paths.get("/Volumes/RAMDisk/gb") };
+    //dataPath = new Path[] { Paths.get("/Users/jack/Desktop/romset/gb") };
 
     mergePath = Paths.get("/Volumes/RAMDisk/merge");
     

@@ -19,6 +19,8 @@ import com.jack.nit.Options;
 import com.jack.nit.Settings;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.exceptions.RomPathNotFoundException;
+import com.jack.nit.handles.ArchiveHandle;
+import com.jack.nit.handles.BinaryHandle;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
 import com.pixbits.io.FolderScanner;

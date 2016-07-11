@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 
 import com.jack.nit.Options;
 import com.jack.nit.data.Rom;
+import com.jack.nit.handles.RomHandle;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
 import com.pixbits.stream.StreamException;

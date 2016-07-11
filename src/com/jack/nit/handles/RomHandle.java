@@ -1,4 +1,4 @@
-package com.jack.nit.scanner;
+package com.jack.nit.handles;
 
 import java.io.IOException;
 import java.io.InputStream;

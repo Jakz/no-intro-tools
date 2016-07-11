@@ -1,6 +1,6 @@
 package com.jack.nit.data;
 
-import com.jack.nit.scanner.RomHandle;
+import com.jack.nit.handles.RomHandle;
 
 public class Rom
 {

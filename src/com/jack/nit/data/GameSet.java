@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import com.jack.nit.data.header.Header;
-import com.jack.nit.scanner.RomHandle;
+import com.jack.nit.handles.RomHandle;
 
 public class GameSet
 {
