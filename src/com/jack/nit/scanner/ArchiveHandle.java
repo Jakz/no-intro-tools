@@ -124,7 +124,7 @@ public class ArchiveHandle extends RomHandle
     final ExtractCallback callback = new ExtractCallback(archive, indexInArchive); 
     
     Runnable r = () -> {
-      System.out.println("Extract Thread Started");
+      //System.out.println("Extract Thread Started");
       try
       {
         archive.extract(new int[] { indexInArchive }, false, callback);
@@ -138,7 +138,7 @@ public class ArchiveHandle extends RomHandle
       {
          e.printStackTrace();
       }
-      System.out.println("Extract Thread Stopped");
+      //System.out.println("Extract Thread Stopped");
     };
     
     new Thread(r).start();
@@ -162,7 +162,7 @@ public class ArchiveHandle extends RomHandle
     @Override public synchronized int read(byte[] data) throws IOException
     {
       int i = super.read(data);
-      System.out.println("PipedInput::read "+i+" "+Thread.currentThread().getName());
+      //System.out.println("PipedInput::read "+i+" "+Thread.currentThread().getName());
       return i;
     }
 
@@ -185,7 +185,7 @@ public class ArchiveHandle extends RomHandle
     { 
       try
       {
-        System.out.println("PipedOutput::write "+data.length+" "+Thread.currentThread().getName());
+        //System.out.println("PipedOutput::write "+data.length+" "+Thread.currentThread().getName());
         pos.write(data);
       }
       catch (IOException e)
@@ -242,7 +242,7 @@ public class ArchiveHandle extends RomHandle
     
     public void setOperationResult(ExtractOperationResult result) throws SevenZipException
     {
-       System.out.println("Extract Stream finished");
+       //System.out.println("Extract Stream finished");
     }
     
     public void setCompleted(long completeValue) throws SevenZipException

@@ -109,7 +109,7 @@ public class Options
     matchMD5 = false;
     multiThreaded = true;
     
-    mergeMode = MergeMode.SINGLE_ARCHIVE_PER_SET;
+    mergeMode = MergeMode.SINGLE_ARCHIVE_PER_CLONE;
     forceMergeInPlace = true;
     
     archiveFormat = ArchiveFormat._7ZIP;

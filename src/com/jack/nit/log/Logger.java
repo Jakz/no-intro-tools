@@ -14,7 +14,7 @@ public abstract class Logger
   {
     int lastProgress;
     final int logLevel;
-    boolean showProgress = false;
+    boolean showProgress = true;
     
     MyLogger(Options options)
     {
@@ -23,13 +23,15 @@ public abstract class Logger
     
     @Override protected void doLog(Log type, String message)
     {
-      if (type.ordinal() > logLevel)
+      if (type != null && type.ordinal() > logLevel)
         return;
       
       if (type == Log.DEBUG)
         System.err.println("["+type+"] "+message);
-      else
+      else if (type != null)
         System.out.println("["+type+"] "+message);
+      else
+        System.out.println(message);
     }
     
     final static int PROGRESS_LENGTH = 20;
@@ -70,7 +72,7 @@ public abstract class Logger
       System.out.print("\r[");
       for (int i = 0; i < PROGRESS_LENGTH; ++i)
         System.out.print(".");
-      System.out.println("] 100%");
+      System.out.println("] 100%                                         ");
     }
   };
   
@@ -79,6 +81,11 @@ public abstract class Logger
   public static void init(Options options)
   {
     logger = new MyLogger(options);
+  }
+  
+  public static void log(String message, Object... args)
+  {
+    log(null, String.format(message, args));
   }
 
   public static void log(Log type, String message)

@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 import com.jack.nit.Options;
 import com.jack.nit.data.GameSetStatus;
-import com.jack.nit.data.RomFoundReference;
+import com.jack.nit.data.Rom;
 import com.jack.nit.data.xmdb.GameClone;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
@@ -34,15 +34,17 @@ public class Merger
   GameSetStatus set;
   Options options;
   Compressor compressor;
+  List<Rom> found;
   
   public Merger(GameSetStatus set, Options options)
   {
     this.set = set;
     this.options = options;
     this.compressor = new Compressor(options);
+    this.found = set.set.foundRoms().collect(Collectors.toList());
   }
   
-  public void merge(Path dest) throws FileNotFoundException, SevenZipException
+  public void merge(Path dest) throws IOException, SevenZipException
   {
     try
     {
@@ -63,20 +65,27 @@ public class Merger
     }
   }
   
-  private void mergeToSingleArchive(Path dest) throws FileNotFoundException, SevenZipException
+  private void mergeToSingleArchive(Path dest) throws SevenZipException, IOException
   {
-    RomHandle[] handles = set.found.stream().map(rfr -> rfr.handle).toArray(i -> new RomHandle[i]);
+    RomHandle[] handles = found.stream().map(rom -> rom.handle()).toArray(i -> new RomHandle[i]);
     
     String archiveName = options.datPath.getFileName().toString();
-    archiveName = archiveName.substring(0, archiveName.indexOf('.')) + options.archiveFormat.extension;
+    archiveName = archiveName.substring(0, archiveName.lastIndexOf('.')) + options.archiveFormat.extension;
+    
+    if (!options.doesMergeInPlace())
+      Files.delete(dest.resolve(archiveName)); 
+    else
+    {
+      //TODO: if merge is in place we should probably just update existing archive
+    }
     
     compressor.createArchive(dest.resolve(archiveName), handles);
   }
   
   private void mergeToOneArchivePerGame(Path dest) throws FileNotFoundException, SevenZipException
   {
-    set.found.forEach(StreamException.rethrowConsumer(rfr -> {
-      createArchive(dest.resolve(rfr.rom.game.name+options.archiveFormat.extension), new ArchiveInfo(rfr.rom.game.name, rfr.handle));
+    found.forEach(StreamException.rethrowConsumer(rom -> {
+      createArchive(dest.resolve(rom.game().name+options.archiveFormat.extension), new ArchiveInfo(rom.game().name, rom.handle()));
     }));    
   }
   
@@ -103,24 +112,24 @@ public class Merger
     Map<GameClone, ArchiveInfo> clones = new HashMap<>();
     List<ArchiveInfo> handles = new ArrayList<>();
     
-    for (RomFoundReference rfr : set.found)
+    for (Rom rom : found)
     {
-      GameClone clone = set.clones.get(rfr.rom.game);
+      GameClone clone = set.clones.get(rom.game());
       
       if (clone != null)
       {
         clones.compute(clone, (k,v) -> {
           if (v == null)
-            return new ArchiveInfo(k.getTitleForBias(options.zonePriority), rfr.handle);
+            return new ArchiveInfo(k.getTitleForBias(options.zonePriority), rom.handle());
           else
           {
-            v.handles.add(rfr.handle);
+            v.handles.add(rom.handle());
             return v;
           }
         });
       }
       else
-        handles.add(new ArchiveInfo(rfr.rom.game.normalizedTitle(), rfr.handle)); 
+        handles.add(new ArchiveInfo(rom.game().normalizedTitle(), rom.handle())); 
     }
     
     Logger.log(Log.INFO1, "Merger is going to create %d archives.", clones.size()+handles.size());
@@ -140,8 +149,8 @@ public class Merger
     
   private void mergeUncompressed(Path dest)
   {
-    set.found.forEach(StreamException.rethrowConsumer(rfr -> {
-      RomHandle handle = rfr.handle;
+    found.forEach(StreamException.rethrowConsumer(rom -> {
+      RomHandle handle = rom.handle();
       
       // TODO: manage src dest as same path
       // just copy the file
@@ -156,7 +165,7 @@ public class Merger
     }));
   }
   
-  private void createArchive(Path dest, ArchiveInfo info) throws FileNotFoundException, SevenZipException
+  private void createArchive(Path dest, ArchiveInfo info) throws FileNotFoundException, SevenZipException, IOException
   {
     ArchiveStatus status = checkExistingArchiveStatus(dest, info);
     
@@ -166,10 +175,26 @@ public class Merger
         Logger.log(Log.INFO2, "Skipping creation of %s, already up to date.", dest.getFileName().toString());
         break;
       case CREATE:
+        Files.deleteIfExists(dest); 
         compressor.createArchive(dest, info.handles.toArray(new RomHandle[info.handles.size()]));
         break;
       case UPDATE:
       {
+        Logger.log(Log.DEBUG, "Archive %s must be updated", dest.getFileName());
+        
+        /* if archive needs to be updated it means it alrady exists and already present roms should be merged with new roms to the archive
+         * so we first rename the existing archive to a temporary name
+         */
+        Path tempArchive = Files.createTempFile(dest.getParent(), "", "." + options.archiveFormat.extension);
+        
+        /* then we update all references to old archive to new name */
+        info.handles.stream().filter(rh -> rh.file().equals(dest)).forEach(rh -> rh.relocate(tempArchive));
+        
+        /* now we can create the new archive by merging items from old archive and the new files */
+        compressor.createArchive(dest, info.handles.toArray(new RomHandle[info.handles.size()]));
+        
+        /* now it's safe to delete temporary file because otherwise checkExistingArchiveStatus would have returned ArchiveStatus.ERROR */
+        Files.delete(tempArchive);       
         
         break;
       }
@@ -255,14 +280,14 @@ public class Merger
   {
     Map<Path, ExistingArchive> archives = new HashMap<>();
     
-    set.found.forEach(rfr -> {
-      if (rfr.handle.isArchive())
+    found.forEach(rom -> {
+      if (rom.handle().isArchive())
       {
-        archives.compute(rfr.handle.file(), (path,archive) -> {
+        archives.compute(rom.handle().file(), (path,archive) -> {
           if (archive == null)
             archive = new ExistingArchive(path);
           else
-            archive.handles.add(rfr.handle);
+            archive.handles.add(rom.handle());
           
           return archive;
         });

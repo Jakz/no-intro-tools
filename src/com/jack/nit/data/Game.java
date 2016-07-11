@@ -16,6 +16,7 @@ public class Game
     this.name = name;
     this.description = description;
     this.roms = roms;
+    Arrays.stream(this.roms).forEach(r -> r.setGame(this));
   }
   
   public String normalizedTitle() { return name.substring(0, name.indexOf('(')-1); }

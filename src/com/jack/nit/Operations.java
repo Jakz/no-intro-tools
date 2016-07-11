@@ -2,10 +2,12 @@ package com.jack.nit;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
 import org.xml.sax.SAXException;
 
 import com.jack.nit.data.GameSet;
+import com.jack.nit.data.GameSetStatus;
 import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
@@ -36,5 +38,18 @@ public class Operations
     Logger.log(Log.INFO1, "Loaded clone set for \'"+set.name+"\' ("+set.size()+" games in "+cloneSet.size()+" entries)");
 
     return cloneSet;
+  }
+  
+  public static void printStatistics(GameSetStatus set, Options options)
+  {
+    long found = set.set.foundRoms().count();
+    
+    Logger.log("Statistics for %s:", set.set.name);
+    Logger.log("  %d total roms", set.set.size());
+    if (set.clones != null)
+      Logger.log("  %d total games", set.clones.size());
+    Logger.log("  %d found roms (%d%%)", found, (found*100)/set.set.size());
+    Logger.log("  %d missing roms", set.set.size() - found);
+    
   }
 }

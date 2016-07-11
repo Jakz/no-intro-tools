@@ -90,7 +90,7 @@ public class Compressor
     {
       try
       { 
-        System.out.println("closing extract stream: "+success);
+        //System.out.println("closing extract stream: "+success);
         currentStream.close();
       }
       catch (IOException e)
@@ -124,14 +124,14 @@ public class Compressor
       {
         int i = super.read(data);
         
-        System.out.println("MySequentialInStream::read "+i+" "+Thread.currentThread().getName());
+        //System.out.println("MySequentialInStream::read "+i+" "+Thread.currentThread().getName());
         
         return i;
       }
       
       @Override public void close() throws IOException
       {
-        System.out.println("MyISequentialInStream::close");
+        //System.out.println("MyISequentialInStream::close");
         super.close();
       }
     }

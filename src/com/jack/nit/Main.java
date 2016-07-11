@@ -3,10 +3,10 @@ package com.jack.nit;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.GameSetStatus;
-import com.jack.nit.data.RomFoundReference;
 import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
@@ -59,18 +59,23 @@ public class Main
       
       Verifier verifier = new Verifier(options, set);
       
-      List<RomFoundReference> found = verifier.verify(handles);
+      int foundCount = verifier.verify(handles);
       
-      Logger.log(Log.INFO1, "Found %d verified roms", found.size());
-      found.forEach(r -> Logger.log(Log.INFO3, "> %s", r.rom.game.name));
+      Logger.log(Log.INFO1, "Found %d verified roms", foundCount);
+      //found.forEach(r -> Logger.log(Log.INFO3, "> %s", r.rom.game.name));
       
       Renamer renamer = new Renamer(options);
-      renamer.rename(found);
+      renamer.rename(set.foundRoms().collect(Collectors.toList()));
       
-      GameSetStatus status = new GameSetStatus(set, clones, found);
+      if (true)
+        return;
+      
+      GameSetStatus status = new GameSetStatus(set, clones);
       
       Merger merger = new Merger(status, options);
       merger.merge(options.mergePath());
+      
+      Operations.printStatistics(status, options);
       
       /*RomHandle[] compress = found.stream().limit(2).map(rh -> rh.handle).toArray(i -> new RomHandle[i]);
       

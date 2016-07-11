@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import com.jack.nit.data.header.Header;
+import com.jack.nit.scanner.RomHandle;
 
 public class GameSet
 {
@@ -46,4 +47,13 @@ public class GameSet
   
   public Stream<Game> stream() { return Arrays.stream(games); }
   public Iterator<Game> iterator() { return Arrays.asList(games).iterator(); }
+  
+  public Stream<Rom> foundRoms()
+  { 
+    return Arrays.stream(games)
+        .map(game -> game.stream()
+            .filter(r -> r.handle() != null))
+        .reduce((s1,s2) -> Stream.concat(s1, s2))
+        .get(); 
+  }
 }

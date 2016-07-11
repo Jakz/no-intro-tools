@@ -5,9 +5,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.pixbits.stream.StreamException;
+
 public class HashCache
 {
-  private final Map<Long, RomReference> cache;
+  private final Map<Long, Rom> cache;
   private final Set<Long> sizes;
   
   HashCache()
@@ -28,14 +30,17 @@ public class HashCache
     cache.clear();
     sizes.clear();
     
-    set.stream().forEach(g -> {
-      g.stream().forEach(r -> {
-        cache.put(r.crc32, new RomReference(g,r));
+    set.stream().forEach(StreamException.rethrowConsumer(g -> {
+      g.stream().forEach(StreamException.rethrowConsumer(r -> {
+        if (cache.containsKey(r.crc32))
+          throw new RuntimeException("Duplicate CRC found!");
+        
+        cache.put(r.crc32, r);
         sizes.add(r.size);
-      });
-    });
+      }));
+    }));
   }
   
   public boolean isValidSize(long size) { return sizes.contains(size); }
-  public RomReference romForCrc(long crc) { return cache.get(crc); }
+  public Rom romForCrc(long crc) { return cache.get(crc); }
 }

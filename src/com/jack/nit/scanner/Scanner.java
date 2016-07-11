@@ -152,7 +152,8 @@ public class Scanner
     faultyArchives.forEach(p -> Logger.log(Log.WARNING, "File "+p.getFileName()+" is not a valid archive."));
 
     Logger.log(Log.INFO1, "Found %d potential matches (%d binary, %d inside archives).", binaryHandles.size()+archiveHandles.size(), binaryHandles.size(), archiveHandles.size());
-    Logger.log(Log.INFO3, "Skipped %d entries:", skipped.size());
+    if (skipped.size() > 0)
+      Logger.log(Log.INFO3, "Skipped %d entries:", skipped.size());
     skipped.forEach(s -> Logger.log(Log.INFO3, "> %s", s));
 
     return new RomHandlesSet(binaryHandles, archiveHandles);
