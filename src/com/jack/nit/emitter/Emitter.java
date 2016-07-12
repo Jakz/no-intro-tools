@@ -5,7 +5,7 @@ import java.nio.file.Path;
 
 import com.jack.nit.data.GameSet;
 
-public interface Generator
+public interface Emitter
 {
   public void generate(CreatorOptions options, GameSet set) throws IOException;
 }

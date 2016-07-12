@@ -13,7 +13,7 @@ import com.jack.nit.data.GameSet;
 import com.jack.nit.data.Rom;
 import com.jack.nit.data.xmdb.CloneSet;
 
-public class ClrMameProGenerator implements Generator
+public class ClrMameProEmitter implements Emitter
 {
   private final HexBinaryAdapter hexConverter = new HexBinaryAdapter();
   

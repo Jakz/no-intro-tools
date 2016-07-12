@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 import org.xml.sax.SAXException;
 
-import com.jack.nit.emitter.ClrMameProGenerator;
+import com.jack.nit.emitter.ClrMameProEmitter;
 import com.jack.nit.emitter.CreatorOptions;
 import com.jack.nit.emitter.GameSetCreator;
 import com.jack.nit.data.GameSet;
@@ -96,7 +96,7 @@ public class Operations
   {
     if (options.format == DatFormat.clrmamepro)
     {
-      ClrMameProGenerator generator = new ClrMameProGenerator();
+      ClrMameProEmitter generator = new ClrMameProEmitter();
       generator.generate(options, set);
     }
   }
