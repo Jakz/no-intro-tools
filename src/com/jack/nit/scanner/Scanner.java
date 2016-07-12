@@ -120,7 +120,7 @@ public class Scanner
               Long lcompressedSize = (Long)archive.getProperty(i, PropID.PACKED_SIZE);
               long compressedSize = lcompressedSize != null ? lcompressedSize : -1;
               String fileName = (String)archive.getProperty(i, PropID.PATH);
-              long crc = (Integer)archive.getProperty(i, PropID.CRC);
+              long crc = Integer.toUnsignedLong((Integer)archive.getProperty(i, PropID.CRC));
               
               if (set.cache().isValidSize(size) || !options.matchSize)
                 archiveHandles.add(new ArchiveHandle(path, archive.getArchiveFormat(), fileName, i, size, compressedSize, crc));

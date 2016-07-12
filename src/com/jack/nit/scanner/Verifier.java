@@ -82,6 +82,9 @@ public class Verifier
     stream.forEach(StreamException.rethrowConsumer(path -> {      
       Logger.logger.updateProgress(current.getAndIncrement() / total, path.file().getFileName().toString());
       
+      if (path.file().getFileName().toString().startsWith("5 in 1 Funpak (USA)"))
+        System.out.println("aAAa");
+      
       Rom rom = null;
       
       if (options.verifyJustCRC())

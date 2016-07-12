@@ -230,7 +230,7 @@ public class Merger
               int count = archive.getNumberOfItems();
               for (int i = 0; i < count; ++i)
               {
-                long crc = (long)(int)archive.getProperty(i, PropID.CRC);
+                long crc = Integer.toUnsignedLong((int)archive.getProperty(i, PropID.CRC));
                 String filename = (String)archive.getProperty(i, PropID.PATH);
                 if (!filename.equals(crcs.get(crc)))
                   return ArchiveStatus.ERROR;
@@ -247,7 +247,7 @@ public class Merger
             
             int count = archive.getNumberOfItems();
             for (int i = 0; i < count; ++i)
-              crcs.put((long)(int)archive.getProperty(i, PropID.CRC), (String)archive.getProperty(i, PropID.PATH));
+              crcs.put(Integer.toUnsignedLong((int)archive.getProperty(i, PropID.CRC)), (String)archive.getProperty(i, PropID.PATH));
             
             return info.handles.stream().allMatch(h -> h.fileName().equals(crcs.get(h.crc()))) ? ArchiveStatus.UP_TO_DATE : ArchiveStatus.CREATE;
           }  

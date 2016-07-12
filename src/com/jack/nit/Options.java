@@ -17,7 +17,8 @@ public class Options
     UNCOMPRESSED,
     SINGLE_ARCHIVE_PER_GAME,
     SINGLE_ARCHIVE_PER_CLONE,
-    SINGLE_ARCHIVE_PER_SET
+    SINGLE_ARCHIVE_PER_SET,
+    NO_MERGE
   };
   
   public static enum ArchiveFormat
@@ -53,6 +54,7 @@ public class Options
   
   public Path[] dataPath;
   private Path mergePath;
+  private Path wholeArchivePath;
   
   public final BiasSet zonePriority;
   
@@ -66,18 +68,25 @@ public class Options
     
     multiThreaded = !args.getBoolean(Args.NO_MULTI_THREAD);
     
-    switch (args.getString(Args.MERGE_MODE))
+    if (args.getBoolean("no-merge"))
     {
-      case "uncompressed":
-        mergeMode = MergeMode.UNCOMPRESSED; break;
-      case "archive-by-clone":
-        mergeMode = MergeMode.SINGLE_ARCHIVE_PER_CLONE; break;
-      case "archive-by-game":
-        mergeMode = MergeMode.SINGLE_ARCHIVE_PER_GAME; break;
-      case "single-archive":
-        mergeMode = MergeMode.SINGLE_ARCHIVE_PER_SET; break;
-      default:
-        mergeMode = MergeMode.SINGLE_ARCHIVE_PER_CLONE; break;
+      mergeMode = MergeMode.NO_MERGE;
+    }
+    else
+    {
+      switch (args.getString(Args.MERGE_MODE))
+      {
+        case "uncompressed":
+          mergeMode = MergeMode.UNCOMPRESSED; break;
+        case "archive-by-clone":
+          mergeMode = MergeMode.SINGLE_ARCHIVE_PER_CLONE; break;
+        case "archive-by-game":
+          mergeMode = MergeMode.SINGLE_ARCHIVE_PER_GAME; break;
+        case "single-archive":
+          mergeMode = MergeMode.SINGLE_ARCHIVE_PER_SET; break;
+        default:
+          mergeMode = MergeMode.SINGLE_ARCHIVE_PER_CLONE; break;
+      }
     }
     
     forceMergeInPlace = args.getBoolean(Args.IN_PLACE_MERGE);
@@ -109,9 +118,9 @@ public class Options
     matchSize = true;
     matchSHA1 = false;
     matchMD5 = false;
-    multiThreaded = true;
+    multiThreaded = false;
     
-    mergeMode = MergeMode.SINGLE_ARCHIVE_PER_CLONE;
+    mergeMode = MergeMode.NO_MERGE;
     forceMergeInPlace = false;
     
     archiveFormat = ArchiveFormat._7ZIP;
@@ -121,14 +130,16 @@ public class Options
     keepUnrecognizedFilesInArchives = false;
     cleanMergePathAfterMerge = true;
     
-    datPath = Paths.get("dats/gb.dat");
+    datPath = Paths.get("dats/gg.dat");
     headerPath = null;
-    cloneDatPath = Paths.get("dats/gb.xmdb");
+    cloneDatPath = Paths.get("dats/gg.xmdb");
     
-    dataPath = new Path[] { Paths.get("/Volumes/RAM Disk/gb") };
+    dataPath = new Path[] { Paths.get("/Volumes/RAM Disk/gg") };
     //dataPath = new Path[] { Paths.get("/Users/jack/Desktop/romset/gb") };
 
     mergePath = Paths.get("/Volumes/RAM Disk/merge");
+    
+    wholeArchivePath = Paths.get("/Volumes/RAM Disk/");
     
     zonePriority = new BiasSet(Zone.ITALY, Zone.EUROPE, Zone.USA, Zone.JAPAN);
   }

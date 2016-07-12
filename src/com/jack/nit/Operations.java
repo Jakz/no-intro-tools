@@ -1,8 +1,12 @@
 package com.jack.nit;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -12,6 +16,7 @@ import org.xml.sax.SAXException;
 import com.jack.nit.emitter.ClrMameProEmitter;
 import com.jack.nit.emitter.CreatorOptions;
 import com.jack.nit.emitter.GameSetCreator;
+import com.jack.nit.Options.MergeMode;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.Rom;
 import com.jack.nit.data.xmdb.CloneSet;
@@ -91,13 +96,40 @@ public class Operations
     
     return set;
   }
-  
+    
   public static void consolidateGameSet(CreatorOptions options, GameSet set) throws IOException
   {
     if (options.format == DatFormat.clrmamepro)
     {
       ClrMameProEmitter generator = new ClrMameProEmitter();
       generator.generate(options, set);
+    }
+  }
+  
+  public static void saveStatusOnTextFiles(GameSet set, Options options) throws IOException
+  {
+    List<String> have = new ArrayList<>();
+    List<String> miss = new ArrayList<>();
+    
+    set.stream().forEach(game -> {
+      (game.isFound() ? have : miss).add(game.name);
+    });
+    
+    Logger.log(Log.INFO1, "Saving found status on files.");
+
+    
+    Path basePath = options.mergeMode != MergeMode.NO_MERGE ? options.mergePath() : options.dataPath[0];
+    
+    try (PrintWriter wrt = new PrintWriter(Files.newBufferedWriter(basePath.resolve("SetHave.txt"))))
+    {
+      wrt.printf(" You have %d of %d known %s games\n\n", have.size(), have.size()+miss.size(), set.info.name);      
+      for (String h : have) wrt.println(h);
+    }
+    
+    try (PrintWriter wrt = new PrintWriter(Files.newBufferedWriter(basePath.resolve("SetMiss.txt"))))
+    {
+      wrt.printf(" You are missing %d of %d known %s games\n\n", miss.size(), have.size()+miss.size(), set.info.name);      
+      for (String h : miss) wrt.println(h);
     }
   }
 }

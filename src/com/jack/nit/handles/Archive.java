@@ -75,7 +75,7 @@ public class Archive
       long size = (long)archive.getProperty(i, PropID.SIZE);
       Long lcompressedSize = (Long)archive.getProperty(i, PropID.PACKED_SIZE);
       long compressedSize = lcompressedSize != null ? lcompressedSize : -1;
-      long crc = (Integer)archive.getProperty(i, PropID.CRC);
+      long crc = Integer.toUnsignedLong((Integer)archive.getProperty(i, PropID.CRC));
       
       items.add(new Item(this, path, i, crc, size, compressedSize));
     }

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.jack.nit.emitter.CreatorOptions;
+import com.jack.nit.Options.MergeMode;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.exceptions.FatalErrorException;
@@ -49,6 +50,8 @@ public class Main
     {
       initializeSevenZip();
       
+      if (args.length > 1)
+      {
       Namespace rargs = arguments.parseArgs(args);
       System.out.println(rargs);
       
@@ -68,8 +71,8 @@ public class Main
         {
           List<String> dats = rargs.getList("infile");
           if (dats.size() < 2)
-            throw new FatalErrorException("compare-dat expects at least 2 DAT files");
-          
+            throw new ArgumentParserException("compare-dat expects at least 2 DAT files", arguments);
+                    
           List<Path> paths = dats.stream().map(Paths::get).collect(Collectors.toList());
           
           List<GameSet> sets = paths.stream()
@@ -91,10 +94,13 @@ public class Main
       }
       
             
-      Options options = new Options();
  
       if (true)
         return;
+      }
+      
+      Options options = new Options();
+
       
       Logger.init(options);
       
@@ -116,13 +122,17 @@ public class Main
       Renamer renamer = new Renamer(options);
       renamer.rename(set.foundRoms().collect(Collectors.toList()));
       
-      Merger merger = new Merger(set, options);
-      merger.merge(options.mergePath());
-      
-      if (options.cleanMergePathAfterMerge)
-        Operations.cleanMergePath(set, options);
-      
+      if (options.mergeMode != MergeMode.NO_MERGE)
+      {
+        Merger merger = new Merger(set, options);
+        merger.merge(options.mergePath());
+        
+        if (options.cleanMergePathAfterMerge)
+          Operations.cleanMergePath(set, options);
+      }
+
       Operations.printStatistics(set);
+      Operations.saveStatusOnTextFiles(set, options);
       
       /*RomHandle[] compress = found.stream().limit(2).map(rh -> rh.handle).toArray(i -> new RomHandle[i]);
       

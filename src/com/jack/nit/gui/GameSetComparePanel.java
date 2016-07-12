@@ -2,6 +2,7 @@ package com.jack.nit.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -9,6 +10,8 @@ import java.util.OptionalInt;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -55,6 +58,8 @@ public class GameSetComparePanel extends JPanel
 
         }
       }
+      
+      
     }
 
     @Override public String getColumnName(int i) { return sets.get(i).info.name; }
@@ -73,18 +78,41 @@ public class GameSetComparePanel extends JPanel
     }
   }
   
+  private class InfoPanel extends JPanel
+  {
+    JLabel[] labels;
+    
+    private InfoPanel(List<GameSet> sets)
+    {
+      labels = sets.stream().map(set -> {
+        return new JLabel(set.info.name);
+      }).toArray(i -> new JLabel[i]);
+      
+      setLayout(new GridLayout(labels.length, 1));
+      for (JLabel label : labels) add(label);
+      
+      setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+      
+    }
+    
+  }
+  
   private final JTable table;
   private final TableModel model;
+  private final InfoPanel info;
   
   public GameSetComparePanel(List<GameSet> sets)
   {
     model = new TableModel(sets);
     table = new JTable(model);
     
+    info = new InfoPanel(sets);
+    
     JScrollPane pane = new JScrollPane(table);
     pane.setPreferredSize(new Dimension(800,800));
     
     setLayout(new BorderLayout());
     add(pane, BorderLayout.CENTER);
+    add(info, BorderLayout.SOUTH);
   }
 }

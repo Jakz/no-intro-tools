@@ -117,6 +117,12 @@ public class Args
       .dest(HEADER_PATH)
       .type(String.class)
       .help("path to optional header file for DAT");
+    
+    parser.addArgument("--no-merge")
+      .dest("no-merge")
+      .action(Arguments.storeConst())
+      .setConst(true)
+      .setDefault(false);
   }
   
   private static void generateDatCreateParser(ArgumentParser parser)
