@@ -1,5 +1,8 @@
 package com.jack.nit.data;
 
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+
+import com.jack.nit.digest.DigestInfo;
 import com.jack.nit.handles.RomHandle;
 
 public class Rom
@@ -24,10 +27,39 @@ public class Rom
     this.handle = null;
   }
   
+  public Rom(String name, long size, DigestInfo info)
+  {
+    this(name, size, info.crc, info.md5, info.sha1);
+  }
+  
   public void setHandle(RomHandle handle) { this.handle = handle; }
   public RomHandle handle() { return handle; }
   
   void setGame(Game game) { this.game = game; }
   public Game game() { return game; }
+  
+  
+  
+  private static HexBinaryAdapter hexConverter = null;
+  private static StringBuilder builder = null;
+  
+  @Override public String toString()
+  { 
+    if (hexConverter == null)
+    {
+      hexConverter = new HexBinaryAdapter();
+      builder = new StringBuilder();
+    }
+    
+    builder.delete(0, builder.length());
+    builder.append("[").append(name).append(", size: ").append(size).append(", crc: ").append(Long.toHexString(crc32));
+    if (md5 != null)
+      builder.append(", md5: ").append(hexConverter.marshal(md5));
+    if (sha1 != null)
+      builder.append(", sha1: ").append(hexConverter.marshal(sha1));
+    builder.append("]");
+    
+    return builder.toString();
+  }
   
 }

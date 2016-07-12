@@ -16,6 +16,13 @@ public class GameClone
     this.games = games;
     this.zones = zones;
   }
+
+  public GameClone(Game[] games)
+  {
+    this.games = games;
+    this.zones = new Game[Zone.values().length];
+  }
+  
   
   public String getTitleForBias(BiasSet bias)
   {    

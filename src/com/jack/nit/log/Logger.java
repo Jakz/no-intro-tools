@@ -16,9 +16,9 @@ public abstract class Logger
     final int logLevel;
     boolean showProgress = true;
     
-    MyLogger(Options options)
+    MyLogger(Log logLevel)
     {
-      this.logLevel = options.logLevel.ordinal();
+      this.logLevel = logLevel.ordinal();
     }
     
     @Override protected void doLog(Log type, String message)
@@ -80,7 +80,12 @@ public abstract class Logger
   
   public static void init(Options options)
   {
-    logger = new MyLogger(options);
+    logger = new MyLogger(options.logLevel);
+  }
+  
+  public static void init()
+  {
+    logger = new MyLogger(Log.DEBUG);
   }
   
   public static void log(String message, Object... args)

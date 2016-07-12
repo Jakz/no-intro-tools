@@ -2,12 +2,9 @@ package com.jack.nit.handles;
 
 import java.io.IOException;
 import java.io.InputStream;
-import com.pixbits.io.PipedInputStream;
-import com.pixbits.io.PipedOutputStream;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
 
-import com.jack.nit.Settings;
 import com.jack.nit.scanner.ExtractionCanceledException;
 
 import net.sf.sevenzipjbinding.ArchiveFormat;
@@ -15,7 +12,6 @@ import net.sf.sevenzipjbinding.ExtractAskMode;
 import net.sf.sevenzipjbinding.ExtractOperationResult;
 import net.sf.sevenzipjbinding.IArchiveExtractCallback;
 import net.sf.sevenzipjbinding.IInArchive;
-import net.sf.sevenzipjbinding.ISequentialOutStream;
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.SevenZipException;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
@@ -50,7 +46,7 @@ public class ArchiveHandle extends RomHandle
       return archive;
     
     try
-    {
+    {      
       RandomAccessFileInStream rfile = new RandomAccessFileInStream(new RandomAccessFile(file.toFile(), "r"));
       return SevenZip.openInArchive(null, rfile);
     }
@@ -60,29 +56,6 @@ public class ArchiveHandle extends RomHandle
     }
     
     return null;
-  }
-  
-  public final void forceOpen()
-  {
-    if (archive == null)
-      archive = open();
-  }
-  
-  public final void forceClose()
-  {
-    try
-    {
-      archive.close();
-      archive = null;
-    }
-    catch (IOException e)
-    {
-      e.printStackTrace();
-    }
-    finally
-    {
-      archive = null;
-    }
   }
   
   @Override public final boolean isArchive() { return true; }
@@ -122,7 +95,8 @@ public class ArchiveHandle extends RomHandle
   public InputStream getInputStream() throws IOException
   {
     final IInArchive archive = open();    
-    final ExtractCallback callback = new ExtractCallback(archive, indexInArchive); 
+    final ArchiveExtractPipedStream stream = new ArchiveExtractPipedStream(archive, indexInArchive);
+    final ArchiveExtractCallback callback = new ArchiveExtractCallback(stream); 
     
     Runnable r = () -> {
       //System.out.println("Extract Thread Started");
@@ -143,118 +117,9 @@ public class ArchiveHandle extends RomHandle
     };
     
     new Thread(r).start();
-    
-    
-    return callback.stream.getInputStream();
+ 
+    return stream.getInputStream();
   }
-  
-  public static class ArchivePipedInputStream extends PipedInputStream
-  {
-    private final IInArchive archive;
-    private final int indexInArchive;
-    
-    public ArchivePipedInputStream(IInArchive archive, int indexInArchive)
-    {
-      super(Settings.PIPED_BUFFER_SIZE);
-      this.archive = archive;
-      this.indexInArchive = indexInArchive;
-    }
-    
-    @Override public synchronized int read(byte[] data) throws IOException
-    {
-      int i = super.read(data);
-      //System.out.println("PipedInput::read "+i+" "+Thread.currentThread().getName());
-      return i;
-    }
 
-    public int getIndexInArchive() { return indexInArchive; }
-    public IInArchive getArchive() { return archive; }
-  }
-  
-  private class ExtractStream implements ISequentialOutStream
-  {
-    private ArchivePipedInputStream pis;
-    private PipedOutputStream pos;
-  
-    ExtractStream(IInArchive archive, int indexInArchive) throws IOException
-    {
-      pis = new ArchivePipedInputStream(archive, indexInArchive);
-      pos = new PipedOutputStream(pis);
-    }
-    
-    @Override public synchronized int write(byte[] data)
-    { 
-      try
-      {
-        //System.out.println("PipedOutput::write "+data.length+" "+Thread.currentThread().getName());
-        pos.write(data);
-      }
-      catch (IOException e)
-      {
-        e.printStackTrace();
-      }
-      
-      return data.length;
-    }
-    
-    public InputStream getInputStream()
-    {
-      return pis;
-    }
-    
-    public void close() throws IOException { 
-      pos.close();
-    }
-  }
-  
-  private class ExtractCallback implements IArchiveExtractCallback
-  {
-    private final IInArchive archive;
-    private int index;
-    private ExtractStream stream;
-    
-    ExtractCallback(IInArchive archive, int index)
-    {
-      this.archive = archive;
-      this.index = index;
-      try
-      {
-        this.stream = new ExtractStream(archive, index);
-      }
-      catch (IOException e)
-      {
-        e.printStackTrace();
-      }
-    }
-    
-    public void close() throws IOException { stream.close(); }
-    
-    public ISequentialOutStream getStream(int index, ExtractAskMode mode)
-    {
-      this.index = index;
-      if (mode != ExtractAskMode.EXTRACT) return null;
-      return stream;
-    }
-    
-    public void prepareOperation(ExtractAskMode extractAskMode) throws SevenZipException
-    {
-      
-    }
-    
-    public void setOperationResult(ExtractOperationResult result) throws SevenZipException
-    {
-       //System.out.println("Extract Stream finished");
-    }
-    
-    public void setCompleted(long completeValue) throws SevenZipException
-    {
-      
-    }
-
-    public void setTotal(long total) throws SevenZipException
-    {
-      //System.out.println("EXTRACTED: "+total);
-    }
-  }
   
 }

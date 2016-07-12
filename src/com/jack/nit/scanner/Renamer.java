@@ -1,7 +1,6 @@
 package com.jack.nit.scanner;
 
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,7 +11,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.jack.nit.Options;

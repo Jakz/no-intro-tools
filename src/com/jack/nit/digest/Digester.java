@@ -6,16 +6,11 @@ import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
 import com.jack.nit.Settings;
-import com.jack.nit.data.Rom;
-import com.jack.nit.handles.ArchiveHandle;
 import com.jack.nit.handles.RomHandle;
-
-import net.sf.sevenzipjbinding.PropID;
 
 public class Digester
 {

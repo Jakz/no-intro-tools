@@ -12,8 +12,6 @@ import com.jack.nit.handles.RomHandle;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
 
-import net.sf.sevenzipjbinding.ArchiveFormat;
-import net.sf.sevenzipjbinding.IOutCreateArchive;
 import net.sf.sevenzipjbinding.IOutCreateArchive7z;
 import net.sf.sevenzipjbinding.IOutCreateCallback;
 import net.sf.sevenzipjbinding.IOutItem7z;

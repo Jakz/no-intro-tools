@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.jack.nit.Options;
-import com.jack.nit.data.GameSetStatus;
+import com.jack.nit.data.GameSet;
 import com.jack.nit.data.Rom;
 import com.jack.nit.data.xmdb.GameClone;
 import com.jack.nit.exceptions.FatalErrorException;
@@ -35,17 +35,17 @@ import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 
 public class Merger
 {
-  GameSetStatus set;
+  GameSet set;
   Options options;
   Compressor compressor;
   List<Rom> found;
   
-  public Merger(GameSetStatus set, Options options)
+  public Merger(GameSet set, Options options)
   {
     this.set = set;
     this.options = options;
     this.compressor = new Compressor(options);
-    this.found = set.set.foundRoms().collect(Collectors.toList());
+    this.found = set.foundRoms().collect(Collectors.toList());
   }
   
   public void merge(Path dest) throws IOException, SevenZipException
@@ -106,7 +106,7 @@ public class Merger
     
     for (Rom rom : found)
     {
-      GameClone clone = set.clones.get(rom.game());
+      GameClone clone = set.clones().get(rom.game());
       
       if (clone != null)
       {

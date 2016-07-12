@@ -1,5 +1,8 @@
 package com.jack.nit;
 
+import com.jack.nit.creator.CreatorOptions;
+import com.jack.nit.parser.DatFormat;
+
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
@@ -28,6 +31,8 @@ public class Args
 
   private static void generateVerifierParser(ArgumentParser parser)
   {
+    parser.setDefault("command", Command.VERIFY);
+    
     parser.addArgument("--compression-level", "-cl")
       .dest(COMPRESSION_LEVEL)
       .type(Integer.class)
@@ -62,14 +67,7 @@ public class Args
       .action(Arguments.storeConst())
       .setConst(true)
       .setDefault(false);
-    
-    parser.addArgument("--no-multi-thread", "-nmt")
-      .dest(NO_MULTI_THREAD)
-      .help("disable multi-threaded workflow")
-      .action(Arguments.storeConst())
-      .setConst(true)
-      .setDefault(false);
-    
+        
     parser.addArgument("--merge-mode", "-mm")
       .dest(MERGE_MODE)
       .help("specify kind of merge you want")
@@ -101,40 +99,95 @@ public class Args
       .dest(DAT_PATH)
       .type(String.class)
       .required(true)
-      .help("Path to DAT file");
+      .help("path to DAT file");
     
     parser.addArgument("--roms-path", "-roms=")
       .dest(DATA_PATH)
       .type(String.class)
       .nargs("+")
       .required(true)
-      .help("Path to roms folder");
+      .help("path to roms folder");
     
     parser.addArgument("--clones-file", "--clones")
       .dest(CLONE_PATH)
       .type(String.class)
-      .help("Path to clones definition file");
+      .help("path to clones definition file");
     
     parser.addArgument("--header-file", "--header")
       .dest(HEADER_PATH)
       .type(String.class)
-      .help("Path to optional header file for DAT");
+      .help("path to optional header file for DAT");
   }
   
   static void generateDatCreateParser(ArgumentParser parser)
   {
-    parser.addArgument("--out", "-o")
-      .dest("out-file")
+    parser.setDefault("command", Command.CREATE_DAT);
+        
+    parser.addArgument("--format", "-f")
+      .dest("format")
+      .type(DatFormat.class)
+      .choices(DatFormat.values())
+      .setDefault(DatFormat.clrmamepro)
+      .help("output format for generated DAT file");
+    
+    parser.addArgument("--mode", "-m")
+      .dest("mode")
+      .type(CreatorOptions.Mode.class)
+      .choices(CreatorOptions.Mode.values())
+      .setDefault(CreatorOptions.Mode.merged)
+      .help("mode of generation, merged means that an archive contains multiple versions of same game while multi means that an archive contains multiple roms for same game");
+    
+    parser.addArgument("--folder-as-archives", "-faa")
+      .dest("folder-as-archives")
+      .action(Arguments.storeConst())
+      .setConst(true)
+      .setDefault(false)
+      .help("treat folder as archives, so that a folder will be considered a clone set or a multiple rom game according to mode");
+    
+    parser.addArgument("--exts", "-e")
+      .dest("exts")
       .type(String.class)
-      .setDefault("created.dat")
-      .help("Path to created DAT file");
+      .nargs("+")
+      .help("comma separated list of accepted estensions, use * for any files");
+    
+    parser.addArgument("--out", "-o")
+      .dest("outfile")
+      .type(String.class)
+      .setDefault("output.dat")
+      .help("path to created DAT file");
+    
+    parser.addArgument("--name", "-n")
+      .setDefault("")
+      .dest("name")
+      .type(String.class)
+      .help("name of the DAT file");
+    
+    parser.addArgument("--desc", "-d")
+      .setDefault("")
+      .dest("description")
+      .type(String.class)
+      .help("description of the DAT file");
+    
+    parser.addArgument("--version")
+      .setDefault("")
+      .dest("version")
+      .type(String.class)
+      .help("version of the DAT file");
+    
+    parser.addArgument("--comment", "-c")
+      .setDefault("")
+      .dest("comment")
+      .type(String.class)
+      .help("description of the DAT file");
     
     parser.addArgument("infiles")
-      .dest("in-files")
+      .dest("infile")
       .type(String.class)
       .nargs("+")
       .required(true)
-      .help("Paths to folders or archives to scan to generate DAT");
+      .help("paths to folders or archives to scan to generate DAT");
+    
+
   }
   
   static ArgumentParser generateParser()
@@ -142,14 +195,21 @@ public class Args
     ArgumentParser parser = ArgumentParsers.newArgumentParser("no-intro-tools")
         .defaultHelp(true)
         .description("Verify, rename and merge ROMS for no-intro DATs");
-    
-    Subparsers subparsers = parser.addSubparsers();
+        
+    Subparsers subparsers = parser.addSubparsers().help("action to perform");
     
     Subparser verifierParser = subparsers.addParser("verify").help("verify and organize roms");
     generateVerifierParser(verifierParser);
 
     Subparser createDatParser = subparsers.addParser("create-dat").help("create DAT from existing files");
     generateDatCreateParser(createDatParser);
+    
+    parser.addArgument("--no-multi-thread", "-nmt")
+    .dest(NO_MULTI_THREAD)
+    .help("disable multi-threaded workflow")
+    .action(Arguments.storeConst())
+    .setConst(true)
+    .setDefault(false);
  
     
     return parser;

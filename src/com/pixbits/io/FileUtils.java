@@ -30,4 +30,17 @@ public class FileUtils
       return crc.getValue();
     }
   }
+  
+  public static String fileNameWithoutExtension(Path path) {
+    String fileName = path.getFileName().toString();
+    int lastDot = fileName.lastIndexOf(".");
+    
+    return lastDot == -1 ? fileName : fileName.substring(0, lastDot);
+  }
+  
+  public static String trimExtension(String fileName) {
+    int lastDot = fileName.lastIndexOf(".");
+    
+    return lastDot == -1 ? fileName : fileName.substring(0, lastDot);
+  }
 }

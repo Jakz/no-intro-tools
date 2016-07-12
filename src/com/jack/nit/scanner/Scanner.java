@@ -16,7 +16,6 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.jack.nit.Options;
-import com.jack.nit.Settings;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.exceptions.RomPathNotFoundException;
 import com.jack.nit.handles.ArchiveHandle;
@@ -28,7 +27,6 @@ import com.pixbits.stream.StreamException;
 
 import net.sf.sevenzipjbinding.IInArchive;
 import net.sf.sevenzipjbinding.PropID;
-import net.sf.sevenzipjbinding.PropertyInfo;
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 
@@ -113,21 +111,6 @@ public class Scanner
         try (IInArchive archive = openArchive(path))
         {
           int itemCount = archive.getNumberOfItems();
-
-          //boolean isSolid = (boolean)archive.getArchiveProperty(PropID.SOLID);
-          //System.out.println("Solid: "+isSolid);
-
-          /*System.out.println("Archive: "+path.getFileName());
-          for (int i = 0; i < archive.getNumberOfArchiveProperties(); ++i)
-          {
-            System.out.println(archive.getArchivePropertyInfo(i).propID + ": " + archive.getArchiveProperty(archive.getArchivePropertyInfo(i).propID));
-          }
-          
-          System.out.println("Item prop");
-          for (int i = 0; i < archive.getNumberOfProperties(); ++i)
-          {
-            System.out.println(archive.getPropertyInfo(i).propID + ": " + archive.getProperty(0, archive.getPropertyInfo(i).propID));
-          }*/
 
           if (true)
           {   

@@ -7,9 +7,9 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import com.jack.nit.data.header.Header;
-import com.jack.nit.handles.RomHandle;
+import com.jack.nit.data.xmdb.CloneSet;
 
-public class GameSet
+public class GameSet implements Iterable<Game>
 {
   public final String name;
   public final String description;
@@ -21,6 +21,8 @@ public class GameSet
   private final Map<String, Game> gameMap;
   
   final private HashCache cache;
+  
+  private CloneSet clones;
 
   public GameSet(String name, String description, Header header, String version, String comment, Game[] games)
   {
@@ -35,6 +37,9 @@ public class GameSet
     
     Arrays.stream(games).forEach(g -> gameMap.put(g.name, g));
   }
+  
+  public CloneSet clones() { return clones; }
+  public void setClones(CloneSet clones) { this.clones = clones; }
   
   public HashCache cache() { return cache; }
 

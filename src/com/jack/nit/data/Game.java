@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-public class Game
+public class Game implements Iterable<Rom>
 {
   public final String name;
   public final String description;

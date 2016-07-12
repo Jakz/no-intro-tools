@@ -6,7 +6,7 @@ public class FormatUnrecognizedException extends Exception
 {
   public final Path path;
   
-  FormatUnrecognizedException(Path path, String message)
+  public FormatUnrecognizedException(Path path, String message)
   {
     super(message);
     this.path = path;

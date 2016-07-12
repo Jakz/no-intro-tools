@@ -1,18 +1,12 @@
 package com.jack.nit.scanner;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
-import java.util.zip.CRC32;
-import java.util.zip.CheckedInputStream;
-
 import com.jack.nit.Options;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.HashCache;
@@ -20,12 +14,9 @@ import com.jack.nit.data.Rom;
 import com.jack.nit.digest.DigestInfo;
 import com.jack.nit.digest.DigestOptions;
 import com.jack.nit.digest.Digester;
-import com.jack.nit.handles.ArchiveHandle;
 import com.jack.nit.handles.RomHandle;
 import com.jack.nit.log.Logger;
 import com.pixbits.stream.StreamException;
-
-import net.sf.sevenzipjbinding.PropID;
 
 public class Verifier
 {
