@@ -1,4 +1,4 @@
-package com.jack.nit.creator;
+package com.jack.nit.emitter;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -42,6 +42,7 @@ public class CreatorOptions
   public final String description;
   public final String version;
   public final String comment;
+  public final String author;
   
   @SuppressWarnings("unchecked")
   public CreatorOptions(Map<String, Object> properties)
@@ -74,6 +75,8 @@ public class CreatorOptions
     description = (String)properties.get("description");
     version = (String)properties.get("version");
     comment = (String)properties.get("comment");
+    author = (String)properties.get("author");
+
   }
   
   public boolean shouldCalculateCRC() { return true; }

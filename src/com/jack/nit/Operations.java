@@ -9,9 +9,9 @@ import java.util.stream.Stream;
 
 import org.xml.sax.SAXException;
 
-import com.jack.nit.creator.ClrMameProGenerator;
-import com.jack.nit.creator.CreatorOptions;
-import com.jack.nit.creator.GameSetCreator;
+import com.jack.nit.emitter.ClrMameProGenerator;
+import com.jack.nit.emitter.CreatorOptions;
+import com.jack.nit.emitter.GameSetCreator;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.Rom;
 import com.jack.nit.data.xmdb.CloneSet;
@@ -31,7 +31,7 @@ public class Operations
   {
     ClrMameProParser parser = new ClrMameProParser(options);
     GameSet set = parser.load(options.datPath);
-    Logger.log(Log.INFO1, "Loaded set \'"+set.name+"\' ("+set.size()+" games, "+set.realSize()+" roms)");
+    Logger.log(Log.INFO1, "Loaded set \'"+set.info.name+"\' ("+set.size()+" games, "+set.realSize()+" roms)");
 
     return set;
   }
@@ -44,7 +44,7 @@ public class Operations
 
     CloneSet cloneSet = xmdbParser.load(path);
         
-    Logger.log(Log.INFO1, "Loaded clone set for \'"+set.name+"\' ("+set.size()+" games in "+cloneSet.size()+" entries)");
+    Logger.log(Log.INFO1, "Loaded clone set for \'"+set.info.name+"\' ("+set.size()+" games in "+cloneSet.size()+" entries)");
 
     return cloneSet;
   }
@@ -53,7 +53,7 @@ public class Operations
   {
     long found = set.foundRoms().count();
     
-    Logger.log("Statistics for %s:", set.name);
+    Logger.log("Statistics for %s:", set.info.name);
     Logger.log("  %d total roms", set.size());
     
     if (set.clones() != null && set.clones().size() > 0)

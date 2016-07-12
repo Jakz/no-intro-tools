@@ -1,4 +1,4 @@
-package com.jack.nit.creator;
+package com.jack.nit.emitter;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -23,10 +23,16 @@ public class ClrMameProGenerator implements Generator
     try (PrintWriter wrt = new PrintWriter(Files.newBufferedWriter(options.destPath)))
     {
       wrt.print("clrmamepro (\n");
-      wrt.printf("\tname \"%s\"\n", set.name);
-      wrt.printf("\tdescription \"%s\"\n", set.description);
-      wrt.printf("\tversion \"%s\"\n", set.version);
-      wrt.printf("\tcomment \"%s\"\n", set.comment);
+      if (set.info.name != null && !set.info.name.isEmpty())
+        wrt.printf("\tname \"%s\"\n", set.info.name);
+      if (set.info.description != null && !set.info.description.isEmpty())
+        wrt.printf("\tdescription \"%s\"\n", set.info.description);
+      if (set.info.version != null && !set.info.version.isEmpty())
+        wrt.printf("\tversion \"%s\"\n", set.info.version);
+      if (set.info.comment != null && !set.info.comment.isEmpty())
+        wrt.printf("\tcomment \"%s\"\n", set.info.comment);
+      if (set.info.author != null && !set.info.author.isEmpty())
+        wrt.printf("\tauthor \"%s\"\n", set.info.author);
       wrt.print(")\n\n");
       
       set.stream().sorted((g1,g2) -> g1.name.compareToIgnoreCase(g2.name)).forEach(game -> {

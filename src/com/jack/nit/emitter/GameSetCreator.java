@@ -1,4 +1,4 @@
-package com.jack.nit.creator;
+package com.jack.nit.emitter;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 
 import com.jack.nit.data.Game;
 import com.jack.nit.data.GameSet;
+import com.jack.nit.data.GameSetInfo;
 import com.jack.nit.data.Rom;
 import com.jack.nit.data.header.Header;
 import com.jack.nit.data.xmdb.CloneSet;
@@ -274,7 +275,7 @@ public class GameSetCreator
     analyze();
     Logger.logger.endProgress();
     
-    GameSet set = new GameSet(options.name, options.description, null, options.version, options.comment, games.toArray(new Game[games.size()]));
+    GameSet set = new GameSet(new GameSetInfo(options.name, options.description, options.version, options.comment, options.author), null, games.toArray(new Game[games.size()]));
     set.setClones(new CloneSet(set, clones.toArray(new GameClone[clones.size()])));
     return set;
   }

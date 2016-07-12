@@ -1,6 +1,6 @@
 package com.jack.nit;
 
-import com.jack.nit.creator.CreatorOptions;
+import com.jack.nit.emitter.CreatorOptions;
 import com.jack.nit.parser.DatFormat;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
@@ -179,6 +179,12 @@ public class Args
       .dest("comment")
       .type(String.class)
       .help("description of the DAT file");
+    
+    parser.addArgument("--author")
+      .setDefault("")
+      .dest("author")
+      .type(String.class)
+      .help("author of the DAT file");
     
     parser.addArgument("infiles")
       .dest("infile")

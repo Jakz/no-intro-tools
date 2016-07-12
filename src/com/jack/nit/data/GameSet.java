@@ -11,12 +11,9 @@ import com.jack.nit.data.xmdb.CloneSet;
 
 public class GameSet implements Iterable<Game>
 {
-  public final String name;
-  public final String description;
+  public final GameSetInfo info;
   public final Header header;
-  public final String version;
-  public final String comment;
-  
+
   private final Game[] games;
   private final Map<String, Game> gameMap;
   
@@ -24,13 +21,10 @@ public class GameSet implements Iterable<Game>
   
   private CloneSet clones;
 
-  public GameSet(String name, String description, Header header, String version, String comment, Game[] games)
+  public GameSet(GameSetInfo info, Header header, Game[] games)
   {
-    this.name = name;
-    this.description = description;
+    this.info = info;
     this.header = header;
-    this.version = version;
-    this.comment = comment;
     this.games = games;
     this.cache = new HashCache(this);
     this.gameMap = new HashMap<>();

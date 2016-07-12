@@ -1,4 +1,4 @@
-package com.jack.nit.creator;
+package com.jack.nit.emitter;
 
 import java.io.IOException;
 import java.nio.file.Path;

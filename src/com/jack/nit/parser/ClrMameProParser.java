@@ -18,6 +18,7 @@ import org.xml.sax.SAXException;
 import com.jack.nit.Options;
 import com.jack.nit.data.Game;
 import com.jack.nit.data.GameSet;
+import com.jack.nit.data.GameSetInfo;
 import com.jack.nit.data.Rom;
 import com.jack.nit.data.header.Header;
 import com.pixbits.io.XMLParser;
@@ -108,7 +109,11 @@ public class ClrMameProParser
         header = headerParser.load(options.headerPath);
       }
       
-      set = new GameSet(value("name"), value("description"), header, value("version"), value("comment"), games.toArray(new Game[games.size()]));
+      set = new GameSet(
+          new GameSetInfo(value("name"), value("description"), value("version"), value("comment"), value("author")),
+          header,
+          games.toArray(new Game[games.size()])
+      );
       popState();
       
       return set;

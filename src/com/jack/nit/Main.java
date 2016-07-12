@@ -2,7 +2,7 @@ package com.jack.nit;
 
 import java.util.stream.Collectors;
 
-import com.jack.nit.creator.CreatorOptions;
+import com.jack.nit.emitter.CreatorOptions;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.exceptions.FatalErrorException;
