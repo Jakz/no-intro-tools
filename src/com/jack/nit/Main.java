@@ -1,5 +1,8 @@
 package com.jack.nit;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import com.jack.nit.emitter.CreatorOptions;
@@ -7,6 +10,8 @@ import com.jack.nit.data.GameSet;
 import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.exceptions.FatalErrorException;
 import com.jack.nit.exceptions.RomPathNotFoundException;
+import com.jack.nit.gui.GameSetComparePanel;
+import com.jack.nit.gui.SimpleFrame;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
 import com.jack.nit.merger.Merger;
@@ -14,6 +19,7 @@ import com.jack.nit.scanner.Renamer;
 import com.jack.nit.scanner.RomHandlesSet;
 import com.jack.nit.scanner.Scanner;
 import com.jack.nit.scanner.Verifier;
+import com.pixbits.stream.StreamException;
 
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.SevenZipNativeInitializationException;
@@ -55,6 +61,26 @@ public class Main
           CreatorOptions coptions = new CreatorOptions(rargs.getAttrs());
           GameSet set = Operations.createGameSet(coptions);
           Operations.consolidateGameSet(coptions, set);
+          break;
+        }
+        
+        case COMPARE_DAT:
+        {
+          List<String> dats = rargs.getList("infile");
+          if (dats.size() < 2)
+            throw new FatalErrorException("compare-dat expects at least 2 DAT files");
+          
+          List<Path> paths = dats.stream().map(Paths::get).collect(Collectors.toList());
+          
+          List<GameSet> sets = paths.stream()
+              .map(StreamException.rethrowFunction(
+                  path -> Operations.loadGameSet(Options.simpleDatLoad(path))
+              ))
+              .collect(Collectors.toList());
+          
+          SimpleFrame<GameSetComparePanel> frame = new SimpleFrame<>("Game Set Compare", new GameSetComparePanel(sets), true);
+          frame.setVisible(true);
+          
           break;
         }
        

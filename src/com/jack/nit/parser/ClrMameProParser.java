@@ -140,7 +140,7 @@ public class ClrMameProParser
     else if (k.equals("flags") || k.equals("serial"))
       return; // skip
     else
-      throw new IllegalArgumentException("unrecognized key in dat: "+k);
+      throw new IllegalArgumentException("unrecognized key in dat: "+k+", "+v);
   }
   
   public void scope(String k, boolean isEnd)

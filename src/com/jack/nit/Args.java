@@ -119,7 +119,7 @@ public class Args
       .help("path to optional header file for DAT");
   }
   
-  static void generateDatCreateParser(ArgumentParser parser)
+  private static void generateDatCreateParser(ArgumentParser parser)
   {
     parser.setDefault("command", Command.CREATE_DAT);
         
@@ -192,8 +192,18 @@ public class Args
       .nargs("+")
       .required(true)
       .help("paths to folders or archives to scan to generate DAT");
-    
+  }
+  
+  private static void generateDatCompareParser(ArgumentParser parser)
+  {
+    parser.setDefault("command", Command.COMPARE_DAT);
 
+    parser.addArgument("infiles")
+      .dest("infile")
+      .type(String.class)
+      .nargs("+")
+      .required(true)
+      .help("paths to DAT files to compare");
   }
   
   static ArgumentParser generateParser()
@@ -209,6 +219,9 @@ public class Args
 
     Subparser createDatParser = subparsers.addParser("create-dat").help("create DAT from existing files");
     generateDatCreateParser(createDatParser);
+    
+    Subparser compareDatParser = subparsers.addParser("compare-dat").help("compare multiple DATs, first set specified will be used as reference");
+    generateDatCompareParser(compareDatParser);
     
     parser.addArgument("--no-multi-thread", "-nmt")
     .dest(NO_MULTI_THREAD)

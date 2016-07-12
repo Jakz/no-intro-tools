@@ -1,5 +1,7 @@
 package com.jack.nit.data;
 
+import java.util.Arrays;
+
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
 import com.jack.nit.digest.DigestInfo;
@@ -64,7 +66,7 @@ public class Rom
  
   public boolean isEquivalent(Rom rom)
   {
-    return size == rom.size && crc32 == rom.crc32 && md5 == rom.md5 && sha1 == rom.sha1;
+    return size == rom.size && crc32 == rom.crc32 && (md5 == null || rom.md5 == null || Arrays.equals(md5,rom.md5)) && (sha1 == null || rom.sha1 == null || Arrays.equals(sha1,rom.sha1));
   }
   
 }

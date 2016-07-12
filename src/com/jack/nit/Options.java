@@ -30,29 +30,29 @@ public class Options
     public final String extension;
   };
   
-  public final Log logLevel;
+  public Log logLevel;
   
-  public final boolean matchSize;
-  public final boolean matchSHA1;
-  public final boolean matchMD5;
-  public final boolean multiThreaded;
+  public boolean matchSize;
+  public boolean matchSHA1;
+  public boolean matchMD5;
+  public boolean multiThreaded;
   
   
-  private final boolean forceMergeInPlace;
-  public final MergeMode mergeMode;
-  public final ArchiveFormat archiveFormat;
-  public final boolean useSolidArchives;
-  public final int compressionLevel;
-  public final boolean alwaysRewriteArchives;
-  public final boolean keepUnrecognizedFilesInArchives;
-  public final boolean cleanMergePathAfterMerge;
+  private boolean forceMergeInPlace;
+  public MergeMode mergeMode;
+  public ArchiveFormat archiveFormat;
+  public boolean useSolidArchives;
+  public int compressionLevel;
+  public boolean alwaysRewriteArchives;
+  public boolean keepUnrecognizedFilesInArchives;
+  public boolean cleanMergePathAfterMerge;
   
-  public final Path datPath;
-  public final Path headerPath;
-  public final Path cloneDatPath;
+  public Path datPath;
+  public Path headerPath;
+  public Path cloneDatPath;
   
-  public final Path[] dataPath;
-  private final Path mergePath;
+  public Path[] dataPath;
+  private Path mergePath;
   
   public final BiasSet zonePriority;
   
@@ -125,17 +125,24 @@ public class Options
     headerPath = null;
     cloneDatPath = Paths.get("dats/gb.xmdb");
     
-    dataPath = new Path[] { Paths.get("/Volumes/RAMDisk/gb") };
+    dataPath = new Path[] { Paths.get("/Volumes/RAM Disk/gb") };
     //dataPath = new Path[] { Paths.get("/Users/jack/Desktop/romset/gb") };
 
-    mergePath = Paths.get("/Volumes/RAMDisk/merge");
+    mergePath = Paths.get("/Volumes/RAM Disk/merge");
     
     zonePriority = new BiasSet(Zone.ITALY, Zone.EUROPE, Zone.USA, Zone.JAPAN);
   }
-  
+
   public boolean verifyJustCRC() { return !(matchSHA1 || matchMD5); }
   
   //TODO: not correct, if merge in place it should be original path of rom or force 1 data path max
   public Path mergePath() { return forceMergeInPlace ? dataPath[0] : mergePath; }
   public boolean doesMergeInPlace() { return forceMergeInPlace || dataPath.equals(mergePath); } 
+  
+  public static Options simpleDatLoad(Path path)
+  {
+    Options options = new Options();
+    options.datPath = path;
+    return options;
+  }
 }
