@@ -61,5 +61,10 @@ public class Rom
     
     return builder.toString();
   }
+ 
+  public boolean isEquivalent(Rom rom)
+  {
+    return size == rom.size && crc32 == rom.crc32 && md5 == rom.md5 && sha1 == rom.sha1;
+  }
   
 }

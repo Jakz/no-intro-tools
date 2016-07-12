@@ -155,7 +155,7 @@ public class GameSetCreator
       entries = entries.parallel();
     
     entries.forEach(StreamException.rethrowConsumer(e -> {
-      Logger.logger.updateProgress(count.getAndIncrement()/total, "");
+      Logger.logger.updateProgress(count.getAndIncrement()/total, e.path.getFileName().toString());
       analyzeEntry(null, e); 
     }));
   }
