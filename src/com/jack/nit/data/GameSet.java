@@ -32,10 +32,15 @@ public class GameSet implements Iterable<Game>
     this.gameMap = new HashMap<>();
     
     Arrays.stream(games).forEach(g -> gameMap.put(g.name, g));
+    
+    info.computeStats(this);
   }
   
   public CloneSet clones() { return clones; }
-  public void setClones(CloneSet clones) { this.clones = clones; }
+  public void setClones(CloneSet clones) {  
+    this.clones = clones;
+    info.computeStats(this);
+  }
   
   public HashCache cache() { return cache; }
 

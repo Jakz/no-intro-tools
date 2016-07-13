@@ -96,10 +96,12 @@ public class Main
         
         case GUI:
         {
-          Path path = Paths.get(rargs.getString("folder"));
+          Path path = Paths.get(rargs.getString("folder")).normalize();
           
-          if (!Files.exists(path) || Files.isDirectory(path))
-            throw new ArgumentParserException("path doesn't exist or it's not a directory", arguments);
+          if (!Files.exists(path) || !Files.isDirectory(path))
+            throw new ArgumentParserException(String.format("path '%s' doesn't exist or it's not a directory", path.toString()), arguments);
+          
+          Operations.prepareGUIMode(path);
           
           break;
         }

@@ -131,7 +131,7 @@ public class Options
     cleanMergePathAfterMerge = true;
     
     datPath = Paths.get("dats/sms.dat");
-    headerPath = null;
+    headerPath = Paths.get("dats/headers");
     cloneDatPath = Paths.get("dats/sms.xmdb");
     
     dataPath = new Path[] { Paths.get("/Volumes/RAM Disk/sms") };

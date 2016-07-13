@@ -3,8 +3,11 @@ package com.jack.nit;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -16,6 +19,8 @@ import org.xml.sax.SAXException;
 import com.jack.nit.emitter.ClrMameProEmitter;
 import com.jack.nit.emitter.CreatorOptions;
 import com.jack.nit.emitter.GameSetCreator;
+import com.jack.nit.gui.GameSetListPanel;
+import com.jack.nit.gui.SimpleFrame;
 import com.jack.nit.Options.MergeMode;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.Rom;
@@ -25,6 +30,7 @@ import com.jack.nit.log.Logger;
 import com.jack.nit.parser.ClrMameProParser;
 import com.jack.nit.parser.DatFormat;
 import com.jack.nit.parser.XMDBParser;
+import com.pixbits.io.FileUtils;
 import com.pixbits.io.FolderScanner;
 import com.pixbits.io.XMLEmbeddedDTD;
 import com.pixbits.io.XMLParser;
@@ -133,8 +139,30 @@ public class Operations
     }
   }
   
-  public static void prepareGUIMode(Path path)
+  public static void prepareGUIMode(Path path) throws IOException
   {
+    PathMatcher datMatcher = FileSystems.getDefault().getPathMatcher("glob:*.dat");
+
+    FolderScanner scanner = new FolderScanner(datMatcher, false);
+
+    Set<Path> files = scanner.scan(path);
     
+    
+    List<GameSet> sets = files.stream().map(StreamException.rethrowFunction(p -> {
+      GameSet set = Operations.loadGameSet(Options.simpleDatLoad(p));
+      
+      Path optionalXMDB = p.getParent().resolve(FileUtils.fileNameWithoutExtension(p) + ".xmdb");
+      
+      if (Files.exists(optionalXMDB))
+      {
+        CloneSet clones = Operations.loadCloneSetFromXMDB(set, optionalXMDB);
+        set.setClones(clones);
+      }
+      
+      return set;
+    })).collect(Collectors.toList());
+    
+    SimpleFrame<GameSetListPanel> frame = new SimpleFrame<>("DAT Manager", new GameSetListPanel(sets), true);
+    frame.setVisible(true);
   }
 }

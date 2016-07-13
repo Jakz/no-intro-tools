@@ -6,9 +6,11 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Stack;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
@@ -63,6 +65,9 @@ public class ClrMameProParser
   Stack<Map<String,Object>> values;
    
   Status status = Status.NOWHERE;
+  
+  SimpleParser parser;
+  Path path;
 
   private final HexBinaryAdapter hexConverter = new HexBinaryAdapter();
   
@@ -78,12 +83,23 @@ public class ClrMameProParser
   
   public Map<String,Object> valueMap() { return values.peek(); }
   
+  public void checkPresenceOfValues(String... keys)
+  {
+    Optional<String> missingKey = Arrays.stream(keys).filter(key -> !valueMap().containsKey(key)).findAny();
+    
+    if (missingKey.isPresent())
+      throw new IllegalArgumentException(String.format("required value %s in clrmamepro dat was not found at (%s:%d,%d).", missingKey.get(), path.getFileName().toString(), parser.getLine(), parser.getRow()));
+  }
+  
   @SuppressWarnings("unchecked")
   public <T> T value(String k) { return (T)valueMap().get(k); }
+  public <T> T valueOrDefault(String k, T def) { T value = value(k); return value != null ? value : def; }
+  
   public void setValueForKey(String k, Object v) { valueMap().put(k, v); }
   
   public GameSet load(Path file) throws IOException, SAXException
   {
+    this.path = file;
     try (InputStream fis = new BufferedInputStream(Files.newInputStream(file)))
     {
       status = Status.NOWHERE;
@@ -92,7 +108,7 @@ public class ClrMameProParser
       rom = null;
       values = new Stack<>();
       
-      SimpleParser parser = new SimpleParser(fis);
+      parser = new SimpleParser(fis);
       parser.addSingle('(', ')').addQuote('\"').addWhiteSpace(' ', '\t', '\r', '\n');
 
       SimpleTreeBuilder builder = new SimpleTreeBuilder(parser, this::pair, this::scope);
@@ -106,7 +122,10 @@ public class ClrMameProParser
       if (headerFile != null)
       {        
         XMLParser<Header> headerParser = new XMLParser<>(new HeaderParser());
-        header = headerParser.load(options.headerPath);
+        
+        Path headerPath = options.headerPath != null && Files.isDirectory(options.headerPath) ? options.headerPath.resolve(headerFile) : file.getParent().resolve(headerFile);
+        
+        header = headerParser.load(headerPath);
       }
       
       set = new GameSet(
@@ -139,6 +158,8 @@ public class ClrMameProParser
       setValueForKey(k, hexConverter.unmarshal(v));
     else if (k.equals("flags") || k.equals("serial"))
       return; // skip
+    else if (k.equals("forcenodump"))
+      return;
     else
       throw new IllegalArgumentException("unrecognized key in dat: "+k+", "+v);
   }
@@ -174,7 +195,9 @@ public class ClrMameProParser
       }
       else
       {
-        roms.add(new Rom(value("name"), value("size"), value("crc"), value("md5"), value("sha1")));
+        checkPresenceOfValues("name");
+        
+        roms.add(new Rom(value("name"), valueOrDefault("size", -1L), valueOrDefault("crc", -1L), valueOrDefault("md5", null), valueOrDefault("sha1", null)));
         popState();
       }
     }

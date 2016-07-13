@@ -101,8 +101,12 @@ public class Merger
   
   private void mergeToCloneArchives(Path dest) throws FileNotFoundException, SevenZipException
   {
+    if (set.clones() == null || set.clones().size() == 0)
+      throw new FatalErrorException(String.format("can't merge '%s' by using game clones since there is no clone info", set.info.name));
+    
     Map<GameClone, ArchiveInfo> clones = new HashMap<>();
     List<ArchiveInfo> handles = new ArrayList<>();
+    Set<String> archiveTitles = new HashSet<>();
     
     for (Rom rom : found)
     {
@@ -111,8 +115,12 @@ public class Merger
       if (clone != null)
       {
         clones.compute(clone, (k,v) -> {
+          String archiveName = k.getTitleForBias(options.zonePriority);
+          if (!archiveTitles.add(archiveName))
+            throw new FatalErrorException(String.format("can't merge '%s' correctly: clone data contains two entries that resolve to same name: %s", set.info.name, archiveName));
+          
           if (v == null)
-            return new ArchiveInfo(k.getTitleForBias(options.zonePriority), rom.handle());
+            return new ArchiveInfo(archiveName, rom.handle());
           else
           {
             v.handles.add(rom.handle());
