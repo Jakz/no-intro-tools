@@ -20,6 +20,8 @@ public class GameSet implements Iterable<Game>
   final private HashCache cache;
   
   private CloneSet clones;
+  
+  private System system;
 
   public GameSet(GameSetInfo info, Header header, Game[] games)
   {
@@ -55,4 +57,6 @@ public class GameSet implements Iterable<Game>
         .reduce((s1,s2) -> Stream.concat(s1, s2))
         .get(); 
   }
+  
+  public System system() { return system; }
 }

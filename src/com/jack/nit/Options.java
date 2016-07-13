@@ -120,7 +120,7 @@ public class Options
     matchMD5 = false;
     multiThreaded = false;
     
-    mergeMode = MergeMode.NO_MERGE;
+    mergeMode = MergeMode.SINGLE_ARCHIVE_PER_CLONE;
     forceMergeInPlace = false;
     
     archiveFormat = ArchiveFormat._7ZIP;
@@ -130,11 +130,11 @@ public class Options
     keepUnrecognizedFilesInArchives = false;
     cleanMergePathAfterMerge = true;
     
-    datPath = Paths.get("dats/gg.dat");
+    datPath = Paths.get("dats/sms.dat");
     headerPath = null;
-    cloneDatPath = Paths.get("dats/gg.xmdb");
+    cloneDatPath = Paths.get("dats/sms.xmdb");
     
-    dataPath = new Path[] { Paths.get("/Volumes/RAM Disk/gg") };
+    dataPath = new Path[] { Paths.get("/Volumes/RAM Disk/sms") };
     //dataPath = new Path[] { Paths.get("/Users/jack/Desktop/romset/gb") };
 
     mergePath = Paths.get("/Volumes/RAM Disk/merge");

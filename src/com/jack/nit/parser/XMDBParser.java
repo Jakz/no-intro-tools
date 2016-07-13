@@ -54,7 +54,7 @@ public class XMDBParser extends XMLHandler<CloneSet>
       
       if (game == null)
       {
-        Logger.log(Log.WARNING, "Zoned clone '"+attrString("name")+" is not present in corresponding game set");
+        Logger.log(Log.WARNING, "Zoned clone '"+attrString("name")+"' is not present in corresponding game set");
         return;
       }
       if (zone == null)
@@ -68,7 +68,7 @@ public class XMDBParser extends XMLHandler<CloneSet>
 
       if (game == null)
       {
-        Logger.log(Log.WARNING, "Game clone '"+attrString("name")+" is not present in corresponding game set");
+        Logger.log(Log.WARNING, "Game clone '"+attrString("name")+"' is not present in corresponding game set");
         return;
       }
               

@@ -1,8 +1,8 @@
 clrmamepro (
 	name "GoodGB"
-	description ""
+	description "GoodGB"
 	version "3.14"
-	comment ""
+	comment "GoodGB"
 )
 
 game (

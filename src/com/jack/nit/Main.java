@@ -1,5 +1,6 @@
 package com.jack.nit;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -50,7 +51,7 @@ public class Main
     {
       initializeSevenZip();
       
-      if (args.length > 1)
+      if (args.length > 0)
       {
       Namespace rargs = arguments.parseArgs(args);
       System.out.println(rargs);
@@ -90,6 +91,17 @@ public class Main
         case VERIFY:
         {
           
+          break;
+        }
+        
+        case GUI:
+        {
+          Path path = Paths.get(rargs.getString("folder"));
+          
+          if (!Files.exists(path) || Files.isDirectory(path))
+            throw new ArgumentParserException("path doesn't exist or it's not a directory", arguments);
+          
+          break;
         }
       }
       

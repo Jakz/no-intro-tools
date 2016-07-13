@@ -132,4 +132,9 @@ public class Operations
       for (String h : miss) wrt.println(h);
     }
   }
+  
+  public static void prepareGUIMode(Path path)
+  {
+    
+  }
 }

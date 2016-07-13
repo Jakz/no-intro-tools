@@ -212,11 +212,22 @@ public class Args
       .help("paths to DAT files to compare");
   }
   
+  private static void generateGuiParser(ArgumentParser parser)
+  {
+    parser.setDefault("command", Command.GUI);
+    
+    parser.addArgument("dfolder")
+      .dest("folder")
+      .type(String.class)
+      .required(true)
+      .help("the path which contains all the DATs file to manage");
+  }
+  
   static ArgumentParser generateParser()
   {
     ArgumentParser parser = ArgumentParsers.newArgumentParser("no-intro-tools")
         .defaultHelp(true)
-        .description("Verify, rename and merge ROMS for no-intro DATs");
+        .description("Verify, rename and merge roms. Manage DAT files in multiple ways.");
         
     Subparsers subparsers = parser.addSubparsers().help("action to perform");
     
@@ -228,6 +239,9 @@ public class Args
     
     Subparser compareDatParser = subparsers.addParser("compare-dat").help("compare multiple DATs, first set specified will be used as reference");
     generateDatCompareParser(compareDatParser);
+    
+    Subparser guiParser = subparsers.addParser("gui").help("graphical mode which give an overall view of all DATs from a folder");
+    generateGuiParser(guiParser);
     
     parser.addArgument("--no-multi-thread", "-nmt")
     .dest(NO_MULTI_THREAD)

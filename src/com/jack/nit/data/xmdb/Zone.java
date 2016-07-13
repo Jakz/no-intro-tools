@@ -18,7 +18,9 @@ public enum Zone
   SWEDEN("Sw"),
   KOREA("K"),
   CHINA("Cn"),
-  CANADA("Ca")
+  CANADA("Ca"),
+  BRASIL("Br"),
+  ASIA("As")
   ;
   
   private static final Map<String, Zone> tinyCodeMap = new HashMap<>();

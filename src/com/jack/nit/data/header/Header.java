@@ -1,5 +1,7 @@
 package com.jack.nit.data.header;
 
+import java.io.InputStream;
+
 public class Header
 {
   public final String name;
@@ -14,5 +16,4 @@ public class Header
     this.version = version;
     this.rules = rules;
   }
-  
 }
