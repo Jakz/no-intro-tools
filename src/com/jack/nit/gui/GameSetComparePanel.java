@@ -15,6 +15,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
 
 import com.jack.nit.data.Game;
@@ -100,17 +101,18 @@ public class GameSetComparePanel extends JPanel
   private final JTable table;
   private final TableModel model;
   private final InfoPanel info;
-  
+    
   public GameSetComparePanel(List<GameSet> sets)
   {
     model = new TableModel(sets);
     table = new JTable(model);
     
+    
     info = new InfoPanel(sets);
-    
+        
     JScrollPane pane = new JScrollPane(table);
-    pane.setPreferredSize(new Dimension(800,800));
-    
+    pane.setPreferredSize(new Dimension(400,800));
+       
     setLayout(new BorderLayout());
     add(pane, BorderLayout.CENTER);
     add(info, BorderLayout.SOUTH);

@@ -18,9 +18,7 @@ public class Game implements Iterable<Rom>
     this.roms = roms;
     Arrays.stream(this.roms).forEach(r -> r.setGame(this));
   }
-  
-  public String normalizedTitle() { return name.substring(0, name.indexOf('(')-1); }
-  
+    
   public Rom get(int index) { return roms[index]; }
   public int size() { return roms.length; }
   

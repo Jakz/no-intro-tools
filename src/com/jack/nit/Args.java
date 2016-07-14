@@ -123,6 +123,14 @@ public class Args
       .action(Arguments.storeConst())
       .setConst(true)
       .setDefault(false);
+    
+    parser.addArgument("--verify-merge")
+      .dest("verify-merge")
+      .action(Arguments.storeConst())
+      .setConst(true)
+      .setDefault(false)
+      .help("verify merged roms after the operation to ensure everything worked well");
+      
   }
   
   private static void generateDatCreateParser(ArgumentParser parser)

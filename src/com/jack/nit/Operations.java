@@ -1,5 +1,6 @@
 package com.jack.nit;
 
+import java.awt.Dimension;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -30,6 +31,7 @@ import com.jack.nit.log.Logger;
 import com.jack.nit.parser.ClrMameProParser;
 import com.jack.nit.parser.DatFormat;
 import com.jack.nit.parser.XMDBParser;
+import com.jack.nit.scripts.ConsolePanel;
 import com.pixbits.io.FileUtils;
 import com.pixbits.io.FolderScanner;
 import com.pixbits.io.XMLEmbeddedDTD;
@@ -164,5 +166,15 @@ public class Operations
     
     SimpleFrame<GameSetListPanel> frame = new SimpleFrame<>("DAT Manager", new GameSetListPanel(sets), true);
     frame.setVisible(true);
+  }
+  
+  public static void openConsole() throws IOException
+  {
+    ConsolePanel panel = new ConsolePanel();
+    panel.setMySize(1024,768);
+    
+    SimpleFrame<ConsolePanel> console = new SimpleFrame<>("Console", new ConsolePanel(), true);
+    console.setLocationRelativeTo(null);
+    console.setVisible(true);
   }
 }

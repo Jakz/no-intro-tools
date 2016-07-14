@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -48,12 +49,12 @@ public class GameSetListPanel extends JPanel
     {
       JLabel label = (JLabel)renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, r, c);
 
-      label.setOpaque(true);
+      /*label.setOpaque(true);
       
       if (isSelected)
         label.setBackground(selectedColor);
       else
-        label.setBackground(r % 2 == 0 ? evenColor : oddColor);
+        label.setBackground(r % 2 == 0 ? evenColor : oddColor);*/
       
       if (c == 0)
       {
@@ -128,11 +129,16 @@ public class GameSetListPanel extends JPanel
   private final JTable table;
   private final SetTableModel model;
   
+  private final GameListPanel setPanel;
+  
   public GameSetListPanel(List<GameSet> sets)
   {
     this.sets = sets;
     this.model = new SetTableModel();
     this.table = new JTable(model);
+    this.setPanel = new GameListPanel();
+    
+    table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.setDefaultRenderer(String.class, new SetTableRenderer(table.getDefaultRenderer(String.class)));
     table.setDefaultRenderer(Integer.class, new SetTableRenderer(table.getDefaultRenderer(Integer.class)));
     
@@ -144,14 +150,21 @@ public class GameSetListPanel extends JPanel
       table.getColumnModel().getColumn(table.getColumnCount()-i-1).setMaxWidth(width);
     }
     
+    table.getSelectionModel().addListSelectionListener(e -> {
+      if (!e.getValueIsAdjusting())
+      {
+        setPanel.populate(sets.get(e.getFirstIndex()));
+      }
+    });
+    
     JScrollPane pane = new JScrollPane(table);
     pane.setPreferredSize(new Dimension(600,800));
     
-    JSplitPane spane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+    JSplitPane spane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
     spane.add(pane);
-    spane.add(new JPanel());
+    spane.add(setPanel);
     
     setLayout(new BorderLayout());
-    add(pane, BorderLayout.CENTER);
+    add(spane, BorderLayout.CENTER);
   }
 }

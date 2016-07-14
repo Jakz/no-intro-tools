@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 import com.jack.nit.data.Game;
 
-public class GameClone
+public class GameClone implements Iterable<Game>
 {
   private final Game[] games;
   private final Game[] zones;
@@ -31,10 +31,10 @@ public class GameClone
     // find first occurring game for the zone list requested
     for (Zone zone : bias.getZones())
       if (zones[zone.ordinal()] != null)
-        return zones[zone.ordinal()].normalizedTitle();
+        return zones[zone.ordinal()].name;
     
     // otherwise just return any title
-    return games[0].normalizedTitle();
+    return games[0].name;
   }
   
   public Game get(Zone zone) { return zones[zone.ordinal()]; }

@@ -40,12 +40,15 @@ public class Merger
   Compressor compressor;
   List<Rom> found;
   
+  TitleNormalizer normalizer;
+  
   public Merger(GameSet set, Options options)
   {
     this.set = set;
     this.options = options;
     this.compressor = new Compressor(options);
     this.found = set.foundRoms().collect(Collectors.toList());
+    this.normalizer = new TitleNormalizer();
   }
   
   public void merge(Path dest) throws IOException, SevenZipException
@@ -106,7 +109,7 @@ public class Merger
     
     Map<GameClone, ArchiveInfo> clones = new HashMap<>();
     List<ArchiveInfo> handles = new ArrayList<>();
-    Set<String> archiveTitles = new HashSet<>();
+    Map<String, GameClone> cloneMapping = new HashMap<>();
     
     for (Rom rom : found)
     {
@@ -115,21 +118,25 @@ public class Merger
       if (clone != null)
       {
         clones.compute(clone, (k,v) -> {
-          String archiveName = k.getTitleForBias(options.zonePriority);
-          if (!archiveTitles.add(archiveName))
-            throw new FatalErrorException(String.format("can't merge '%s' correctly: clone data contains two entries that resolve to same name: %s", set.info.name, archiveName));
-          
+          String archiveName = normalizer.normalize(k.getTitleForBias(options.zonePriority));
+
           if (v == null)
+          {
+            cloneMapping.putIfAbsent(archiveName, clone);
             return new ArchiveInfo(archiveName, rom.handle());
+          }
           else
           {
+            if (!clone.equals(cloneMapping.get(archiveName)))
+              throw new FatalErrorException(String.format("can't merge '%s' correctly: clone data contains two entries that resolve to same name: %s", set.info.name, archiveName));
+            
             v.handles.add(rom.handle());
             return v;
           }
         });
       }
       else
-        handles.add(new ArchiveInfo(rom.game().normalizedTitle(), rom.handle())); 
+        handles.add(new ArchiveInfo(normalizer.normalize(rom.game().name), rom.handle())); 
     }
     
     Logger.log(Log.INFO1, "Merger is going to create %d archives.", clones.size()+handles.size());
@@ -216,10 +223,7 @@ public class Merger
   private ArchiveStatus checkExistingArchiveStatus(Path dest, ArchiveInfo info)
   {
     try
-    {
-      if (info.name.startsWith("Taz-Mania"))
-        System.out.println("aaaa");
-      
+    {     
       if (options.alwaysRewriteArchives || !Files.exists(dest))
         return ArchiveStatus.CREATE;
     

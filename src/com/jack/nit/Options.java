@@ -47,6 +47,8 @@ public class Options
   public boolean alwaysRewriteArchives;
   public boolean keepUnrecognizedFilesInArchives;
   public boolean cleanMergePathAfterMerge;
+  public boolean verifyMerge;
+  public boolean skipRename;
   
   public Path datPath;
   public Path headerPath;
@@ -70,7 +72,7 @@ public class Options
     
     if (args.getBoolean("no-merge"))
     {
-      mergeMode = MergeMode.NO_MERGE;
+      mergeMode = MergeMode.SINGLE_ARCHIVE_PER_CLONE;
     }
     else
     {
@@ -98,6 +100,8 @@ public class Options
     alwaysRewriteArchives = args.getBoolean(Args.ALWAYS_REWRITE_ARCHIVES);
     keepUnrecognizedFilesInArchives = args.getBoolean(Args.KEEP_UNRECOGNIZED_FILES);
     cleanMergePathAfterMerge = true;
+    verifyMerge = args.getBoolean("verify-merge");
+    skipRename = true; // TODO: should be parsed from --skip-rename
     
     datPath =  Paths.get(args.getString(Args.DAT_PATH));
     headerPath = args.get(Args.HEADER_PATH) != null ? Paths.get(args.getString(Args.HEADER_PATH)) : null;
@@ -113,14 +117,14 @@ public class Options
   
   public Options()
   {
-    logLevel = Log.DEBUG;
+    logLevel = Log.INFO1;
     
     matchSize = true;
     matchSHA1 = false;
     matchMD5 = false;
-    multiThreaded = false;
+    multiThreaded = true;
     
-    mergeMode = MergeMode.SINGLE_ARCHIVE_PER_CLONE;
+    mergeMode = MergeMode.NO_MERGE;
     forceMergeInPlace = false;
     
     archiveFormat = ArchiveFormat._7ZIP;
@@ -129,12 +133,15 @@ public class Options
     alwaysRewriteArchives = false;
     keepUnrecognizedFilesInArchives = false;
     cleanMergePathAfterMerge = true;
+    verifyMerge = false;
+    skipRename = true;
+
     
-    datPath = Paths.get("dats/sms.dat");
+    datPath = Paths.get("dats/jaguar.dat");
     headerPath = Paths.get("dats/headers");
-    cloneDatPath = Paths.get("dats/sms.xmdb");
+    cloneDatPath = Paths.get("dats/jaguar.xmdb");
     
-    dataPath = new Path[] { Paths.get("/Volumes/RAM Disk/sms") };
+    dataPath = new Path[] { Paths.get("/Volumes/RAM Disk/merge") };
     //dataPath = new Path[] { Paths.get("/Users/jack/Desktop/romset/gb") };
 
     mergePath = Paths.get("/Volumes/RAM Disk/merge");

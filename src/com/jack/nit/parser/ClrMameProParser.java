@@ -8,10 +8,14 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
@@ -23,6 +27,9 @@ import com.jack.nit.data.GameSet;
 import com.jack.nit.data.GameSetInfo;
 import com.jack.nit.data.Rom;
 import com.jack.nit.data.header.Header;
+import com.jack.nit.log.Log;
+import com.jack.nit.log.Logger;
+import com.jack.nit.merger.TitleNormalizer;
 import com.pixbits.io.XMLParser;
 import com.pixbits.parser.SimpleParser;
 import com.pixbits.parser.SimpleTreeBuilder;
@@ -135,7 +142,17 @@ public class ClrMameProParser
       );
       popState();
       
+      
+      Set<String> tags = new TreeSet<String>(); 
+      for (String s : naming)
+      {
+        if (!TitleNormalizer.words.contains("("+s+")"))
+           tags.add(s);
+      }
+      Logger.log(Log.INFO3, "Tags which will not be automatically filtered: %s",tags.stream().collect(Collectors.joining(", ", "[", "]")));
+      
       return set;
+      
     }
   }
 
@@ -164,6 +181,8 @@ public class ClrMameProParser
       throw new IllegalArgumentException("unrecognized key in dat: "+k+", "+v);
   }
   
+  Set<String> naming = new TreeSet<>();
+  
   public void scope(String k, boolean isEnd)
   {   
     if (k.equals("clrmamepro"))
@@ -183,6 +202,20 @@ public class ClrMameProParser
       }
       else
       {
+        String name = value("name");
+        
+        int fi = 0;
+        while (fi != -1)
+        {
+          fi = name.indexOf('(', fi);
+          
+          if (fi == -1) break;
+          
+          int si = name.indexOf(')', fi);
+          naming.add(name.substring(fi+1, si));
+          fi = si;
+        }
+        
         games.add(new Game(value("name"), value("description"), roms.toArray(new Rom[roms.size()])));
         popState();
       }

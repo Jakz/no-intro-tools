@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import com.jack.nit.data.Game;
 import com.jack.nit.data.GameSet;
 
-public class CloneSet
+public class CloneSet implements Iterable<GameClone>
 {
   private final GameSet set;
   private final GameClone[] clones;

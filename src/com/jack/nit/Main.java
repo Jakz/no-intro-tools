@@ -6,6 +6,9 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
+
 import com.jack.nit.emitter.CreatorOptions;
 import com.jack.nit.Options.MergeMode;
 import com.jack.nit.data.GameSet;
@@ -21,6 +24,7 @@ import com.jack.nit.scanner.Renamer;
 import com.jack.nit.scanner.RomHandlesSet;
 import com.jack.nit.scanner.Scanner;
 import com.jack.nit.scanner.Verifier;
+import com.jack.nit.scripts.ConsolePanel;
 import com.pixbits.stream.StreamException;
 
 import net.sf.sevenzipjbinding.SevenZip;
@@ -39,77 +43,103 @@ public class Main
   {
     SevenZip.initSevenZipFromPlatformJAR();
   }
+  
+  public static void setLNF()
+  {
+    try {
+      for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+          if ("Nimbus".equals(info.getName())) {
+            
+            UIManager.setLookAndFeel(info.getClassName());
+            break;
+          }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+        // If Nimbus is not available, you can set the GUI to another look and feel.
+    }
+  }
 
   public static void main(String[] args)
   {
     Logger.init();
 
-    
     ArgumentParser arguments = Args.generateParser();
     
     try
     {
+      setLNF();
+      Operations.prepareGUIMode(Paths.get("dats/"));
+      if (true)
+        return;
+      
       initializeSevenZip();
       
       if (args.length > 0)
       {
-      Namespace rargs = arguments.parseArgs(args);
-      System.out.println(rargs);
-      
-      Command command = rargs.get("command");
-      
-      switch (command)
-      {
-        case CREATE_DAT:
-        {
-          CreatorOptions coptions = new CreatorOptions(rargs.getAttrs());
-          GameSet set = Operations.createGameSet(coptions);
-          Operations.consolidateGameSet(coptions, set);
-          break;
-        }
+        Namespace rargs = arguments.parseArgs(args);
+        System.out.println(rargs);
         
-        case COMPARE_DAT:
-        {
-          List<String> dats = rargs.getList("infile");
-          if (dats.size() < 2)
-            throw new ArgumentParserException("compare-dat expects at least 2 DAT files", arguments);
-                    
-          List<Path> paths = dats.stream().map(Paths::get).collect(Collectors.toList());
-          
-          List<GameSet> sets = paths.stream()
-              .map(StreamException.rethrowFunction(
-                  path -> Operations.loadGameSet(Options.simpleDatLoad(path))
-              ))
-              .collect(Collectors.toList());
-          
-          SimpleFrame<GameSetComparePanel> frame = new SimpleFrame<>("Game Set Compare", new GameSetComparePanel(sets), true);
-          frame.setVisible(true);
-          
-          break;
-        }
-       
-        case VERIFY:
-        {
-          
-          break;
-        }
+        Command command = rargs.get("command");
         
-        case GUI:
+        switch (command)
         {
-          Path path = Paths.get(rargs.getString("folder")).normalize();
+          case CREATE_DAT:
+          {
+            CreatorOptions coptions = new CreatorOptions(rargs.getAttrs());
+            GameSet set = Operations.createGameSet(coptions);
+            Operations.consolidateGameSet(coptions, set);
+            break;
+          }
           
-          if (!Files.exists(path) || !Files.isDirectory(path))
-            throw new ArgumentParserException(String.format("path '%s' doesn't exist or it's not a directory", path.toString()), arguments);
-          
-          Operations.prepareGUIMode(path);
-          
-          break;
-        }
-      }
-      
+          case COMPARE_DAT:
+          {
+            List<String> dats = rargs.getList("infile");
+            if (dats.size() < 2)
+              throw new ArgumentParserException("compare-dat expects at least 2 DAT files", arguments);
+                      
+            List<Path> paths = dats.stream().map(Paths::get).collect(Collectors.toList());
             
- 
-      if (true)
+            List<GameSet> sets = paths.stream()
+                .map(StreamException.rethrowFunction(
+                    path -> Operations.loadGameSet(Options.simpleDatLoad(path))
+                ))
+                .collect(Collectors.toList());
+            
+            SimpleFrame<GameSetComparePanel> frame = new SimpleFrame<>("Game Set Compare", new GameSetComparePanel(sets), true);
+            frame.setVisible(true);
+            
+            break;
+          }
+         
+          case VERIFY:
+          {
+            
+            break;
+          }
+          
+          case GUI:
+          {
+            setLNF();
+            
+            Path path = Paths.get(rargs.getString("folder")).normalize();
+            
+            if (!Files.exists(path) || !Files.isDirectory(path))
+              throw new ArgumentParserException(String.format("path '%s' doesn't exist or it's not a directory", path.toString()), arguments);
+            
+            Operations.prepareGUIMode(path);
+            
+            break;
+          }
+          
+          case CONSOLE:
+          {
+            setLNF();
+            Operations.openConsole();
+            break;
+          }
+        }
+
         return;
       }
       
@@ -133,8 +163,11 @@ public class Main
       Logger.log(Log.INFO1, "Found %d verified roms", foundCount);
       //found.forEach(r -> Logger.log(Log.INFO3, "> %s", r.rom.game.name));
       
-      Renamer renamer = new Renamer(options);
-      renamer.rename(set.foundRoms().collect(Collectors.toList()));
+      if (!options.skipRename)
+      {
+        Renamer renamer = new Renamer(options);
+        renamer.rename(set.foundRoms().collect(Collectors.toList()));
+      }
       
       if (options.mergeMode != MergeMode.NO_MERGE)
       {
