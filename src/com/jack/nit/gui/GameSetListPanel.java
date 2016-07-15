@@ -151,9 +151,11 @@ public class GameSetListPanel extends JPanel
     }
     
     table.getSelectionModel().addListSelectionListener(e -> {
-      if (!e.getValueIsAdjusting())
+      int index = table.getSelectedRow();
+            
+      if (!e.getValueIsAdjusting() && index < sets.size())
       {
-        setPanel.populate(sets.get(e.getFirstIndex()));
+        setPanel.populate(sets.get(index));
       }
     });
     

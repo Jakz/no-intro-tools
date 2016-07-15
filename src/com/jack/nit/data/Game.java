@@ -8,16 +8,21 @@ public class Game implements Iterable<Rom>
 {
   public final String name;
   public final String description;
+  public final GameInfo info;
   
   private final Rom[] roms;
   
   public Game(String name, String description, Rom[] roms)
   {
+    this.info = new GameInfo();
+    
     this.name = name;
     this.description = description;
     this.roms = roms;
     Arrays.stream(this.roms).forEach(r -> r.setGame(this));
   }
+  
+  public GameInfo info() { return info; }
     
   public Rom get(int index) { return roms[index]; }
   public int size() { return roms.length; }

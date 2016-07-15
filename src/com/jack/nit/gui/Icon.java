@@ -6,6 +6,7 @@ public enum Icon
 {
   FLAG_AUSTRALIA("flag_australia"),
   FLAG_BRAZIL("flag_brazil"),
+  FLAG_CANADA("flag_canada"),
   FLAG_CHINA("flag_china"),
   FLAG_DENMARK("flag_denmark"),
   FLAG_EUROPE("flag_europe"),
@@ -25,7 +26,7 @@ public enum Icon
   FLAG_USA("flag_usa"),
   FLAG_USA_EUROPE("flag_usa_europe"),
   FLAG_JAPAN_USA("flag_japan_usa"),
-  FLAG_WORLD("flag_usa"),
+  FLAG_WORLD("flag_world"),
   STATUS_ALL("status_all"),
   STATUS_BADLY_NAMED("status_badly_named"),
   STATUS_CORRECT("status_correct"),
@@ -37,6 +38,8 @@ public enum Icon
   ARROW_UP("arrow-up"),
   ARROW_DOWN("arrow-down"),
   ARROW_UP_DOWN("arrow-up-down"),
+  
+  ROM("rom"),
 
   SYSTEM_GAME_GEAR("systems/game-gear"),
   SYSTEM_GAMEBOY("systems/gameboy"),

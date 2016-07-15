@@ -23,6 +23,7 @@ import org.xml.sax.SAXException;
 
 import com.jack.nit.Options;
 import com.jack.nit.data.Game;
+import com.jack.nit.data.GameCataloguer;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.GameSetInfo;
 import com.jack.nit.data.Rom;
@@ -50,6 +51,8 @@ public class ClrMameProParser
     GAME,
     ROM
   };
+  
+  GameCataloguer cataloguer = new NoIntroCataloguer();
   
   GameSet set;
   Game game;
@@ -216,7 +219,9 @@ public class ClrMameProParser
           fi = si;
         }
         
-        games.add(new Game(value("name"), value("description"), roms.toArray(new Rom[roms.size()])));
+        Game game = new Game(value("name"), value("description"), roms.toArray(new Rom[roms.size()]));
+        cataloguer.catalogue(game);
+        games.add(game);
         popState();
       }
     }

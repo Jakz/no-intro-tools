@@ -102,7 +102,7 @@ public class Scanner
     List<ArchiveHandle> archiveHandles = new ArrayList<>();
 
     paths.stream().forEach(StreamException.rethrowConsumer(path -> {
-      //Logger.logger.updateProgress(current.getAndIncrement() / count, "");
+      Logger.logger.updateProgress(current.getAndIncrement() / count, "");
       
       boolean shouldBeArchive = archiveMatcher.matches(path.getFileName());
       

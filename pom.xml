@@ -14,6 +14,7 @@
     <jdk.version>1.8</jdk.version>
     <zip7.version>9.20-2.00beta</zip7.version>	
     <argparse4j.version>0.7.0</argparse4j.version>
+    <jparsec.version>2.2.1</jparsec.version>
   </properties>
 
 	<build>
@@ -85,7 +86,6 @@
 			</plugin>
 		</plugins>
 	</build>
-
   <dependencies>
 		<dependency>
 		    <groupId>net.sf.sevenzipjbinding</groupId>
@@ -102,5 +102,15 @@
       <artifactId>argparse4j</artifactId>
       <version>${argparse4j.version}</version>
     </dependency>
+    <dependency>
+			<groupId>org.jparsec</groupId>
+			<artifactId>jparsec</artifactId>
+			<version>${jparsec.version}</version>
+		</dependency>
+    <!--<dependency>
+      <groupId>com.googlecode.blacken</groupId>
+      <artifactId>blacken-core</artifactId>
+      <version>${blacken.version}</version>
+    </dependency>-->
   </dependencies>
 </project>
