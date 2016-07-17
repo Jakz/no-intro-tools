@@ -13,9 +13,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.jack.nit.Options;
+import com.jack.nit.data.Game;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.Rom;
 import com.jack.nit.data.xmdb.GameClone;
@@ -42,12 +44,12 @@ public class Merger
   
   TitleNormalizer normalizer;
   
-  public Merger(GameSet set, Options options)
+  public Merger(GameSet set, Predicate<Game> filter, Options options)
   {
     this.set = set;
     this.options = options;
     this.compressor = new Compressor(options);
-    this.found = set.foundRoms().collect(Collectors.toList());
+    this.found = set.foundRoms().filter(r -> filter.test(r.game())).collect(Collectors.toList());
     this.normalizer = new TitleNormalizer();
   }
   

@@ -32,8 +32,8 @@ public class HashCache
     
     set.stream().forEach(StreamException.rethrowConsumer(g -> {
       g.stream().forEach(StreamException.rethrowConsumer(r -> {
-        if (cache.containsKey(r.crc32))
-          throw new RuntimeException("Duplicate CRC found!");
+        /*if (cache.containsKey(r.crc32))
+          throw new RuntimeException("Duplicate CRC found!");*/
         
         cache.put(r.crc32, r);
         sizes.add(r.size);

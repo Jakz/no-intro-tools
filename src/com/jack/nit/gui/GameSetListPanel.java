@@ -144,7 +144,7 @@ public class GameSetListPanel extends JPanel
     
     for (int i = 0; i < 4; ++i)
     {
-      int width = i == 0 ? 100 : 60;
+      int width = i == 0 ? 80 : 50;
       
       table.getColumnModel().getColumn(table.getColumnCount()-i-1).setMinWidth(width);
       table.getColumnModel().getColumn(table.getColumnCount()-i-1).setMaxWidth(width);
@@ -160,7 +160,7 @@ public class GameSetListPanel extends JPanel
     });
     
     JScrollPane pane = new JScrollPane(table);
-    pane.setPreferredSize(new Dimension(600,800));
+    pane.setPreferredSize(new Dimension(300,800));
     
     JSplitPane spane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
     spane.add(pane);

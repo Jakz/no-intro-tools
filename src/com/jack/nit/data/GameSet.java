@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import com.jack.nit.data.header.Header;
 import com.jack.nit.data.xmdb.CloneSet;
+import com.jack.nit.data.xmdb.GameClone;
 
 public class GameSet implements Iterable<Game>
 {
@@ -39,6 +40,11 @@ public class GameSet implements Iterable<Game>
   public CloneSet clones() { return clones; }
   public void setClones(CloneSet clones) {  
     this.clones = clones;
+    
+    for (GameClone clone : clones)
+      for (Game game : clone)
+        game.setClone(clone);
+    
     info.computeStats(this);
   }
   

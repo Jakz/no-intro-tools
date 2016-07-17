@@ -18,7 +18,7 @@ public class LocationSet
   
   public void add(Location location) { mask |= location.mask; }
   public boolean is(Location location) { return (mask & location.mask) != 0; }
-  public boolean isJust(Location location) { return (mask & location.mask) == mask; }
+  public boolean isJust(Location location) { return mask == location.mask; }
   public boolean isLocalized() { return mask != 0; }
   
   public long getMask() { return mask; }

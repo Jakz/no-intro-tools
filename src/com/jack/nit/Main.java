@@ -171,7 +171,7 @@ public class Main
       
       if (options.mergeMode != MergeMode.NO_MERGE)
       {
-        Merger merger = new Merger(set, options);
+        Merger merger = new Merger(set, g -> true, options);
         merger.merge(options.mergePath());
         
         if (options.cleanMergePathAfterMerge)

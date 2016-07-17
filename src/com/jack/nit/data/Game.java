@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
+import com.jack.nit.data.xmdb.GameClone;
+
 public class Game implements Iterable<Rom>
 {
   public final String name;
@@ -11,6 +13,7 @@ public class Game implements Iterable<Rom>
   public final GameInfo info;
   
   private final Rom[] roms;
+  private GameClone clone;
   
   public Game(String name, String description, Rom[] roms)
   {
@@ -19,16 +22,21 @@ public class Game implements Iterable<Rom>
     this.name = name;
     this.description = description;
     this.roms = roms;
+    this.clone = null;
     Arrays.stream(this.roms).forEach(r -> r.setGame(this));
   }
   
   public GameInfo info() { return info; }
     
+  public boolean isComplete() { return Arrays.stream(roms).allMatch(r -> r.handle() != null); }
   public Rom get(int index) { return roms[index]; }
   public int size() { return roms.length; }
   
   public Iterator<Rom> iterator() { return Arrays.asList(roms).iterator(); }
   public Stream<Rom> stream() { return Arrays.stream(roms); }
+  
+  public void setClone(GameClone clone) { this.clone = clone; }
+  public GameClone getClone() { return clone; }   
   
   public boolean hasEquivalentRom(Rom rom)
   {
