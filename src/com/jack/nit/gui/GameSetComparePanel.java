@@ -3,24 +3,18 @@ package com.jack.nit.gui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
 
 import com.jack.nit.data.Game;
 import com.jack.nit.data.GameSet;
-import com.jack.nit.data.Rom;
 
 public class GameSetComparePanel extends JPanel
 {

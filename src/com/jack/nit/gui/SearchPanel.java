@@ -2,8 +2,6 @@ package com.jack.nit.gui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
@@ -13,14 +11,9 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
-
 import com.jack.nit.data.Game;
 import com.jack.nit.data.Location;
 import com.jack.nit.data.Searcher;
-import com.jack.nit.data.Version;
 import com.pixbits.gui.JPlaceHolderTextField;
 
 public class SearchPanel extends JPanel

@@ -16,6 +16,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.jack.nit.Options;
+import com.jack.nit.Settings;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.exceptions.RomPathNotFoundException;
 import com.jack.nit.handles.ArchiveHandle;
@@ -116,16 +117,37 @@ public class Scanner
           {   
             for (int i = 0; i < itemCount; ++i)
             {
+              /* TODO: check extension of file? */
+              
               long size = (long)archive.getProperty(i, PropID.SIZE);
               Long lcompressedSize = (Long)archive.getProperty(i, PropID.PACKED_SIZE);
               long compressedSize = lcompressedSize != null ? lcompressedSize : -1;
               String fileName = (String)archive.getProperty(i, PropID.PATH);
-              long crc = Integer.toUnsignedLong((Integer)archive.getProperty(i, PropID.CRC));
               
-              if (set.cache().isValidSize(size) || !options.matchSize)
-                archiveHandles.add(new ArchiveHandle(path, archive.getArchiveFormat(), fileName, i, size, compressedSize, crc));
+              /* if file ends with archive extension */
+              if (Arrays.asList(Settings.archiveExtensions).stream().anyMatch(ext -> fileName.endsWith("."+ext)))
+              {
+                
+              }
               else
-                skipped.add(fileName+" in "+path.getFileName());
+              {
+                /* if header is null then we can compute crc and check size to filter out elements */
+                if (set.header == null)
+                {           
+                  long crc = Integer.toUnsignedLong((Integer)archive.getProperty(i, PropID.CRC));
+                  
+                  if (set.cache().isValidSize(size) || !options.matchSize)
+                    archiveHandles.add(new ArchiveHandle(path, archive.getArchiveFormat(), fileName, i, size, compressedSize, crc));
+                  else
+                    skipped.add(fileName+" in "+path.getFileName());
+                }
+                /* otherwise we're out of luck we must delay the checks */
+                {
+                  archiveHandles.add(new ArchiveHandle(path, archive.getArchiveFormat(), fileName, i, size, compressedSize, -1));
+                }
+              }
+              
+
             }
           }
         }
@@ -136,8 +158,8 @@ public class Scanner
       }
       else
       {
-        /* if size of the file is compatible with the romset add it to potential roms */
-        if (set.cache().isValidSize(Files.size(path)) || !options.matchSize)
+        /* if size of the file is compatible with the romset or if set has special rules add it to potential roms */
+        if (set.header != null || set.cache().isValidSize(Files.size(path)) || !options.matchSize)
           binaryHandles.add(new BinaryHandle(path));
         else
           skipped.add(path.getFileName().toString());

@@ -12,24 +12,35 @@ import net.sf.sevenzipjbinding.IInArchive;
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 
-public class ArchiveHandle extends RomHandle
+public class NestedArchiveHandle extends RomHandle
 {
   private Path file;
   public final int indexInArchive;
   public final String internalName;
   public final ArchiveFormat format;
+  
+  public final int nestedIndexInArchive;
+  public final String nestedInternalName;
+  public final ArchiveFormat nestedFormat;
+  
   public final long size;
   public final long compressedSize;
   public final long crc;
   
   private IInArchive archive;
   
-  public ArchiveHandle(Path file, ArchiveFormat format, String internalName, Integer indexInArchive, long size, long compressedSize, long crc)
+  public NestedArchiveHandle(Path file, ArchiveFormat format, String internalName, Integer indexInArchive, ArchiveFormat nestedFormat, String nestedInternalName, int nestedIndexInArchive, long size, long compressedSize, long crc)
   {
     this.file = file.normalize();
+    
     this.internalName = internalName;
     this.indexInArchive = indexInArchive;
-    this.format = format;  
+    this.format = format;
+    
+    this.nestedIndexInArchive = nestedIndexInArchive;
+    this.nestedInternalName = nestedInternalName;
+    this.nestedFormat = nestedFormat;
+    
     this.size = size;
     this.compressedSize = compressedSize;
     this.archive = null;

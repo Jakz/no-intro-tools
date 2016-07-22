@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.swing.UIManager;
@@ -11,6 +12,7 @@ import javax.swing.UIManager.LookAndFeelInfo;
 
 import com.jack.nit.emitter.CreatorOptions;
 import com.jack.nit.Options.MergeMode;
+import com.jack.nit.data.Game;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.exceptions.FatalErrorException;
@@ -24,7 +26,6 @@ import com.jack.nit.scanner.Renamer;
 import com.jack.nit.scanner.RomHandlesSet;
 import com.jack.nit.scanner.Scanner;
 import com.jack.nit.scanner.Verifier;
-import com.jack.nit.scripts.ConsolePanel;
 import com.pixbits.stream.StreamException;
 
 import net.sf.sevenzipjbinding.SevenZip;
@@ -68,10 +69,10 @@ public class Main
     
     try
     {
-      setLNF();
+      /*setLNF();
       Operations.prepareGUIMode(Paths.get("dats/"));
       if (true)
-        return;
+        return;*/
       
       initializeSevenZip();
       
@@ -171,7 +172,13 @@ public class Main
       
       if (options.mergeMode != MergeMode.NO_MERGE)
       {
-        Merger merger = new Merger(set, g -> true, options);
+        Predicate<Game> predicate = g -> true;
+        
+        /*Searcher searcher = new Searcher();
+        Predicate<Game> predicate = searcher.buildExportByRegionPredicate(Location.ITALY, Location.EUROPE, Location.USA);
+        predicate.and(searcher.buildPredicate("is:proper is:licensed"));*/
+           
+        Merger merger = new Merger(set, predicate, options);
         merger.merge(options.mergePath());
         
         if (options.cleanMergePathAfterMerge)

@@ -6,7 +6,6 @@ import java.io.InputStream;
 import com.pixbits.io.PipedOutputStream;
 
 import net.sf.sevenzipjbinding.IInArchive;
-import net.sf.sevenzipjbinding.ISequentialOutStream;
 
 class ArchiveExtractPipedStream implements ArchiveExtractStream
 {

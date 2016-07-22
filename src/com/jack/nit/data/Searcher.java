@@ -1,10 +1,11 @@
 package com.jack.nit.data;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import com.jack.nit.data.xmdb.GameClone;
-import com.jack.nit.data.xmdb.Zone;
 
 public class Searcher
 {
@@ -36,17 +37,37 @@ public class Searcher
     return filter;
   }
   
+  private Game findFirstClone(GameClone clone, Location... zones)
+  {
+    for (Location zone : zones)
+    {
+      Optional<Game> cgame = clone.stream().filter(g -> g.info().location.isJust(zone)).findFirst();
+      
+      if (cgame.isPresent())
+        return cgame.get();
+      
+      cgame = clone.stream().filter(g -> g.info().location.is(zone)).findFirst();
+      
+      if (cgame.isPresent())
+        return cgame.get();
+    }
+    
+    return null;
+  }
+  
   public Predicate<Game> buildExportByRegionPredicate(Location... zones)
   {
     return game -> {
       GameClone clone = game.getClone();
-      
+      List<Location> lzones = Arrays.asList(zones);
+ 
+      /* if game doesn't have any clone then should be exported if it has correct zone */
       if (clone == null)
-        return Arrays.stream(zones).anyMatch(zone -> game.info().location.isJust(zone));
+        return lzones.stream().anyMatch(zone -> game.info().location.isJust(zone));
       else
       {
-        for (Location location : location)
-          
+        Game cgame = findFirstClone(clone, zones);
+        return cgame == game;
       }
     };
   }

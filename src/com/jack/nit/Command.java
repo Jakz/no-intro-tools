@@ -6,5 +6,6 @@ public enum Command
   CREATE_DAT,
   COMPARE_DAT,
   GUI,
-  CONSOLE
+  CONSOLE,
+  EXPORT
 }

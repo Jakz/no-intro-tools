@@ -1,7 +1,6 @@
 package com.jack.nit.handles;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -9,8 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import com.jack.nit.Settings;
-import com.jack.nit.scanner.ExtractionCanceledException;
 import com.jack.nit.scanner.FormatUnrecognizedException;
 
 import net.sf.sevenzipjbinding.ArchiveFormat;

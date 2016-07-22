@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.jack.nit.Args;
-import com.jack.nit.data.GameSet;
+import com.jack.nit.Settings;
 import com.jack.nit.exceptions.FatalErrorException;
 import com.jack.nit.parser.DatFormat;
 
@@ -30,7 +30,6 @@ public class CreatorOptions
   public final DatFormat format;
   public final Mode mode;
   
-  public final String[] archiveExtensions = {"zip", "7z", "rar"};
   public final String[] binaryExtensions;
   
   public final PathMatcher archiveMatcher;
@@ -62,7 +61,7 @@ public class CreatorOptions
     format = (DatFormat)properties.get("format");
     mode = (Mode)properties.get("mode");
     
-    archiveMatcher = FileSystems.getDefault().getPathMatcher(Arrays.asList(archiveExtensions).stream().collect(Collectors.joining(",", "glob:*.{", "}")));
+    archiveMatcher = FileSystems.getDefault().getPathMatcher(Arrays.asList(Settings.archiveExtensions).stream().collect(Collectors.joining(",", "glob:*.{", "}")));
     
     List<String> extensions = (List<String>)properties.get("exts");
     binaryExtensions = extensions.toArray(new String[extensions.size()]);

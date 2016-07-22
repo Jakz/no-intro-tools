@@ -5,17 +5,14 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.DirectoryStream;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -25,7 +22,6 @@ import com.jack.nit.data.Game;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.GameSetInfo;
 import com.jack.nit.data.Rom;
-import com.jack.nit.data.header.Header;
 import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.data.xmdb.GameClone;
 import com.jack.nit.digest.DigestInfo;
@@ -34,11 +30,9 @@ import com.jack.nit.digest.Digester;
 import com.jack.nit.handles.Archive;
 import com.jack.nit.handles.ArchiveHandle;
 import com.jack.nit.handles.BinaryHandle;
-import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
 import com.jack.nit.scanner.FormatUnrecognizedException;
 import com.pixbits.io.FileUtils;
-import com.pixbits.io.FolderScanner;
 import com.pixbits.stream.StreamException;
 
 import net.sf.sevenzipjbinding.IInArchive;
@@ -169,7 +163,7 @@ public class GameSetCreator
       String name = FileUtils.fileNameWithoutExtension(e.path);
       long size = Files.size(e.path);
       BinaryHandle handle = new BinaryHandle(e.path);
-      DigestInfo info = digester.digest(handle, handle.getInputStream());
+      DigestInfo info = digester.digest(handle, handle.getInputStream(), true);
       
       Rom rom = new Rom(e.path.getFileName().toString(), size, info);
       rom.setHandle(handle);
@@ -203,7 +197,7 @@ public class GameSetCreator
         istream.filter(item -> Arrays.stream(options.binaryExtensions).anyMatch(ext -> item.path.endsWith(ext)))
         .forEach(StreamException.rethrowConsumer(item -> {
           ArchiveHandle handle = item.handle();
-          DigestInfo info = digester.digest(handle, handle.getInputStream());
+          DigestInfo info = digester.digest(handle, handle.getInputStream(), false);
           Rom rom = new Rom(item.path, item.size, info);
 
           /* merged mode: each entry in the archive is a clone of the game identifier by the archive itself */

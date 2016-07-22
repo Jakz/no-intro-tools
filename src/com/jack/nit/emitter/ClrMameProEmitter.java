@@ -1,16 +1,11 @@
 package com.jack.nit.emitter;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
-import com.jack.nit.data.Game;
 import com.jack.nit.data.GameSet;
-import com.jack.nit.data.Rom;
 import com.jack.nit.data.xmdb.CloneSet;
 
 public class ClrMameProEmitter implements Emitter

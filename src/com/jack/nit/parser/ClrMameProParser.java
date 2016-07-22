@@ -8,7 +8,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -98,7 +97,7 @@ public class ClrMameProParser
     Optional<String> missingKey = Arrays.stream(keys).filter(key -> !valueMap().containsKey(key)).findAny();
     
     if (missingKey.isPresent())
-      throw new IllegalArgumentException(String.format("required value %s in clrmamepro dat was not found at (%s:%d,%d).", missingKey.get(), path.getFileName().toString(), parser.getLine(), parser.getRow()));
+      throw new IllegalArgumentException(String.format("required value %s in clrmamepro dat was not found at (%s:%d,%d).", missingKey.get(), path.getFileName().toString(), parser.getLine(), parser.getColumn()));
   }
   
   @SuppressWarnings("unchecked")
@@ -181,7 +180,7 @@ public class ClrMameProParser
     else if (k.equals("forcenodump"))
       return;
     else
-      throw new IllegalArgumentException("unrecognized key in dat: "+k+", "+v);
+      throw new IllegalArgumentException("unrecognized key in dat: "+k+", "+v+" at "+parser.getLine()+":"+parser.getColumn());
   }
   
   Set<String> naming = new TreeSet<>();

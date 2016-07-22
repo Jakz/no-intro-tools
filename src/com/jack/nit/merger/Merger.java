@@ -2,6 +2,8 @@ package com.jack.nit.merger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,8 +17,10 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.jack.nit.Options;
+import com.jack.nit.Settings;
 import com.jack.nit.data.Game;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.Rom;
@@ -81,16 +85,17 @@ public class Merger
     
     String archiveName = options.datPath.getFileName().toString();
     archiveName = archiveName.substring(0, archiveName.lastIndexOf('.')) + options.archiveFormat.extension;
+    Path destArchive = dest.resolve(archiveName);
     
-    if (!options.doesMergeInPlace())
-      Files.delete(dest.resolve(archiveName)); 
+    if (!options.doesMergeInPlace() && Files.exists(destArchive))
+      Files.delete(destArchive); 
     else
     {
       //TODO: if merge is in place we should probably just update existing archive
     }
     
     compressor.createArchive(dest.resolve(archiveName), handles);
-    Arrays.stream(handles).forEach(h -> h.relocate(dest));
+    Arrays.stream(handles).forEach(h -> h.relocate(destArchive));
   }
   
   private void mergeToOneArchivePerGame(Path dest) throws FileNotFoundException, SevenZipException
@@ -157,6 +162,11 @@ public class Merger
     
   private void mergeUncompressed(Path dest)
   {
+    Stream<Rom> found = this.found.stream();
+    
+    if (options.multiThreaded)
+      found = found.parallel();
+    
     found.forEach(StreamException.rethrowConsumer(rom -> {
       RomHandle handle = rom.handle();
       
@@ -170,7 +180,23 @@ public class Merger
       }
       else
       {
-        // extract from archive to dest
+        Path path = dest.resolve(normalizer.normalize(rom.game().name)+"."+handle.getInternalExtension());
+        
+        try (InputStream is = handle.getInputStream())
+        {
+          try (OutputStream os = Files.newOutputStream(path))
+          {
+            byte[] buffer = new byte[Settings.PIPED_BUFFER_SIZE];
+            int i = -1;
+            
+            while ((i = is.read(buffer)) > 0)
+            {
+              os.write(buffer, 0, i);
+            }
+          }
+        }
+        
+        handle.relocate(path);
       }
     }));
   }

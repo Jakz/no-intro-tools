@@ -49,6 +49,7 @@ public class Options
   public boolean cleanMergePathAfterMerge;
   public boolean verifyMerge;
   public boolean skipRename;
+  public boolean checkNestedArchives;
   
   public Path datPath;
   public Path headerPath;
@@ -102,6 +103,7 @@ public class Options
     cleanMergePathAfterMerge = true;
     verifyMerge = args.getBoolean("verify-merge");
     skipRename = true; // TODO: should be parsed from --skip-rename
+    checkNestedArchives = true;
     
     datPath =  Paths.get(args.getString(Args.DAT_PATH));
     headerPath = args.get(Args.HEADER_PATH) != null ? Paths.get(args.getString(Args.HEADER_PATH)) : null;
@@ -135,20 +137,20 @@ public class Options
     cleanMergePathAfterMerge = true;
     verifyMerge = false;
     skipRename = true;
-
+    checkNestedArchives = true;
     
-    datPath = Paths.get("dats/jaguar.dat");
+    datPath = Paths.get("dats/gba.dat");
     headerPath = Paths.get("dats/headers");
-    cloneDatPath = Paths.get("dats/jaguar.xmdb");
+    cloneDatPath = Paths.get("dats/gba.xmdb");
     
-    dataPath = new Path[] { Paths.get("/Volumes/RAM Disk/merge") };
+    dataPath = new Path[] { Paths.get("/Volumes/Vicky/merge") };
     //dataPath = new Path[] { Paths.get("/Users/jack/Desktop/romset/gb") };
 
-    mergePath = Paths.get("/Volumes/RAM Disk/merge");
+    mergePath = Paths.get("/Volumes/Vicky/merge");
     
     wholeArchivePath = Paths.get("/Volumes/RAM Disk/");
     
-    zonePriority = new BiasSet(Zone.ITALY, Zone.EUROPE, Zone.USA, Zone.JAPAN);
+    zonePriority = new BiasSet(Zone.EUROPE, Zone.USA, Zone.JAPAN);
   }
 
   public boolean verifyJustCRC() { return !(matchSHA1 || matchMD5); }

@@ -11,6 +11,7 @@ import com.jack.nit.Options;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.HashCache;
 import com.jack.nit.data.Rom;
+import com.jack.nit.data.header.SkippingStream;
 import com.jack.nit.digest.DigestInfo;
 import com.jack.nit.digest.DigestOptions;
 import com.jack.nit.digest.Digester;
@@ -42,15 +43,14 @@ public class Verifier
   
   public int verify(RomHandlesSet handles) throws IOException
   {
-    if (set.header != null)
-      throw new UnsupportedOperationException("romsets with headers are not supported yed");
-    
     Logger.logger.startProgress("[INFO] Verifying roms...");
     current.set(0);
     total = handles.binaries.size() + handles.archives.size();
     
-    int found = verifyNoHeader(handles.binaries) + verifyNoHeader(handles.archives);
-    
+    int found = 0;
+
+    found = verifyNoHeader(handles.binaries) + verifyNoHeader(handles.archives);
+      
     Logger.logger.endProgress();
     
     return found;
@@ -58,7 +58,7 @@ public class Verifier
   
   private Rom verifyRawInputStream(RomHandle handle, InputStream is) throws IOException, NoSuchAlgorithmException
   {
-    DigestInfo info = digester.digest(handle, is);
+    DigestInfo info = digester.digest(handle, is, set.header != null);
     
     Rom rom = cache.romForCrc(info.crc);
     
@@ -87,7 +87,7 @@ public class Verifier
       
       Rom rom = null;
       
-      if (options.verifyJustCRC())
+      if (options.verifyJustCRC() && set.header == null)
       {
         rom = verifyJustCRC(path);
       }
@@ -95,7 +95,10 @@ public class Verifier
       {
         try (InputStream is = path.getInputStream())
         {
-          rom = verifyRawInputStream(path, is);
+          if (set.header != null)
+            rom = verifyRawInputStream(path, new SkippingStream(is, new byte[] { 0x46, 0x44, 0x53 }, 16));
+          else
+            rom = verifyRawInputStream(path, is);
         }
       }
 

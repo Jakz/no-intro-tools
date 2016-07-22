@@ -1,7 +1,5 @@
 package com.jack.nit.data.header;
 
-import java.io.InputStream;
-
 public class Header
 {
   public final String name;

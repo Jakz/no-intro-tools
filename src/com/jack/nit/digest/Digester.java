@@ -27,11 +27,9 @@ public class Digester
     return new DigestInfo(handle.crc(), null, null);
   }
   
-  public DigestInfo digest(RomHandle handle, InputStream is) throws IOException, NoSuchAlgorithmException
+  public DigestInfo digest(RomHandle handle, InputStream is, boolean realCRC) throws IOException, NoSuchAlgorithmException
   {
     final byte[] buffer = options.multiThreaded ? new byte[8192] : this.buffer;
-
-    boolean computeRealCRC = !handle.isArchive();
     
     InputStream fis = new BufferedInputStream(is);
     CheckedInputStream crc = null;
@@ -39,7 +37,7 @@ public class Digester
     MessageDigest sha1 = null;
     boolean realRead = false;
 
-    if (computeRealCRC)
+    if (realCRC)
     {
       crc = new CheckedInputStream(is, new CRC32());
       fis = crc;
@@ -71,7 +69,7 @@ public class Digester
     //TODO: maybe there are multple roms with same CRC32
 
     return new DigestInfo(
-       computeRealCRC ? crc.getChecksum().getValue() : handle.crc(),
+       realCRC ? crc.getChecksum().getValue() : handle.crc(),
        options.computeMD5 ? md5.digest() : null,
        options.computeSHA1 ? sha1.digest() : null
     );

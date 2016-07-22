@@ -1,20 +1,15 @@
 package com.jack.nit;
 
-import java.awt.Dimension;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.xml.sax.SAXException;
 
 import com.jack.nit.emitter.ClrMameProEmitter;
@@ -24,7 +19,6 @@ import com.jack.nit.gui.GameSetListPanel;
 import com.jack.nit.gui.SimpleFrame;
 import com.jack.nit.Options.MergeMode;
 import com.jack.nit.data.GameSet;
-import com.jack.nit.data.Rom;
 import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
