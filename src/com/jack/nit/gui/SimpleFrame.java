@@ -20,4 +20,6 @@ public class SimpleFrame<T extends JPanel> extends JFrame
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
   }
   
+  public T getContent() { return content; }
+  
 }

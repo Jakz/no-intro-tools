@@ -17,10 +17,10 @@ import com.jack.nit.data.GameSet;
 import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.exceptions.FatalErrorException;
 import com.jack.nit.exceptions.RomPathNotFoundException;
+import com.jack.nit.gui.FrameSet;
 import com.jack.nit.gui.GameSetComparePanel;
 import com.jack.nit.gui.SimpleFrame;
 import com.jack.nit.log.Log;
-import com.jack.nit.log.Logger;
 import com.jack.nit.merger.Merger;
 import com.jack.nit.scanner.Renamer;
 import com.jack.nit.scanner.RomHandlesSet;
@@ -60,19 +60,21 @@ public class Main
         // If Nimbus is not available, you can set the GUI to another look and feel.
     }
   }
-
+  
+  public static FrameSet frames;
+  
   public static void main(String[] args)
   {
-    Logger.init();
+    Log.init();
 
     ArgumentParser arguments = Args.generateParser();
     
     try
     {
-      /*setLNF();
+      setLNF();
       Operations.prepareGUIMode(Paths.get("dats/"));
       if (true)
-        return;*/
+        return;
       
       initializeSevenZip();
       
@@ -147,7 +149,7 @@ public class Main
       Options options = new Options();
 
       
-      Logger.init(options);
+      Log.init(options);
       
       GameSet set = Operations.loadGameSet(options);
       CloneSet clones = Operations.loadCloneSetFromXMDB(set, options.cloneDatPath);
@@ -161,7 +163,7 @@ public class Main
       
       int foundCount = verifier.verify(handles);
       
-      Logger.log(Log.INFO1, "Found %d verified roms", foundCount);
+      Log.log(Log.INFO1, "Found %d verified roms", foundCount);
       //found.forEach(r -> Logger.log(Log.INFO3, "> %s", r.rom.game.name));
       
       if (!options.skipRename)
@@ -201,15 +203,15 @@ public class Main
     }
     catch (FatalErrorException e)
     {
-      Logger.log(Log.ERROR, e.getMessage());
+      Log.log(Log.ERROR, e.getMessage());
     }
     catch (RomPathNotFoundException e)
     {
-      Logger.log(Log.ERROR, "unable to find specified rom path: "+e.path);
+      Log.log(Log.ERROR, "unable to find specified rom path: "+e.path);
     }
     catch (SevenZipNativeInitializationException e)
     {
-      Logger.log(Log.ERROR, "failed to initialize SevenZip library to manage archives, exiting:\n\t"+e.getMessage());
+      Log.log(Log.ERROR, "failed to initialize SevenZip library to manage archives, exiting:\n\t"+e.getMessage());
     }
     catch (Exception e)
     {

@@ -30,7 +30,7 @@ import com.jack.nit.digest.Digester;
 import com.jack.nit.handles.Archive;
 import com.jack.nit.handles.ArchiveHandle;
 import com.jack.nit.handles.BinaryHandle;
-import com.jack.nit.log.Logger;
+import com.jack.nit.log.Log;
 import com.jack.nit.scanner.FormatUnrecognizedException;
 import com.pixbits.io.FileUtils;
 import com.pixbits.stream.StreamException;
@@ -150,7 +150,7 @@ public class GameSetCreator
       entries = entries.parallel();
     
     entries.forEach(StreamException.rethrowConsumer(e -> {
-      Logger.logger.updateProgress(count.getAndIncrement()/total, e.path.getFileName().toString());
+      Log.logger.updateProgress(count.getAndIncrement()/total, e.path.getFileName().toString());
       analyzeEntry(null, e); 
     }));
   }
@@ -264,10 +264,10 @@ public class GameSetCreator
     count.set(0);
     
     prescanFiles();
-    Logger.logger.startProgress(String.format("Found %s files to analyze for DAT creation", entries.size()));
+    Log.logger.startProgress(String.format("Found %s files to analyze for DAT creation", entries.size()));
     total = entries.size();
     analyze();
-    Logger.logger.endProgress();
+    Log.logger.endProgress();
     
     GameSet set = new GameSet(new GameSetInfo(options.name, options.description, options.version, options.comment, options.author), null, games.toArray(new Game[games.size()]));
     set.setClones(new CloneSet(set, clones.toArray(new GameClone[clones.size()])));

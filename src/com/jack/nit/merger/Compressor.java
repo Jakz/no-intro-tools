@@ -10,7 +10,6 @@ import java.util.Arrays;
 import com.jack.nit.Options;
 import com.jack.nit.handles.RomHandle;
 import com.jack.nit.log.Log;
-import com.jack.nit.log.Logger;
 
 import net.sf.sevenzipjbinding.IOutCreateArchive7z;
 import net.sf.sevenzipjbinding.IOutCreateCallback;
@@ -80,7 +79,7 @@ public class Compressor
 
     @Override public void setCompleted(long complete) throws SevenZipException
     {
-      Logger.logger.updateProgress(complete/(float)totalSize, "");
+      Log.logger.updateProgress(complete/(float)totalSize, "");
     }
 
     @Override
@@ -106,7 +105,7 @@ public class Compressor
       
       decorator.decorate(item, handle);
 
-      Logger.log(Log.DEBUG, " [MERGER] Preparing item %s (%d bytes) to be archived", handle.fileName(), handle.size());
+      Log.log(Log.DEBUG, " [MERGER] Preparing item %s (%d bytes) to be archived", handle.fileName(), handle.size());
       
       return item;
     }
@@ -155,7 +154,7 @@ public class Compressor
   {
     RandomAccessFile raf = new RandomAccessFile(dest.toFile(), "rw");
         
-    Logger.logger.startProgress("Creating archive "+dest.toString());
+    Log.logger.startProgress("Creating archive "+dest.toString());
 
     switch (options.archiveFormat)
     {
@@ -179,6 +178,6 @@ public class Compressor
       }
     }
     
-    Logger.logger.endProgress();
+    Log.logger.endProgress();
   }
 }

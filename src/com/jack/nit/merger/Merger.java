@@ -28,7 +28,6 @@ import com.jack.nit.data.xmdb.GameClone;
 import com.jack.nit.exceptions.FatalErrorException;
 import com.jack.nit.handles.RomHandle;
 import com.jack.nit.log.Log;
-import com.jack.nit.log.Logger;
 import com.pixbits.stream.StreamException;
 
 import net.sf.sevenzipjbinding.IInArchive;
@@ -146,7 +145,7 @@ public class Merger
         handles.add(new ArchiveInfo(normalizer.normalize(rom.game().name), rom.handle())); 
     }
     
-    Logger.log(Log.INFO1, "Merger is going to create %d archives.", clones.size()+handles.size());
+    Log.log(Log.INFO1, "Merger is going to create %d archives.", clones.size()+handles.size());
         
     Consumer<ArchiveInfo> compress = StreamException.rethrowConsumer(a -> { 
         final Path path = dest.resolve(a.name+options.archiveFormat.extension);
@@ -208,7 +207,7 @@ public class Merger
     switch (status)
     {
       case UP_TO_DATE:
-        Logger.log(Log.INFO2, "Skipping creation of %s, already up to date.", dest.getFileName().toString());
+        Log.log(Log.INFO2, "Skipping creation of %s, already up to date.", dest.getFileName().toString());
         break;
       case CREATE:
         Files.deleteIfExists(dest); 
@@ -216,7 +215,7 @@ public class Merger
         break;
       case UPDATE:
       {
-        Logger.log(Log.DEBUG, "Archive %s must be updated", dest.getFileName());
+        Log.log(Log.DEBUG, "Archive %s must be updated", dest.getFileName());
         
         /* if archive needs to be updated it means it alrady exists and already present roms should be merged with new roms to the archive
          * so we first rename the existing archive to a temporary name
@@ -235,7 +234,7 @@ public class Merger
         break;
       }
       case ERROR:
-        Logger.log(Log.ERROR, "Error on checking status of existing archive %s", dest.getFileName().toString());
+        Log.log(Log.ERROR, "Error on checking status of existing archive %s", dest.getFileName().toString());
         break;
     }
   }

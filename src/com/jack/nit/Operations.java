@@ -15,13 +15,15 @@ import org.xml.sax.SAXException;
 import com.jack.nit.emitter.ClrMameProEmitter;
 import com.jack.nit.emitter.CreatorOptions;
 import com.jack.nit.emitter.GameSetCreator;
+import com.jack.nit.gui.FrameSet;
 import com.jack.nit.gui.GameSetListPanel;
+import com.jack.nit.gui.GameSetMenu;
+import com.jack.nit.gui.LogPanel;
 import com.jack.nit.gui.SimpleFrame;
 import com.jack.nit.Options.MergeMode;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.log.Log;
-import com.jack.nit.log.Logger;
 import com.jack.nit.parser.ClrMameProParser;
 import com.jack.nit.parser.DatFormat;
 import com.jack.nit.parser.XMDBParser;
@@ -38,7 +40,7 @@ public class Operations
   {
     ClrMameProParser parser = new ClrMameProParser(options);
     GameSet set = parser.load(options.datPath);
-    Logger.log(Log.INFO1, "Loaded set \'"+set.info.name+"\' ("+set.size()+" games, "+set.realSize()+" roms)");
+    Log.log(Log.INFO1, "Loaded set \'"+set.info.name+"\' ("+set.size()+" games, "+set.realSize()+" roms)");
 
     return set;
   }
@@ -51,7 +53,7 @@ public class Operations
 
     CloneSet cloneSet = xmdbParser.load(path);
         
-    Logger.log(Log.INFO1, "Loaded clone set for \'"+set.info.name+"\' ("+set.size()+" games in "+cloneSet.size()+" entries)");
+    Log.log(Log.INFO1, "Loaded clone set for \'"+set.info.name+"\' ("+set.size()+" games in "+cloneSet.size()+" entries)");
 
     return cloneSet;
   }
@@ -60,22 +62,22 @@ public class Operations
   {
     long found = set.foundRoms().count();
     
-    Logger.log("Statistics for %s:", set.info.name);
-    Logger.log("  %d total roms", set.size());
+    Log.log("Statistics for %s:", set.info.name);
+    Log.log("  %d total roms", set.size());
     
     if (set.clones() != null && set.clones().size() > 0)
-      Logger.log("  %d total games", set.clones().size());
+      Log.log("  %d total games", set.clones().size());
     
     if (found > 0)
     {
-      Logger.log("  %d found roms (%d%%)", found, (found*100)/set.size());
-      Logger.log("  %d missing roms", set.size() - found);
+      Log.log("  %d found roms (%d%%)", found, (found*100)/set.size());
+      Log.log("  %d missing roms", set.size() - found);
     }
   }
   
   public static void cleanMergePath(GameSet set, Options options) throws IOException
   {
-    Logger.log(Log.INFO1, "Cleaning merge path from unneeded files");
+    Log.log(Log.INFO1, "Cleaning merge path from unneeded files");
     
     FolderScanner scanner = new FolderScanner(true);
     
@@ -93,7 +95,7 @@ public class Operations
     GameSetCreator creator = new GameSetCreator(options);
     GameSet set = creator.create();
     
-    Logger.log(Log.INFO1, "Generated game set from folders.");
+    Log.log(Log.INFO1, "Generated game set from folders.");
     printStatistics(set);
     
     return set;
@@ -117,7 +119,7 @@ public class Operations
       (game.isFound() ? have : miss).add(game.name);
     });
     
-    Logger.log(Log.INFO1, "Saving found status on files.");
+    Log.log(Log.INFO1, "Saving found status on files.");
 
     
     Path basePath = options.mergeMode != MergeMode.NO_MERGE ? options.mergePath() : options.dataPath[0];
@@ -137,6 +139,11 @@ public class Operations
   
   public static void prepareGUIMode(Path path) throws IOException
   {
+    Main.frames = new FrameSet();
+    SimpleFrame<LogPanel> logFrame = new SimpleFrame<>("Log", new LogPanel(40,120), false);
+    Main.frames.add("log", logFrame);
+    Log.setLogger(logFrame.getContent());
+    
     PathMatcher datMatcher = FileSystems.getDefault().getPathMatcher("glob:*.dat");
 
     FolderScanner scanner = new FolderScanner(datMatcher, false);
@@ -159,7 +166,13 @@ public class Operations
     })).collect(Collectors.toList());
     
     SimpleFrame<GameSetListPanel> frame = new SimpleFrame<>("DAT Manager", new GameSetListPanel(sets), true);
+    frame.setJMenuBar(new GameSetMenu());
+    frame.setLocationRelativeTo(null);
     frame.setVisible(true);
+    
+    Main.frames.add("main", frame);
+    
+    
   }
   
   public static void openConsole() throws IOException

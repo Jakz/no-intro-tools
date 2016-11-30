@@ -9,6 +9,8 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -32,11 +34,13 @@ public class GameSetListPanel extends JPanel
     public Color oddColor = UIManager.getColor("Table.alternateRowColor");
     public Color selectedColor = UIManager.getColor("Table[Enabled+Selected].textBackground");
     
+    private final SetTableModel model;
     private final Border nonFinalBorder, finalBorder;
     
-    SetTableRenderer(TableCellRenderer renderer)
+    SetTableRenderer(TableCellRenderer renderer, SetTableModel model)
     {
       this.renderer = renderer;
+      this.model = model;
       
       nonFinalBorder = BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(180,180,180)), BorderFactory.createEmptyBorder(2, 5, 1, 5));
       finalBorder = BorderFactory.createEmptyBorder(2, 5, 2, 5);
@@ -119,7 +123,6 @@ public class GameSetListPanel extends JPanel
     
     private final String[] names = {"name", "games", "unique", "roms", "size"};
     @Override public String getColumnName(int i) { return names[i]; }
-
   }
   
   private final List<GameSet> sets;
@@ -134,10 +137,10 @@ public class GameSetListPanel extends JPanel
     this.model = new SetTableModel();
     this.table = new JTable(model);
     this.setPanel = new GameListPanel();
-    
+        
     table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    table.setDefaultRenderer(String.class, new SetTableRenderer(table.getDefaultRenderer(String.class)));
-    table.setDefaultRenderer(Integer.class, new SetTableRenderer(table.getDefaultRenderer(Integer.class)));
+    table.setDefaultRenderer(String.class, new SetTableRenderer(table.getDefaultRenderer(String.class), model));
+    table.setDefaultRenderer(Integer.class, new SetTableRenderer(table.getDefaultRenderer(Integer.class), model));
     
     for (int i = 0; i < 4; ++i)
     {

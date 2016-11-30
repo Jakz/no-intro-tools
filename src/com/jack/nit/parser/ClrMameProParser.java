@@ -28,7 +28,6 @@ import com.jack.nit.data.GameSetInfo;
 import com.jack.nit.data.Rom;
 import com.jack.nit.data.header.Header;
 import com.jack.nit.log.Log;
-import com.jack.nit.log.Logger;
 import com.jack.nit.merger.TitleNormalizer;
 import com.pixbits.io.XMLParser;
 import com.pixbits.parser.SimpleParser;
@@ -151,7 +150,7 @@ public class ClrMameProParser
         if (!TitleNormalizer.words.contains("("+s+")"))
            tags.add(s);
       }
-      Logger.log(Log.INFO3, "Tags which will not be automatically filtered: %s",tags.stream().collect(Collectors.joining(", ", "[", "]")));
+      Log.log(Log.INFO3, "Tags which will not be automatically filtered: %s",tags.stream().collect(Collectors.joining(", ", "[", "]")));
       
       return set;
       

@@ -22,7 +22,6 @@ import com.jack.nit.exceptions.RomPathNotFoundException;
 import com.jack.nit.handles.ArchiveHandle;
 import com.jack.nit.handles.BinaryHandle;
 import com.jack.nit.log.Log;
-import com.jack.nit.log.Logger;
 import com.pixbits.io.FolderScanner;
 import com.pixbits.stream.StreamException;
 
@@ -83,7 +82,7 @@ public class Scanner
           
       })).forEach(files::addAll);
     
-    Logger.log(Log.INFO1, "found %d files to scan in %d paths", files.size(), paths.length);
+    Log.log(Log.INFO1, "found %d files to scan in %d paths", files.size(), paths.length);
     
     return files;
   }
@@ -95,7 +94,7 @@ public class Scanner
     Set<Path> faultyArchives = new HashSet<>();
     Set<String> skipped = new HashSet<>();
     
-    Logger.logger.startProgress("[INFO] Finding files...");
+    Log.logger.startProgress("[INFO] Finding files...");
     final float count = paths.size();
     final AtomicInteger current = new AtomicInteger(0);
     
@@ -103,7 +102,7 @@ public class Scanner
     List<ArchiveHandle> archiveHandles = new ArrayList<>();
 
     paths.stream().forEach(StreamException.rethrowConsumer(path -> {
-      Logger.logger.updateProgress(current.getAndIncrement() / count, "");
+      Log.logger.updateProgress(current.getAndIncrement() / count, "");
       
       boolean shouldBeArchive = archiveMatcher.matches(path.getFileName());
       
@@ -167,14 +166,14 @@ public class Scanner
       }    
     }));
     
-    Logger.logger.endProgress();
+    Log.logger.endProgress();
     
-    faultyArchives.forEach(p -> Logger.log(Log.WARNING, "File "+p.getFileName()+" is not a valid archive."));
+    faultyArchives.forEach(p -> Log.log(Log.WARNING, "File "+p.getFileName()+" is not a valid archive."));
 
-    Logger.log(Log.INFO1, "Found %d potential matches (%d binary, %d inside archives).", binaryHandles.size()+archiveHandles.size(), binaryHandles.size(), archiveHandles.size());
+    Log.log(Log.INFO1, "Found %d potential matches (%d binary, %d inside archives).", binaryHandles.size()+archiveHandles.size(), binaryHandles.size(), archiveHandles.size());
     if (skipped.size() > 0)
-      Logger.log(Log.INFO3, "Skipped %d entries:", skipped.size());
-    skipped.forEach(s -> Logger.log(Log.INFO3, "> %s", s));
+      Log.log(Log.INFO3, "Skipped %d entries:", skipped.size());
+    skipped.forEach(s -> Log.log(Log.INFO3, "> %s", s));
 
     return new RomHandlesSet(binaryHandles, archiveHandles);
   }

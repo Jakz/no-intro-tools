@@ -16,7 +16,7 @@ import com.jack.nit.digest.DigestInfo;
 import com.jack.nit.digest.DigestOptions;
 import com.jack.nit.digest.Digester;
 import com.jack.nit.handles.RomHandle;
-import com.jack.nit.log.Logger;
+import com.jack.nit.log.Log;
 import com.pixbits.stream.StreamException;
 
 public class Verifier
@@ -43,7 +43,7 @@ public class Verifier
   
   public int verify(RomHandlesSet handles) throws IOException
   {
-    Logger.logger.startProgress("[INFO] Verifying roms...");
+    Log.logger.startProgress("[INFO] Verifying roms...");
     current.set(0);
     total = handles.binaries.size() + handles.archives.size();
     
@@ -51,7 +51,7 @@ public class Verifier
 
     found = verifyNoHeader(handles.binaries) + verifyNoHeader(handles.archives);
       
-    Logger.logger.endProgress();
+    Log.logger.endProgress();
     
     return found;
   }
@@ -80,7 +80,7 @@ public class Verifier
       stream = stream.parallel();
         
     stream.forEach(StreamException.rethrowConsumer(path -> {      
-      Logger.logger.updateProgress(current.getAndIncrement() / total, path.file().getFileName().toString());
+      Log.logger.updateProgress(current.getAndIncrement() / total, path.file().getFileName().toString());
       
       if (path.file().getFileName().toString().startsWith("5 in 1 Funpak (USA)"))
         System.out.println("aAAa");

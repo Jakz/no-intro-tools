@@ -12,7 +12,6 @@ import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.data.xmdb.GameClone;
 import com.jack.nit.data.xmdb.Zone;
 import com.jack.nit.log.Log;
-import com.jack.nit.log.Logger;
 import com.pixbits.io.XMLHandler;
 
 public class XMDBParser extends XMLHandler<CloneSet>
@@ -54,7 +53,7 @@ public class XMDBParser extends XMLHandler<CloneSet>
       
       if (game == null)
       {
-        Logger.log(Log.WARNING, "Zoned clone '"+attrString("name")+"' is not present in corresponding game set");
+        Log.log(Log.WARNING, "Zoned clone '"+attrString("name")+"' is not present in corresponding game set");
         return;
       }
       if (zone == null)
@@ -68,7 +67,7 @@ public class XMDBParser extends XMLHandler<CloneSet>
 
       if (game == null)
       {
-        Logger.log(Log.WARNING, "Game clone '"+attrString("name")+"' is not present in corresponding game set");
+        Log.log(Log.WARNING, "Game clone '"+attrString("name")+"' is not present in corresponding game set");
         return;
       }
               

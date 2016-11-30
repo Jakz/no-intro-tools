@@ -17,7 +17,6 @@ import com.jack.nit.Options;
 import com.jack.nit.data.Rom;
 import com.jack.nit.handles.RomHandle;
 import com.jack.nit.log.Log;
-import com.jack.nit.log.Logger;
 import com.pixbits.stream.StreamException;
 
 public class Renamer
@@ -60,7 +59,7 @@ public class Renamer
       RomHandle handle = rom.handle();
       if (handle.isArchive() && mappedFiles.get(handle.file()).size() > 1)
       {
-        Logger.log(Log.WARNING, "Skipping rename of "+rom.game().name+" because it's archived together with other verified files");
+        Log.log(Log.WARNING, "Skipping rename of "+rom.game().name+" because it's archived together with other verified files");
         return;
       }
         
@@ -84,7 +83,7 @@ public class Renamer
         {
           if (mappedFiles.containsKey(finalPath))
           {
-            Logger.log(Log.DEBUG, "Renaming found reference for %s to a temporary name to avoid name clashing with another found reference which should have its name.", finalName.toString());
+            Log.log(Log.DEBUG, "Renaming found reference for %s to a temporary name to avoid name clashing with another found reference which should have its name.", finalName.toString());
             Path temporaryFile = Files.createTempFile(finalPath.getParent(), "", "."+handle.getExtension());
             Files.move(finalPath, temporaryFile, StandardCopyOption.REPLACE_EXISTING);
             Set<Rom> references = mappedFiles.get(finalPath);
@@ -99,7 +98,7 @@ public class Renamer
           }
         }
 
-        Logger.log(Log.DEBUG, "Renaming %s to %s.", handle.file().getFileName(), finalPath.getFileName());
+        Log.log(Log.DEBUG, "Renaming %s to %s.", handle.file().getFileName(), finalPath.getFileName());
         Files.move(handle.file(), finalPath);
         handle.relocate(finalPath);
       }
