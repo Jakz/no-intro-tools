@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import com.jack.nit.config.MergeOptions;
 import com.jack.nit.data.xmdb.BiasSet;
 import com.jack.nit.data.xmdb.Zone;
 import com.jack.nit.log.Log;
@@ -12,14 +13,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 
 public class Options
 {
-  public static enum MergeMode
-  {
-    UNCOMPRESSED,
-    SINGLE_ARCHIVE_PER_GAME,
-    SINGLE_ARCHIVE_PER_CLONE,
-    SINGLE_ARCHIVE_PER_SET,
-    NO_MERGE
-  };
+
   
   public static enum ArchiveFormat
   {
@@ -38,12 +32,10 @@ public class Options
   public boolean matchMD5;
   public boolean multiThreaded;
   
+  public final MergeOptions merge;
   
   private boolean forceMergeInPlace;
-  public MergeMode mergeMode;
-  public ArchiveFormat archiveFormat;
-  public boolean useSolidArchives;
-  public int compressionLevel;
+
   public boolean alwaysRewriteArchives;
   public boolean keepUnrecognizedFilesInArchives;
   public boolean cleanMergePathAfterMerge;
@@ -71,33 +63,20 @@ public class Options
     
     multiThreaded = !args.getBoolean(Args.NO_MULTI_THREAD);
     
+    merge = new MergeOptions();
     if (args.getBoolean("no-merge"))
     {
-      mergeMode = MergeMode.SINGLE_ARCHIVE_PER_CLONE;
+      merge.mode = MergeOptions.Mode.SINGLE_ARCHIVE_PER_CLONE;
     }
     else
-    {
-      switch (args.getString(Args.MERGE_MODE))
-      {
-        case "uncompressed":
-          mergeMode = MergeMode.UNCOMPRESSED; break;
-        case "archive-by-clone":
-          mergeMode = MergeMode.SINGLE_ARCHIVE_PER_CLONE; break;
-        case "archive-by-game":
-          mergeMode = MergeMode.SINGLE_ARCHIVE_PER_GAME; break;
-        case "single-archive":
-          mergeMode = MergeMode.SINGLE_ARCHIVE_PER_SET; break;
-        default:
-          mergeMode = MergeMode.SINGLE_ARCHIVE_PER_CLONE; break;
-      }
-    }
+      merge.mode = MergeOptions.Mode.forName(args.getString(Args.MERGE_MODE));
+    
+    merge.archiveFormat = ArchiveFormat._7ZIP;
+    merge.useSolidArchives = !args.getBoolean(Args.NO_SOLID_ARCHIVES);
+    merge.compressionLevel = args.getInt(Args.COMPRESSION_LEVEL);
     
     forceMergeInPlace = args.getBoolean(Args.IN_PLACE_MERGE);
-    
-    archiveFormat = ArchiveFormat._7ZIP;
-    
-    useSolidArchives = !args.getBoolean(Args.NO_SOLID_ARCHIVES);
-    compressionLevel = args.getInt(Args.COMPRESSION_LEVEL);
+
     alwaysRewriteArchives = args.getBoolean(Args.ALWAYS_REWRITE_ARCHIVES);
     keepUnrecognizedFilesInArchives = args.getBoolean(Args.KEEP_UNRECOGNIZED_FILES);
     cleanMergePathAfterMerge = true;
@@ -121,17 +100,15 @@ public class Options
   {
     logLevel = Log.DEBUG;
     
+    merge = new MergeOptions();
+    
     matchSize = true;
     matchSHA1 = true;
     matchMD5 = false;
     multiThreaded = false;
     
-    mergeMode = MergeMode.NO_MERGE;
     forceMergeInPlace = false;
     
-    archiveFormat = ArchiveFormat._7ZIP;
-    useSolidArchives = true;
-    compressionLevel = 9;
     alwaysRewriteArchives = false;
     keepUnrecognizedFilesInArchives = false;
     cleanMergePathAfterMerge = true;

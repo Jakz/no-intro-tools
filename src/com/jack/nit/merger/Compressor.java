@@ -156,14 +156,14 @@ public class Compressor
         
     Log.logger.startProgress("Creating archive "+dest.toString());
 
-    switch (options.archiveFormat)
+    switch (options.merge.archiveFormat)
     {
       case _7ZIP:
       {
         IOutCreateArchive7z archive = SevenZip.openOutArchive7z();
         archive.setThreadCount(0);
-        archive.setLevel(options.compressionLevel);
-        boolean solid = options.useSolidArchives;
+        archive.setLevel(options.merge.compressionLevel);
+        boolean solid = options.merge.useSolidArchives;
         archive.setSolid(solid);
         if (solid)
         {

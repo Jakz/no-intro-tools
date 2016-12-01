@@ -23,7 +23,7 @@ import com.jack.nit.gui.GameSetListPanel;
 import com.jack.nit.gui.GameSetMenu;
 import com.jack.nit.gui.LogPanel;
 import com.jack.nit.gui.SimpleFrame;
-import com.jack.nit.Options.MergeMode;
+import com.jack.nit.config.MergeOptions;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.log.Log;
@@ -126,7 +126,7 @@ public class Operations
 
     Path basePath = Files.isDirectory(options.dataPath[0]) ? options.dataPath[0] : options.dataPath[0].getParent();
     
-    if (options.mergeMode != MergeMode.NO_MERGE)
+    if (options.merge.mode != MergeOptions.Mode.NO_MERGE)
       basePath = options.mergePath();
 
     try (PrintWriter wrt = new PrintWriter(Files.newBufferedWriter(basePath.resolve("SetHave.txt"))))

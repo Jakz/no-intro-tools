@@ -12,7 +12,8 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
 import com.jack.nit.emitter.CreatorOptions;
-import com.jack.nit.Options.MergeMode;
+import com.jack.nit.config.ConfigFile;
+import com.jack.nit.config.MergeOptions;
 import com.jack.nit.data.Game;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.xmdb.CloneSet;
@@ -67,6 +68,12 @@ public class Main
   public static void main(String[] args)
   {
     Log.init();
+    
+    ConfigFile file = ConfigFile.load(Paths.get("./config.json"));
+    file.verify();
+    
+    if (true)
+      return;
 
     ArgumentParser arguments = Args.generateParser();
     
@@ -171,7 +178,7 @@ public class Main
         renamer.rename(set.foundRoms().collect(Collectors.toList()));
       }
       
-      if (options.mergeMode != MergeMode.NO_MERGE)
+      if (options.merge.mode != MergeOptions.Mode.NO_MERGE)
       {
         Predicate<Game> predicate = g -> true;
         

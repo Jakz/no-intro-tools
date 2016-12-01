@@ -68,7 +68,7 @@ public class Merger
       throw new FatalErrorException("unable to create destination path for merging at "+dest.toString());
     }
 
-    switch (options.mergeMode)
+    switch (options.merge.mode)
     {
       case SINGLE_ARCHIVE_PER_SET: mergeToSingleArchive(dest); break;
       case SINGLE_ARCHIVE_PER_GAME: mergeToOneArchivePerGame(dest); break;
@@ -83,7 +83,7 @@ public class Merger
     RomHandle[] handles = found.stream().map(rom -> rom.handle()).toArray(i -> new RomHandle[i]);
     
     String archiveName = options.datPath.getFileName().toString();
-    archiveName = archiveName.substring(0, archiveName.lastIndexOf('.')) + options.archiveFormat.extension;
+    archiveName = archiveName.substring(0, archiveName.lastIndexOf('.')) + options.merge.archiveFormat.extension;
     Path destArchive = dest.resolve(archiveName);
     
     if (!options.doesMergeInPlace() && Files.exists(destArchive))
@@ -101,7 +101,7 @@ public class Merger
   {
     found.forEach(StreamException.rethrowConsumer(rom -> {
       //TODO: manage games with multiple roms per game
-      final Path finalPath = dest.resolve(rom.game().name+options.archiveFormat.extension);
+      final Path finalPath = dest.resolve(rom.game().name+options.merge.archiveFormat.extension);
       final ArchiveInfo archive = new ArchiveInfo(rom.game().name, rom.handle());
       createArchive(finalPath, archive);
       archive.relocate(finalPath);
@@ -148,7 +148,7 @@ public class Merger
     Log.log(Log.INFO1, "Merger is going to create %d archives.", clones.size()+handles.size());
         
     Consumer<ArchiveInfo> compress = StreamException.rethrowConsumer(a -> { 
-        final Path path = dest.resolve(a.name+options.archiveFormat.extension);
+        final Path path = dest.resolve(a.name+options.merge.archiveFormat.extension);
         createArchive(path, a);
         a.relocate(path);
     });
@@ -220,7 +220,7 @@ public class Merger
         /* if archive needs to be updated it means it alrady exists and already present roms should be merged with new roms to the archive
          * so we first rename the existing archive to a temporary name
          */
-        Path tempArchive = Files.createTempFile(dest.getParent(), "", "." + options.archiveFormat.extension);
+        Path tempArchive = Files.createTempFile(dest.getParent(), "", "." + options.merge.archiveFormat.extension);
         
         /* then we update all references to old archive to new name */
         info.handles.stream().filter(rh -> rh.file().equals(dest)).forEach(rh -> rh.relocate(tempArchive));
