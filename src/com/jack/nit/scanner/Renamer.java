@@ -17,7 +17,7 @@ import com.jack.nit.Options;
 import com.jack.nit.data.Rom;
 import com.jack.nit.handles.RomHandle;
 import com.jack.nit.log.Log;
-import com.pixbits.stream.StreamException;
+import com.pixbits.lib.stream.StreamException;
 
 public class Renamer
 {

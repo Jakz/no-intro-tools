@@ -27,7 +27,7 @@ import com.jack.nit.data.xmdb.BiasSet;
 import com.jack.nit.data.xmdb.GameClone;
 import com.jack.nit.data.xmdb.Zone;
 import com.jack.nit.merger.TitleNormalizer;
-import com.pixbits.strings.StringUtils;
+import com.pixbits.lib.strings.StringUtils;
 
 @SuppressWarnings("serial")
 public class GameListPanel extends JPanel

@@ -8,6 +8,7 @@ import java.awt.Font;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -23,7 +24,9 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 
 import com.jack.nit.data.GameSet;
-import com.pixbits.strings.StringUtils;
+import com.jack.nit.scanner.Scanner;
+import com.pixbits.lib.gui.BrowseButton;
+import com.pixbits.lib.strings.StringUtils;
 
 public class GameSetListPanel extends JPanel
 {    
@@ -125,10 +128,24 @@ public class GameSetListPanel extends JPanel
     @Override public String getColumnName(int i) { return names[i]; }
   }
   
+  private final class SetOptions extends JPanel
+  {
+    public SetOptions()
+    {
+      setPreferredSize(new Dimension(300,200));
+      
+      BrowseButton browseSource = new BrowseButton(30, BrowseButton.Type.FILES_AND_DIRECTORIES);
+      browseSource.setFilter(Scanner.archiveMatcher, "Romsets");
+      
+      add(browseSource);
+    }
+  }
+  
   private final List<GameSet> sets;
   private final JTable table;
   private final SetTableModel model;
   
+  private final SetOptions setOptions;
   private final GameListPanel setPanel;
   
   public GameSetListPanel(List<GameSet> sets)
@@ -160,10 +177,17 @@ public class GameSetListPanel extends JPanel
     });
     
     JScrollPane pane = new JScrollPane(table);
-    pane.setPreferredSize(new Dimension(300,800));
+    //pane.setPreferredSize(new Dimension(300,800));
+    
+    setOptions = new SetOptions();
+    
+    JPanel leftPane = new JPanel();
+    leftPane.setLayout(new BorderLayout());
+    leftPane.add(pane, BorderLayout.CENTER);
+    leftPane.add(setOptions, BorderLayout.SOUTH);
     
     JSplitPane spane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-    spane.add(pane);
+    spane.add(leftPane);
     spane.add(setPanel);
     
     setLayout(new BorderLayout());

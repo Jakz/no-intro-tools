@@ -3,16 +3,16 @@ package com.jack.nit.handles;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.pixbits.io.PipedOutputStream;
+import com.pixbits.lib.io.PipedOutputStream;
 
 import net.sf.sevenzipjbinding.IInArchive;
 
-class ArchiveExtractPipedStream implements ArchiveExtractStream
+public class ArchiveExtractPipedStream implements ArchiveExtractStream
 {
   private ArchivePipedInputStream pis;
   private PipedOutputStream pos;
 
-  ArchiveExtractPipedStream(IInArchive archive, int indexInArchive) throws IOException
+  public ArchiveExtractPipedStream(IInArchive archive, int indexInArchive) throws IOException
   {
     pis = new ArchivePipedInputStream(archive, indexInArchive);
     pos = new PipedOutputStream(pis);

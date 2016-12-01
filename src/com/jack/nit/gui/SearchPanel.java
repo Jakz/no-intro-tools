@@ -14,7 +14,7 @@ import javax.swing.ListCellRenderer;
 import com.jack.nit.data.Game;
 import com.jack.nit.data.Location;
 import com.jack.nit.data.Searcher;
-import com.pixbits.gui.JPlaceHolderTextField;
+import com.pixbits.lib.gui.JPlaceHolderTextField;
 
 public class SearchPanel extends JPanel
 {

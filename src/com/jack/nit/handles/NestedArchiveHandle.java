@@ -5,15 +5,20 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
 
+import com.jack.nit.Settings;
 import com.jack.nit.scanner.ExtractionCanceledException;
+import com.jack.nit.scanner.FormatUnrecognizedException;
 
 import net.sf.sevenzipjbinding.ArchiveFormat;
 import net.sf.sevenzipjbinding.IInArchive;
+import net.sf.sevenzipjbinding.PropID;
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 
 public class NestedArchiveHandle extends RomHandle
 {
+  private static final NestedArchiveCache cache = new NestedArchiveCache();
+  
   private Path file;
   public final int indexInArchive;
   public final String internalName;
@@ -27,7 +32,8 @@ public class NestedArchiveHandle extends RomHandle
   public final long compressedSize;
   public final long crc;
   
-  private IInArchive archive;
+  private MemoryArchive innerArchive;
+  private IInArchive mappedArchive;
   
   public NestedArchiveHandle(Path file, ArchiveFormat format, String internalName, Integer indexInArchive, ArchiveFormat nestedFormat, String nestedInternalName, int nestedIndexInArchive, long size, long compressedSize, long crc)
   {
@@ -43,26 +49,42 @@ public class NestedArchiveHandle extends RomHandle
     
     this.size = size;
     this.compressedSize = compressedSize;
-    this.archive = null;
+    this.innerArchive = null;
+    this.mappedArchive = null;
     this.crc = crc;
   }
+  
+  public MemoryArchive getMemoryArchive() { return innerArchive; }
+  public void setMemoryArchive(MemoryArchive archive) { this.innerArchive = archive; } 
+  
+  public IInArchive getMappedArchive() { return mappedArchive; }
+  public void setMappedArchive(IInArchive archive) { this.mappedArchive = archive; }
     
-  protected IInArchive open()
+  public void loadArchiveInMemory()
   {
-    if (archive != null)
-      return archive;
-    
     try
     {      
       RandomAccessFileInStream rfile = new RandomAccessFileInStream(new RandomAccessFile(file.toFile(), "r"));
-      return SevenZip.openInArchive(null, rfile);
+      IInArchive archive = SevenZip.openInArchive(Settings.guessFormatForFilename(file.getFileName().toString()), rfile);
+      int outerSize = (int)(long)archive.getProperty(indexInArchive, PropID.SIZE);
+      innerArchive = MemoryArchive.load(archive, indexInArchive, outerSize);
+      ArchiveFormat format = Settings.guessFormatForFilename(internalName);
+      mappedArchive = innerArchive.open(format);
+      archive.close();
+      innerArchive.close();
     }
-    catch (IOException e)
+    catch (IOException|FormatUnrecognizedException e)
     {
       e.printStackTrace();
     }
+  }
+  
+  protected IInArchive open()
+  {
+    if (innerArchive == null || mappedArchive == null)
+      loadArchiveInMemory();
     
-    return null;
+    return mappedArchive;
   }
   
   @Override public final boolean isArchive() { return true; }
@@ -102,14 +124,14 @@ public class NestedArchiveHandle extends RomHandle
   public InputStream getInputStream() throws IOException
   {
     final IInArchive archive = open();    
-    final ArchiveExtractPipedStream stream = new ArchiveExtractPipedStream(archive, indexInArchive);
+    final ArchiveExtractPipedStream stream = new ArchiveExtractPipedStream(archive, nestedIndexInArchive);
     final ArchiveExtractCallback callback = new ArchiveExtractCallback(stream); 
     
     Runnable r = () -> {
       //System.out.println("Extract Thread Started");
       try
       {
-        archive.extract(new int[] { indexInArchive }, false, callback);
+        archive.extract(new int[] { nestedIndexInArchive }, false, callback);
         callback.close();
       }
       catch (ExtractionCanceledException e)
@@ -118,7 +140,10 @@ public class NestedArchiveHandle extends RomHandle
       }
       catch (IOException e)
       {
-         e.printStackTrace();
+        System.err.println(String.format("Exception while extracting file %s from nested archive %s (index: %d) contained in %s (index: %d)", 
+            nestedInternalName, internalName, nestedIndexInArchive, file.getFileName().toString(), indexInArchive)); 
+        
+        e.printStackTrace();
       }
       //System.out.println("Extract Thread Stopped");
     };

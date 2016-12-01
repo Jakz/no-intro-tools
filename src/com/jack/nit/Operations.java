@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.swing.JFrame;
+
 import org.xml.sax.SAXException;
 
 import com.jack.nit.emitter.ClrMameProEmitter;
@@ -28,11 +31,11 @@ import com.jack.nit.parser.ClrMameProParser;
 import com.jack.nit.parser.DatFormat;
 import com.jack.nit.parser.XMDBParser;
 import com.jack.nit.scripts.ConsolePanel;
-import com.pixbits.io.FileUtils;
-import com.pixbits.io.FolderScanner;
-import com.pixbits.io.XMLEmbeddedDTD;
-import com.pixbits.io.XMLParser;
-import com.pixbits.stream.StreamException;
+import com.pixbits.lib.io.FileUtils;
+import com.pixbits.lib.io.FolderScanner;
+import com.pixbits.lib.io.XMLEmbeddedDTD;
+import com.pixbits.lib.io.XMLParser;
+import com.pixbits.lib.stream.StreamException;
 
 public class Operations
 {
@@ -121,9 +124,11 @@ public class Operations
     
     Log.log(Log.INFO1, "Saving found status on files.");
 
+    Path basePath = Files.isDirectory(options.dataPath[0]) ? options.dataPath[0] : options.dataPath[0].getParent();
     
-    Path basePath = options.mergeMode != MergeMode.NO_MERGE ? options.mergePath() : options.dataPath[0];
-    
+    if (options.mergeMode != MergeMode.NO_MERGE)
+      basePath = options.mergePath();
+
     try (PrintWriter wrt = new PrintWriter(Files.newBufferedWriter(basePath.resolve("SetHave.txt"))))
     {
       wrt.printf(" You have %d of %d known %s games\n\n", have.size(), have.size()+miss.size(), set.info.name);      
@@ -175,12 +180,26 @@ public class Operations
     
   }
   
+  public static void openLogFrame() throws IOException
+  {
+    JFrame main = Main.frames.get("main");
+    JFrame frame = Main.frames.get("log");
+    //if (frame == null)
+      
+  }
+  
   public static void openConsole() throws IOException
   {
-    ConsolePanel panel = new ConsolePanel();
-    panel.setMySize(1024,768);
+    SimpleFrame<ConsolePanel> console = Main.frames.get("console");
     
-    SimpleFrame<ConsolePanel> console = new SimpleFrame<>("Console", new ConsolePanel(), true);
+    if (console == null)
+    {
+      ConsolePanel panel = new ConsolePanel();
+      panel.setMySize(1024,768);
+      console = new SimpleFrame<>("Console", new ConsolePanel(), true);
+      Main.frames.add("console", console);
+    }
+    
     console.setLocationRelativeTo(null);
     console.setVisible(true);
   }

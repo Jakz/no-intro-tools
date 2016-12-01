@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.pixbits.stream.StreamException;
+import com.pixbits.lib.stream.StreamException;
 
 public class HashCache
 {

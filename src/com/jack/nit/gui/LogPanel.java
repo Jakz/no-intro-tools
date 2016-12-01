@@ -10,6 +10,7 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
@@ -72,8 +73,10 @@ public class LogPanel extends JPanel implements Logger
   @Override
   public void doLog(Log type, String message)
   {
-    appendLog(type, message);
-    entries.add(new LogEntry(type, message));
+    SwingUtilities.invokeLater(() -> {
+      appendLog(type, message);
+      entries.add(new LogEntry(type, message));
+    });
   }
 
   @Override

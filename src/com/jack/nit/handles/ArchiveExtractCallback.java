@@ -8,16 +8,16 @@ import net.sf.sevenzipjbinding.IArchiveExtractCallback;
 import net.sf.sevenzipjbinding.ISequentialOutStream;
 import net.sf.sevenzipjbinding.SevenZipException;
 
-class ArchiveExtractCallback implements IArchiveExtractCallback
+public class ArchiveExtractCallback implements IArchiveExtractCallback
 {
   private ArchiveExtractStream stream;
   
-  ArchiveExtractCallback(ArchiveExtractStream stream)
+  public ArchiveExtractCallback(ArchiveExtractStream stream)
   {
     this.stream = stream;
   }
   
-  ArchiveExtractStream stream() { return stream; }
+  public ArchiveExtractStream stream() { return stream; }
   
   public void close() throws IOException { stream.close(); }
   
@@ -44,6 +44,6 @@ class ArchiveExtractCallback implements IArchiveExtractCallback
 
   public void setTotal(long total) throws SevenZipException
   {
-    //System.out.println("EXTRACTED: "+total);
+
   }
 }

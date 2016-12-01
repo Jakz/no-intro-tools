@@ -119,12 +119,12 @@ public class Options
   
   public Options()
   {
-    logLevel = Log.INFO1;
+    logLevel = Log.DEBUG;
     
     matchSize = true;
-    matchSHA1 = false;
+    matchSHA1 = true;
     matchMD5 = false;
-    multiThreaded = true;
+    multiThreaded = false;
     
     mergeMode = MergeMode.NO_MERGE;
     forceMergeInPlace = false;
@@ -139,16 +139,16 @@ public class Options
     skipRename = true;
     checkNestedArchives = true;
     
-    datPath = Paths.get("dats/gba.dat");
+    datPath = Paths.get("dats/gb.dat");
     headerPath = Paths.get("dats/headers");
-    cloneDatPath = Paths.get("dats/gba.xmdb");
+    cloneDatPath = Paths.get("dats/gb.xmdb");
     
-    dataPath = new Path[] { Paths.get("/Volumes/Vicky/merge") };
+    dataPath = new Path[] { Paths.get("/Users/jack/Desktop/gbc.zip") };
     //dataPath = new Path[] { Paths.get("/Users/jack/Desktop/romset/gb") };
 
-    mergePath = Paths.get("/Volumes/Vicky/merge");
+    mergePath = Paths.get("/Users/jack/Desktop/gbcm");
     
-    wholeArchivePath = Paths.get("/Volumes/RAM Disk/");
+    wholeArchivePath = Paths.get("/Users/jack/Desktop/gbcm");
     
     zonePriority = new BiasSet(Zone.EUROPE, Zone.USA, Zone.JAPAN);
   }

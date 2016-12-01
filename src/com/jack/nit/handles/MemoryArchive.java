@@ -1,9 +1,18 @@
 package com.jack.nit.handles;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 
+import com.jack.nit.Settings;
+import com.jack.nit.scanner.ExtractionCanceledException;
+import com.jack.nit.scanner.FormatUnrecognizedException;
+
+import net.sf.sevenzipjbinding.ArchiveFormat;
+import net.sf.sevenzipjbinding.IInArchive;
 import net.sf.sevenzipjbinding.IInStream;
 import net.sf.sevenzipjbinding.ISeekableStream;
+import net.sf.sevenzipjbinding.SevenZip;
 
 public class MemoryArchive implements IInStream
 {
@@ -47,6 +56,56 @@ public class MemoryArchive implements IInStream
       this.offset = (int)(size - offset);
       
     return this.offset;
+  }
+  
+  public void readFromInputStream(InputStream is) throws IOException
+  {
+    while (offset < size)
+    {
+      int stillToRead = Math.min(8192, size - offset);
+      offset += is.read(data, offset, stillToRead);
+    }
+  }
+  
+  public IInArchive open(ArchiveFormat format) throws IOException, FormatUnrecognizedException
+  {
+    try
+    {
+      IInArchive archive = SevenZip.openInArchive(format, this);
+      
+      if (archive.getArchiveFormat() == null)
+        throw new FormatUnrecognizedException(null, "Nested archive format unrecognized");
+      
+      return archive;
+    }
+    catch (IOException e)
+    {
+      throw new FormatUnrecognizedException(null, "Nested Archive format unrecognized");
+    }
+  }
+  
+  public static MemoryArchive load(IInArchive archive, int index, int size) throws IOException
+  {
+    MemoryArchive memoryArchive = new MemoryArchive(size);
+
+    final ArchiveExtractPipedStream stream = new ArchiveExtractPipedStream(archive, index);
+    final ArchiveExtractCallback callback = new ArchiveExtractCallback(stream); 
+
+    Runnable r = () -> {
+      try
+      {
+        archive.extract(new int[] { index }, false, callback);
+        callback.close();
+      }
+      catch (ExtractionCanceledException e) { }
+      catch (IOException e) { e.printStackTrace(); }
+    };
+    
+    new Thread(r).start();
+
+    memoryArchive.readFromInputStream(stream.getInputStream());    
+    memoryArchive.close();
+    return memoryArchive;
   }
 
 }

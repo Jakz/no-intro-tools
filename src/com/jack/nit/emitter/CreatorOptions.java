@@ -61,7 +61,9 @@ public class CreatorOptions
     format = (DatFormat)properties.get("format");
     mode = (Mode)properties.get("mode");
     
-    archiveMatcher = FileSystems.getDefault().getPathMatcher(Arrays.asList(Settings.archiveExtensions).stream().collect(Collectors.joining(",", "glob:*.{", "}")));
+    archiveMatcher = FileSystems.getDefault().getPathMatcher(Arrays.asList(Settings.archiveExtensions).stream()
+        .map(f -> f.extension)
+        .collect(Collectors.joining(",", "glob:*.{", "}")));
     
     List<String> extensions = (List<String>)properties.get("exts");
     binaryExtensions = extensions.toArray(new String[extensions.size()]);

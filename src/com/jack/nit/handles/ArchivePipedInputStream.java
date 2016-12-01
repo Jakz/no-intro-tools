@@ -3,7 +3,7 @@ package com.jack.nit.handles;
 import java.io.IOException;
 
 import com.jack.nit.Settings;
-import com.pixbits.io.PipedInputStream;
+import com.pixbits.lib.io.PipedInputStream;
 
 import net.sf.sevenzipjbinding.IInArchive;
 

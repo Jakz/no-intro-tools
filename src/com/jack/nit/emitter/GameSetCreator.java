@@ -32,8 +32,8 @@ import com.jack.nit.handles.ArchiveHandle;
 import com.jack.nit.handles.BinaryHandle;
 import com.jack.nit.log.Log;
 import com.jack.nit.scanner.FormatUnrecognizedException;
-import com.pixbits.io.FileUtils;
-import com.pixbits.stream.StreamException;
+import com.pixbits.lib.io.FileUtils;
+import com.pixbits.lib.stream.StreamException;
 
 import net.sf.sevenzipjbinding.IInArchive;
 import net.sf.sevenzipjbinding.SevenZip;

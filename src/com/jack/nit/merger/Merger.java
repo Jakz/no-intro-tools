@@ -28,7 +28,7 @@ import com.jack.nit.data.xmdb.GameClone;
 import com.jack.nit.exceptions.FatalErrorException;
 import com.jack.nit.handles.RomHandle;
 import com.jack.nit.log.Log;
-import com.pixbits.stream.StreamException;
+import com.pixbits.lib.stream.StreamException;
 
 import net.sf.sevenzipjbinding.IInArchive;
 import net.sf.sevenzipjbinding.PropID;

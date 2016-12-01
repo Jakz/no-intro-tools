@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import com.pixbits.io.FileUtils;
+import com.pixbits.lib.io.FileUtils;
 
 public class BinaryHandle extends RomHandle
 {

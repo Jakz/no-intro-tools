@@ -29,9 +29,9 @@ import com.jack.nit.data.Rom;
 import com.jack.nit.data.header.Header;
 import com.jack.nit.log.Log;
 import com.jack.nit.merger.TitleNormalizer;
-import com.pixbits.io.XMLParser;
-import com.pixbits.parser.SimpleParser;
-import com.pixbits.parser.SimpleTreeBuilder;
+import com.pixbits.lib.io.XMLParser;
+import com.pixbits.lib.parser.SimpleParser;
+import com.pixbits.lib.parser.SimpleTreeBuilder;
 
 public class ClrMameProParser
 {

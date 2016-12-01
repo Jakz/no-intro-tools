@@ -27,7 +27,17 @@ public abstract class RomHandle
   public abstract String getInternalExtension();
   public abstract InputStream getInputStream() throws IOException;
   
+  /*
+   * @return crc returns crc32 for handle, this operation caches the value
+   */
   public abstract long crc();
+  
+  /**
+   * @return size in bytes of the handle
+   */
   public abstract long size();
+  /**
+   * @return compressed size in bytes of the handle, corresponds to <code>size()</code> for binary handles
+   */
   public abstract long compressedSize();
 }

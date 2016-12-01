@@ -9,7 +9,7 @@ import com.jack.nit.data.header.Header;
 import com.jack.nit.data.header.Rule;
 import com.jack.nit.data.header.Test;
 import com.jack.nit.data.header.TestData;
-import com.pixbits.io.XMLHandler;
+import com.pixbits.lib.io.XMLHandler;
 
 public class HeaderParser extends XMLHandler<Header>
 {

@@ -2,7 +2,7 @@ package com.jack.nit.data.header;
 
 import java.util.function.Predicate;
 
-import com.pixbits.io.BinaryBuffer;
+import com.pixbits.lib.io.BinaryBuffer;
 
 public abstract class Test
 {

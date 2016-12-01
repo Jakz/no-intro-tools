@@ -12,7 +12,7 @@ import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.data.xmdb.GameClone;
 import com.jack.nit.data.xmdb.Zone;
 import com.jack.nit.log.Log;
-import com.pixbits.io.XMLHandler;
+import com.pixbits.lib.io.XMLHandler;
 
 public class XMDBParser extends XMLHandler<CloneSet>
 {

@@ -1,5 +1,6 @@
 package com.jack.nit;
 
+import java.awt.Insets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,7 +27,7 @@ import com.jack.nit.scanner.Renamer;
 import com.jack.nit.scanner.RomHandlesSet;
 import com.jack.nit.scanner.Scanner;
 import com.jack.nit.scanner.Verifier;
-import com.pixbits.stream.StreamException;
+import com.pixbits.lib.stream.StreamException;
 
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.SevenZipNativeInitializationException;
@@ -72,10 +73,8 @@ public class Main
     try
     {
       setLNF();
-      Operations.prepareGUIMode(Paths.get("dats/"));
-      if (true)
-        return;
-      
+      //Operations.prepareGUIMode(Paths.get("dats/"));
+
       initializeSevenZip();
       
       if (args.length > 0)
