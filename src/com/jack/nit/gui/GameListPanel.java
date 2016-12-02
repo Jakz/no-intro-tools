@@ -171,20 +171,23 @@ public class GameListPanel extends JPanel
   {
     if (set != null)
     {
-    gamesCount = clonesCount = singleCount = 0;
+      gamesCount = clonesCount = singleCount = 0;
     
-    this.set = set;
-    this.filter = search.buildSearchPredicate();
+      this.set = set;
+      this.filter = search.buildSearchPredicate();
     
-    if (set.clones() != null && !flatten.isSelected())
-      populateByClones();
-    else
-      populateBySingleGame();
+      if (set.clones() != null && !flatten.isSelected())
+        populateByClones();
+      else
+        populateBySingleGame();
     
-    status.setText(gamesCount+" games ("+singleCount+" singles, "+clonesCount+" clones)");
+      status.setText(gamesCount+" games ("+singleCount+" singles, "+clonesCount+" clones)");
     }
     else
+    {
       status.setText("");
+      tree.setModel(new DefaultTreeModel(null));
+    }
   }
   
   private DefaultMutableTreeNode createNodeForGame(Game game, boolean normalizedName)

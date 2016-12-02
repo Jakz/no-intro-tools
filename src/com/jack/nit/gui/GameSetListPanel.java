@@ -5,10 +5,13 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -23,6 +26,7 @@ import javax.swing.border.Border;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import com.jack.nit.config.GameSetConfig;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.scanner.Scanner;
 import com.pixbits.lib.gui.BrowseButton;
@@ -52,27 +56,26 @@ public class GameSetListPanel extends JPanel
     @Override public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int r, int c)
     {
       JLabel label = (JLabel)renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, r, c);
-
-      /*label.setOpaque(true);
-      
-      if (isSelected)
-        label.setBackground(selectedColor);
-      else
-        label.setBackground(r % 2 == 0 ? evenColor : oddColor);*/
       
       if (c == 0)
-      {
         label.setHorizontalAlignment(SwingConstants.LEFT);
-      }
       else
-      {
         label.setHorizontalAlignment(SwingConstants.RIGHT);
-      }
       
       if (r < model.getRowCount()-1)
       {
         label.setFont(label.getFont().deriveFont(Font.PLAIN));
         label.setBorder(nonFinalBorder);
+        
+        if (c == 0)
+        {
+          GameSet set = sets.get(r);
+          
+          if (set.system() != null)
+            label.setIcon(set.system().getIcon());
+          else
+            label.setIcon(null);
+        }
       }
       else
       {
@@ -130,17 +133,38 @@ public class GameSetListPanel extends JPanel
   
   private final class SetOptions extends JPanel
   {
+    BrowseButton romsetPath;
+    JButton verify;
+    
     public SetOptions()
     {
       setPreferredSize(new Dimension(300,200));
       
-      BrowseButton browseSource = new BrowseButton(30, BrowseButton.Type.FILES_AND_DIRECTORIES);
-      browseSource.setFilter(Scanner.archiveMatcher, "Romsets");
+      romsetPath = new BrowseButton(30, BrowseButton.Type.FILES_AND_DIRECTORIES);
+      romsetPath.setFilter(Scanner.archiveMatcher, "Romsets");
       
-      add(browseSource);
+      verify = new JButton("Verify");
+      
+      add(romsetPath);
+      add(verify);
+    }
+    
+    void verify()
+    {
+      Path path = romsetPath.getPath();
+      
+      
+    }
+    
+    void update(GameSet set)
+    {
+      verify.setEnabled(set != null);
+      romsetPath.setEnabled(set != null);
+      romsetPath.setPath(set != null ? set.getConfig().romsetPath : null);
     }
   }
   
+  private GameSet set;
   private final List<GameSet> sets;
   private final JTable table;
   private final SetTableModel model;
@@ -154,10 +178,12 @@ public class GameSetListPanel extends JPanel
     this.model = new SetTableModel();
     this.table = new JTable(model);
     this.setPanel = new GameListPanel();
+    this.setOptions = new SetOptions();
         
     table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.setDefaultRenderer(String.class, new SetTableRenderer(table.getDefaultRenderer(String.class), model));
     table.setDefaultRenderer(Integer.class, new SetTableRenderer(table.getDefaultRenderer(Integer.class), model));
+    table.setRowHeight(20);
     
     for (int i = 0; i < 4; ++i)
     {
@@ -170,16 +196,16 @@ public class GameSetListPanel extends JPanel
     table.getSelectionModel().addListSelectionListener(e -> {
       int index = table.getSelectedRow();
             
-      if (!e.getValueIsAdjusting() && index < sets.size())
+      if (!e.getValueIsAdjusting())
       {
-        setPanel.populate(sets.get(index));
+        this.set = index < sets.size() ? sets.get(index) : null;
+        setPanel.populate(set);
+        setOptions.update(set);
       }
     });
     
     JScrollPane pane = new JScrollPane(table);
     //pane.setPreferredSize(new Dimension(300,800));
-    
-    setOptions = new SetOptions();
     
     JPanel leftPane = new JPanel();
     leftPane.setLayout(new BorderLayout());

@@ -2,7 +2,10 @@ package com.jack.nit.config;
 
 import java.util.Arrays;
 
+import com.jack.nit.Args;
 import com.jack.nit.Options.ArchiveFormat;
+
+import net.sourceforge.argparse4j.inf.Namespace;
 
 public class MergeOptions
 {
@@ -42,5 +45,17 @@ public class MergeOptions
     archiveFormat = ArchiveFormat._7ZIP;
     useSolidArchives = true;
     compressionLevel = 9;
+  }
+  
+  public MergeOptions(Namespace args)
+  {
+    if (args.getBoolean("no-merge"))
+      mode = MergeOptions.Mode.SINGLE_ARCHIVE_PER_CLONE;
+    else
+      mode = MergeOptions.Mode.forName(args.getString(Args.MERGE_MODE));
+    
+    archiveFormat = ArchiveFormat._7ZIP;
+    useSolidArchives = !args.getBoolean(Args.NO_SOLID_ARCHIVES);
+    compressionLevel = args.getInt(Args.COMPRESSION_LEVEL);
   }
 }

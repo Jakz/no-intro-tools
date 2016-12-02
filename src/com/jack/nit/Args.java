@@ -224,11 +224,11 @@ public class Args
   {
     parser.setDefault("command", Command.GUI);
     
-    parser.addArgument("dfolder")
-      .dest("folder")
+    parser.addArgument("cfg-file")
+      .dest("cfgfile")
       .type(String.class)
       .required(true)
-      .help("the path which contains all the DATs file to manage");
+      .help("the path to the JSON config file");
   }
   
   static ArgumentParser generateParser()

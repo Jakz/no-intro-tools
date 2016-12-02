@@ -55,4 +55,9 @@ public enum System
   {
     return Arrays.asList(values()).stream().sorted((s1, s2) -> s1.name.compareTo(s2.name)).collect(Collectors.toList());
   }
+  
+  public static System forIdent(String tag)
+  {
+    return Arrays.asList(values()).stream().filter(s -> s.tag.equals(tag)).findFirst().orElse(null);
+  }
 }

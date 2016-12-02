@@ -12,7 +12,7 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
 import com.jack.nit.emitter.CreatorOptions;
-import com.jack.nit.config.ConfigFile;
+import com.jack.nit.config.Config;
 import com.jack.nit.config.MergeOptions;
 import com.jack.nit.data.Game;
 import com.jack.nit.data.GameSet;
@@ -69,18 +69,17 @@ public class Main
   {
     Log.init();
     
-    ConfigFile file = ConfigFile.load(Paths.get("./config.json"));
-    file.verify();
-    
-    if (true)
-      return;
+    Config config = Config.load(Paths.get("./config.json"));
 
     ArgumentParser arguments = Args.generateParser();
     
     try
     {
       setLNF();
-      //Operations.prepareGUIMode(Paths.get("dats/"));
+      Operations.prepareGUIMode(config);
+      
+      if (true)
+        return;
 
       initializeSevenZip();
       
@@ -131,12 +130,14 @@ public class Main
           {
             setLNF();
             
-            Path path = Paths.get(rargs.getString("folder")).normalize();
+            Path path = Paths.get(rargs.getString("cfgfile")).normalize();
             
             if (!Files.exists(path) || !Files.isDirectory(path))
               throw new ArgumentParserException(String.format("path '%s' doesn't exist or it's not a directory", path.toString()), arguments);
             
-            Operations.prepareGUIMode(path);
+            Config cfg = Config.load(path);
+            
+            Operations.prepareGUIMode(cfg);
             
             break;
           }

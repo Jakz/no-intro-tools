@@ -26,6 +26,7 @@ import com.jack.nit.data.GameCataloguer;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.GameSetInfo;
 import com.jack.nit.data.Rom;
+import com.jack.nit.data.System;
 import com.jack.nit.data.header.Header;
 import com.jack.nit.log.Log;
 import com.jack.nit.merger.TitleNormalizer;

@@ -63,18 +63,8 @@ public class Options
     
     multiThreaded = !args.getBoolean(Args.NO_MULTI_THREAD);
     
-    merge = new MergeOptions();
-    if (args.getBoolean("no-merge"))
-    {
-      merge.mode = MergeOptions.Mode.SINGLE_ARCHIVE_PER_CLONE;
-    }
-    else
-      merge.mode = MergeOptions.Mode.forName(args.getString(Args.MERGE_MODE));
-    
-    merge.archiveFormat = ArchiveFormat._7ZIP;
-    merge.useSolidArchives = !args.getBoolean(Args.NO_SOLID_ARCHIVES);
-    merge.compressionLevel = args.getInt(Args.COMPRESSION_LEVEL);
-    
+    merge = new MergeOptions(args);
+
     forceMergeInPlace = args.getBoolean(Args.IN_PLACE_MERGE);
 
     alwaysRewriteArchives = args.getBoolean(Args.ALWAYS_REWRITE_ARCHIVES);

@@ -1,7 +1,5 @@
 package com.pixbits.lib.gui;
 
-import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
@@ -15,11 +13,8 @@ import java.util.function.Supplier;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.UIDefaults;
-import javax.swing.UIManager;
 import javax.swing.filechooser.*;
 
 import com.pixbits.lib.io.PathFileFilter;
@@ -123,6 +118,28 @@ public class BrowseButton extends JTextField
     this.type = type;
     chooser.setFileSelectionMode(type.fctype);
   }
+  
+  public void setPath(Path path)
+  {
+    this.path = path;
+    if (path != null)
+      this.setText(path.toAbsolutePath().toString());
+    else
+      this.setText("");
+  }
+  
+  public void clear()
+  {
+    this.path = null;
+    this.setText("");
+  }
+  
+  public void setEnabled(boolean value)
+  {
+    button.setEnabled(value);
+  }
+  
+  public Path getPath() { return path; }
   
   public void setFilter(PathMatcher matcher, String description)
   {

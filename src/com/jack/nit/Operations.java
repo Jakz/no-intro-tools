@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,8 @@ import com.jack.nit.gui.GameSetListPanel;
 import com.jack.nit.gui.GameSetMenu;
 import com.jack.nit.gui.LogPanel;
 import com.jack.nit.gui.SimpleFrame;
+import com.jack.nit.config.Config;
+import com.jack.nit.config.GameSetConfig;
 import com.jack.nit.config.MergeOptions;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.xmdb.CloneSet;
@@ -142,7 +145,14 @@ public class Operations
     }
   }
   
-  public static void prepareGUIMode(Path path) throws IOException
+  private Set<Path> scanFolderForDats(Path path) throws IOException
+  {
+    PathMatcher datMatcher = FileSystems.getDefault().getPathMatcher("glob:*.dat");
+    FolderScanner scanner = new FolderScanner(datMatcher, false);
+    return scanner.scan(path);
+  }
+  
+  public static void prepareGUIMode(Config config) throws IOException
   {
     Main.frames = new FrameSet();
     SimpleFrame<LogPanel> logFrame = new SimpleFrame<>("Log", new LogPanel(40,120), false);
@@ -150,22 +160,21 @@ public class Operations
     Log.setLogger(logFrame.getContent());
     
     PathMatcher datMatcher = FileSystems.getDefault().getPathMatcher("glob:*.dat");
-
-    FolderScanner scanner = new FolderScanner(datMatcher, false);
-
-    Set<Path> files = scanner.scan(path);
     
-    
-    List<GameSet> sets = files.stream().map(StreamException.rethrowFunction(p -> {
+    List<GameSet> sets = config.dats.stream().map(StreamException.rethrowFunction(d -> {
+      Path p = d.datFile;
       GameSet set = Operations.loadGameSet(Options.simpleDatLoad(p));
       
-      Path optionalXMDB = p.getParent().resolve(FileUtils.fileNameWithoutExtension(p) + ".xmdb");
+      Path optionalXMDB = d.xmdbFile;
       
       if (Files.exists(optionalXMDB))
       {
         CloneSet clones = Operations.loadCloneSetFromXMDB(set, optionalXMDB);
         set.setClones(clones);
       }
+      
+      set.setSystem(d.system);
+      set.getConfig().romsetPath = d.romsetPath;
       
       return set;
     })).collect(Collectors.toList());

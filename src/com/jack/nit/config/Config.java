@@ -9,6 +9,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import com.jack.nit.data.System;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
@@ -18,14 +20,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.jack.nit.exceptions.FatalErrorException;
 
-public class ConfigFile
+public class Config
 {
   public static class DatEntry
   {
-    String system;
-    Path datFile;
-    Path xmdbFile;
-    Path romsetPath;
+    public System system;
+    public Path datFile;
+    public Path xmdbFile;
+    public Path romsetPath;
   }
   
   public static class CfgOptions
@@ -33,8 +35,8 @@ public class ConfigFile
     boolean multiThreaded;
   }
   
-  List<DatEntry> dats;
-  CfgOptions options;
+  public List<DatEntry> dats;
+  public CfgOptions options;
   
   private void verifyThatPathExists(Path path, String message)
   {
@@ -54,7 +56,15 @@ public class ConfigFile
   
   
   
-  
+  static class SystemDeserializer implements JsonDeserializer<com.jack.nit.data.System>
+  {
+    @Override
+    public System deserialize(JsonElement element, Type type, JsonDeserializationContext context) throws JsonParseException
+    {
+      String string = context.deserialize(element, String.class);
+      return com.jack.nit.data.System.forIdent(string);
+    }    
+  }
   
   static class PathDeserializer implements JsonDeserializer<Path>
   {
@@ -66,15 +76,18 @@ public class ConfigFile
     }
   }
   
-  public static ConfigFile load(Path fileName)
+  public static Config load(Path fileName)
   {
     GsonBuilder builder = new GsonBuilder();
     builder.registerTypeAdapter(Path.class, new PathDeserializer());
+    builder.registerTypeAdapter(com.jack.nit.data.System.class, new SystemDeserializer());
     Gson gson = builder.create();
     
     try (BufferedReader rdr = Files.newBufferedReader(fileName))
     {
-      return gson.fromJson(rdr, ConfigFile.class);
+      Config config = gson.fromJson(rdr, Config.class);
+      config.verify();
+      return config;
     }
     catch (IOException e)
     {

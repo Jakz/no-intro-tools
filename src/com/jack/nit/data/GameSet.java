@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import com.jack.nit.config.GameSetConfig;
 import com.jack.nit.data.header.Header;
 import com.jack.nit.data.xmdb.CloneSet;
 import com.jack.nit.data.xmdb.GameClone;
@@ -22,6 +23,7 @@ public class GameSet implements Iterable<Game>
   
   private CloneSet clones;
   
+  private final GameSetConfig config;
   private System system;
 
   public GameSet(GameSetInfo info, Header header, Game[] games)
@@ -31,6 +33,7 @@ public class GameSet implements Iterable<Game>
     this.games = games;
     this.cache = new HashCache(this);
     this.gameMap = new HashMap<>();
+    this.config = new GameSetConfig();
     
     Arrays.stream(games).forEach(g -> gameMap.put(g.name, g));
     
@@ -69,5 +72,8 @@ public class GameSet implements Iterable<Game>
         .get(); 
   }
   
+  public void setSystem(System system) { this.system = system; }
   public System system() { return system; }
+  
+  public GameSetConfig getConfig() { return config; }
 }
