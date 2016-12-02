@@ -41,7 +41,6 @@ public class Options
   public boolean cleanMergePathAfterMerge;
   public boolean verifyMerge;
   public boolean skipRename;
-  public boolean checkNestedArchives;
   
   public Path datPath;
   public Path headerPath;
@@ -68,8 +67,7 @@ public class Options
     keepUnrecognizedFilesInArchives = args.getBoolean(Args.KEEP_UNRECOGNIZED_FILES);
     cleanMergePathAfterMerge = true;
     verifyMerge = args.getBoolean("verify-merge");
-    skipRename = true; // TODO: should be parsed from --skip-rename
-    checkNestedArchives = true;
+    skipRename = args.getBoolean(Args.SKIP_RENAME);
     
     datPath =  Paths.get(args.getString(Args.DAT_PATH));
     headerPath = args.get(Args.HEADER_PATH) != null ? Paths.get(args.getString(Args.HEADER_PATH)) : null;
@@ -99,7 +97,6 @@ public class Options
     cleanMergePathAfterMerge = true;
     verifyMerge = false;
     skipRename = true;
-    checkNestedArchives = true;
     
     datPath = Paths.get("dats/gb.dat");
     headerPath = Paths.get("dats/headers");

@@ -19,9 +19,11 @@ public class Args
   public final static String NO_MULTI_THREAD = "no-multi-thread";
   public final static String MERGE_MODE = "merge-mode";
   public final static String IN_PLACE_MERGE = "force-merge-in-place";
+  public final static String SKIP_RENAME = "skip-rename";
   public final static String NO_SHA1_CHECK = "no-sha1";
   public final static String NO_MD5_CHECK = "no-md5";
   public final static String NO_SIZE_CHECK = "no-size";
+  public final static String NO_NESTED_ARCHIVES = "no-nested";
   
   public final static String DATA_PATH = "data-path";
   public final static String DAT_PATH = "dat-path";
@@ -30,8 +32,8 @@ public class Args
   public final static String DEST_PATH = "dest-path";
 
   private static void generateVerifierParser(ArgumentParser parser)
-  {
-    parser.setDefault("command", Command.VERIFY);
+  {        
+    parser.setDefault("command", Command.ORGANIZE);
     
     parser.addArgument("--compression-level", "-cl")
       .dest(COMPRESSION_LEVEL)
@@ -67,12 +69,26 @@ public class Args
       .action(Arguments.storeConst())
       .setConst(true)
       .setDefault(false);
+    
+    parser.addArgument("--skip-rename", "-sr")
+      .dest(SKIP_RENAME)
+      .help("skip renaming of roms")
+      .action(Arguments.storeConst())
+      .setConst(true)
+      .setDefault(false);
         
     parser.addArgument("--merge-mode", "-mm")
       .dest(MERGE_MODE)
       .help("specify kind of merge you want")
       .choices("uncompressed", "single-archive", "archive-by-clone", "archive-by-game")
       .setDefault("archive-by-clone");
+    
+    parser.addArgument("--no-nested-archives", "-nna")
+      .dest(NO_NESTED_ARCHIVES)
+      .help("disable scanning archives insde other archives")
+      .action(Arguments.storeConst())
+      .setConst(true)
+      .setDefault(false);
     
     parser.addArgument("--no-md5")
       .dest(NO_MD5_CHECK)
@@ -239,7 +255,7 @@ public class Args
         
     Subparsers subparsers = parser.addSubparsers().help("action to perform");
     
-    Subparser verifierParser = subparsers.addParser("verify").help("verify and organize roms");
+    Subparser verifierParser = subparsers.addParser("organize").help("verify and organize roms");
     generateVerifierParser(verifierParser);
 
     Subparser createDatParser = subparsers.addParser("create-dat").help("create DAT from existing files");

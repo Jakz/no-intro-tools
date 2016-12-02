@@ -120,7 +120,7 @@ public class Main
             break;
           }
          
-          case VERIFY:
+          case ORGANIZE:
           {
             
             break;

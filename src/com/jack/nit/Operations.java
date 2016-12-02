@@ -172,7 +172,7 @@ public class Operations
       }
       
       set.setSystem(d.system);
-      set.getConfig().romsetPath = d.romsetPath;
+      set.getConfig().romsetPath = d.romsetPaths.get(0);
       
       return set;
     })).collect(Collectors.toList());

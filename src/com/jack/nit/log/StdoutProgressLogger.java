@@ -49,11 +49,18 @@ public class StdoutProgressLogger implements Logger
   
   @Override public void startProgress(Log type, String message)
   {
-    lastProgress = 0;
-    SwingUtilities.invokeLater(() -> ProgressDialog.init(null, message, null));
-    dialogThread = new Thread(dialogUpdater);
-    running = true;
-    dialogThread.start();
+    try
+    {
+      lastProgress = 0;
+      SwingUtilities.invokeAndWait(() -> ProgressDialog.init(null, message, null));
+      dialogThread = new Thread(dialogUpdater);
+      running = true;
+      dialogThread.start();
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+    }
   }
   
   @Override public synchronized void updateProgress(float percent, String message)

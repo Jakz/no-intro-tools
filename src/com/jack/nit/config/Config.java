@@ -28,7 +28,7 @@ public class Config
     public System system;
     public Path datFile;
     public Path xmdbFile;
-    public Path romsetPath;
+    public List<Path> romsetPaths;
   }
   
   public static class CfgOptions
@@ -51,7 +51,9 @@ public class Config
     {
       verifyThatPathExists(entry.datFile, false, "dat file doesn't exist");
       verifyThatPathExists(entry.xmdbFile, true, "xmdb file doesn't exist");
-      verifyThatPathExists(entry.romsetPath, true, "romset path doesn't exist");
+      if (entry.romsetPaths != null)
+        for (Path romsetPath : entry.romsetPaths)
+          verifyThatPathExists(romsetPath, true, "romset path doesn't exist");
     }
   }
   

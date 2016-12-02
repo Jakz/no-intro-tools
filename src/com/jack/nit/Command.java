@@ -2,7 +2,7 @@ package com.jack.nit;
 
 public enum Command
 {
-  VERIFY,
+  ORGANIZE,
   CREATE_DAT,
   COMPARE_DAT,
   GUI,
