@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import com.jack.nit.Options;
+import com.jack.nit.config.VerifierOptions;
 import com.jack.nit.data.GameSet;
 import com.jack.nit.data.HashCache;
 import com.jack.nit.data.Rom;
@@ -26,6 +27,7 @@ import net.sf.sevenzipjbinding.IInArchive;
 public class Verifier
 {
   private final Options options;
+  private final VerifierOptions voptions;
   private final HashCache cache;
   private final GameSet set;
   private final boolean multiThreaded;
@@ -39,17 +41,19 @@ public class Verifier
   public Verifier(Options options, GameSet set)
   {
     this.options = options;
+    this.voptions = options.verifier;
     this.set = set;
     this.cache = set.cache();
     this.multiThreaded = options.multiThreaded;
-    this.digester = new Digester(new DigestOptions(true, options.matchMD5, options.matchSHA1, options.multiThreaded));
+    this.digester = new Digester(new DigestOptions(true, voptions.matchMD5, voptions.matchSHA1, options.multiThreaded));
   }
   
   public int verify(RomHandlesSet handles) throws IOException
   {
-    Log.logger.startProgress("[INFO] Verifying roms...");
+    Log.logger.startProgress(Log.INFO1, "Verifying roms...");
     current.set(0);
-    total = handles.binaries.size() + handles.archives.size() + handles.nestedArchives.size();
+    total = handles.binaries.size() + handles.archives.size() 
+      + handles.nestedArchives.stream().mapToInt(List::size).sum();
     
     int found = 0;
 
@@ -66,7 +70,7 @@ public class Verifier
     Stream<List<NestedArchiveHandle>> stream = archives.stream();
     AtomicInteger count = new AtomicInteger();
     
-    final boolean onlyCRC = options.verifyJustCRC() && set.header == null;
+    final boolean onlyCRC = voptions.verifyJustCRC() && set.header == null;
 
     if (multiThreaded)
       stream = stream.parallel();
@@ -76,6 +80,9 @@ public class Verifier
       IInArchive iarchive = null;
       for (NestedArchiveHandle handle : batch)
       {
+        Log.logger.updateProgress(current.getAndIncrement() / total, handle.nestedInternalName);
+
+        
         if (!onlyCRC)
         {
           if (archive == null)
@@ -125,7 +132,7 @@ public class Verifier
   {       
     Rom rom = null;
     
-    if (options.verifyJustCRC() && set.header == null)
+    if (voptions.verifyJustCRC() && set.header == null)
     {
       rom = verifyJustCRC(handle);
     }

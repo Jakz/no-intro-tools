@@ -15,7 +15,7 @@ public enum Log
 
   public static void init(Options options)
   {
-    logger = new StdoutLogger(options.logLevel);
+    logger = new StdoutProgressLogger(options.logLevel);
   }
 
   public static void init()

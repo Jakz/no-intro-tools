@@ -68,18 +68,18 @@ public class Main
   public static void main(String[] args)
   {
     Log.init();
-    
-    Config config = Config.load(Paths.get("./config.json"));
-
     ArgumentParser arguments = Args.generateParser();
-    
+        
     try
     {
-      setLNF();
-      Operations.prepareGUIMode(config);
+      Config config = Config.load(Paths.get("./config.json"));
+
       
-      if (true)
-        return;
+      setLNF();
+      //Operations.prepareGUIMode(config);
+      
+      //if (true)
+      //  return;
 
       initializeSevenZip();
       
@@ -210,7 +210,12 @@ public class Main
     }
     catch (FatalErrorException e)
     {
-      Log.log(Log.ERROR, e.getMessage());
+      StackTraceElement[] stack = e.getStackTrace();
+      Log.log(Log.ERROR, "%s at %s.%s(...) : %d",
+          e.getMessage(), 
+          stack[0].getClassName(),
+          stack[0].getMethodName(),
+          stack[0].getLineNumber());
     }
     catch (RomPathNotFoundException e)
     {

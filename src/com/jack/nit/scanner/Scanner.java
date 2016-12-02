@@ -200,7 +200,7 @@ public class Scanner
         long crc = Integer.toUnsignedLong((Integer)archive.getProperty(i, PropID.CRC));
         
         /* if rom has a size valid for the current set or we are not verify size match */
-        if (set.cache().isValidSize(size) || !options.matchSize)
+        if (set.cache().isValidSize(size) || !options.verifier.matchSize)
           return new ArchiveEntryData(fileName, size, compressedSize, crc); 
         /* otherwise skip the entry */
         else if (skipped != null)
@@ -223,7 +223,7 @@ public class Scanner
     Set<Path> faultyArchives = new HashSet<>();
     Set<String> skipped = new HashSet<>();
     
-    Log.logger.startProgress("[INFO] Finding files...");
+    Log.logger.startProgress(Log.INFO2, "Finding files...");
     final float count = paths.size();
     final AtomicInteger current = new AtomicInteger(0);
     
@@ -261,7 +261,7 @@ public class Scanner
       else
       {
         /* if size of the file is compatible with the romset or if set has special rules add it to potential roms */
-        if (set.header != null || set.cache().isValidSize(Files.size(path)) || !options.matchSize)
+        if (set.header != null || set.cache().isValidSize(Files.size(path)) || !options.verifier.matchSize)
           binaryHandles.add(new BinaryHandle(path));
         else
           skipped.add(path.getFileName().toString());    

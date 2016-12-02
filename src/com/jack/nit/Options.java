@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import com.jack.nit.config.MergeOptions;
+import com.jack.nit.config.VerifierOptions;
 import com.jack.nit.data.xmdb.BiasSet;
 import com.jack.nit.data.xmdb.Zone;
 import com.jack.nit.log.Log;
@@ -27,12 +28,11 @@ public class Options
   
   public Log logLevel;
   
-  public boolean matchSize;
-  public boolean matchSHA1;
-  public boolean matchMD5;
+
   public boolean multiThreaded;
   
   public final MergeOptions merge;
+  public final VerifierOptions verifier;
   
   private boolean forceMergeInPlace;
 
@@ -56,14 +56,11 @@ public class Options
   public Options(Namespace args)
   {
     logLevel = Log.INFO3;
-    
-    matchSize = !args.getBoolean(Args.NO_SIZE_CHECK);
-    matchSHA1 = !args.getBoolean(Args.NO_SHA1_CHECK);
-    matchMD5 = !args.getBoolean(Args.NO_MD5_CHECK);
-    
+        
     multiThreaded = !args.getBoolean(Args.NO_MULTI_THREAD);
     
     merge = new MergeOptions(args);
+    verifier = new VerifierOptions(args);
 
     forceMergeInPlace = args.getBoolean(Args.IN_PLACE_MERGE);
 
@@ -91,10 +88,8 @@ public class Options
     logLevel = Log.DEBUG;
     
     merge = new MergeOptions();
-    
-    matchSize = true;
-    matchSHA1 = true;
-    matchMD5 = false;
+    verifier = new VerifierOptions();
+
     multiThreaded = false;
     
     forceMergeInPlace = false;
@@ -110,7 +105,7 @@ public class Options
     headerPath = Paths.get("dats/headers");
     cloneDatPath = Paths.get("dats/gb.xmdb");
     
-    dataPath = new Path[] { Paths.get("/Users/jack/Desktop/gbc.zip") };
+    dataPath = new Path[] { Paths.get("/Users/jack/Desktop/gb.zip") };
     //dataPath = new Path[] { Paths.get("/Users/jack/Desktop/romset/gb") };
 
     mergePath = Paths.get("/Users/jack/Desktop/gbcm");
@@ -119,8 +114,6 @@ public class Options
     
     zonePriority = new BiasSet(Zone.EUROPE, Zone.USA, Zone.JAPAN);
   }
-
-  public boolean verifyJustCRC() { return !(matchSHA1 || matchMD5); }
   
   //TODO: not correct, if merge in place it should be original path of rom or force 1 data path max
   public Path mergePath() { return forceMergeInPlace ? dataPath[0] : mergePath; }

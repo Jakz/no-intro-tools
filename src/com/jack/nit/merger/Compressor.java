@@ -154,7 +154,7 @@ public class Compressor
   {
     RandomAccessFile raf = new RandomAccessFile(dest.toFile(), "rw");
         
-    Log.logger.startProgress("Creating archive "+dest.toString());
+    Log.logger.startProgress(Log.INFO2, "Creating archive "+dest.toString());
 
     switch (options.merge.archiveFormat)
     {

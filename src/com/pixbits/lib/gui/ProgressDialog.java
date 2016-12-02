@@ -2,7 +2,9 @@ package com.pixbits.lib.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Frame;
+import java.awt.GridLayout;
 import java.util.ConcurrentModificationException;
 
 import javax.swing.BorderFactory;
@@ -35,14 +37,23 @@ public class ProgressDialog extends JDialog
 		panel.setLayout(new BorderLayout());
 		
 		progress = new JProgressBar();
+		progress.setStringPainted(true);
+		
+		this.title = new JLabel(title);
+		this.title.setFont(this.title.getFont().deriveFont(Font.BOLD));
+		this.title.setHorizontalAlignment(SwingConstants.CENTER);
 
+		
 		desc = new JLabel("...");
 		desc.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		//progress.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		
 		panel.add(progress, BorderLayout.CENTER);
-		panel.add(desc, BorderLayout.NORTH);
+		JPanel upperPanel = new JPanel(new GridLayout(2,1));
+		upperPanel.add(this.title);
+		upperPanel.add(desc);
+		panel.add(upperPanel, BorderLayout.NORTH);
 		
 		if (callback != null)
 		{
@@ -86,7 +97,9 @@ public class ProgressDialog extends JDialog
 	
 	public static void update(float value, String desc)
 	{
-	  dialog.progress.setValue((int)(value*100));
+	  int ivalue = (int)(value*100);
+	  dialog.progress.setValue(ivalue);
+	  dialog.progress.setString(String.format("%2.1f%%", value*100));
 	  dialog.desc.setText(desc);
 	}
 	

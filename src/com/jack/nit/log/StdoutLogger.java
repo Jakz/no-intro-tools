@@ -16,7 +16,7 @@ public class StdoutLogger implements Logger
     if (type != null && type.ordinal() > logLevel)
       return;
     
-    if (type == Log.DEBUG)
+    if (type == Log.DEBUG || type == Log.ERROR)
       System.err.println("["+type+"] "+message);
     else if (type != null)
       System.out.println("["+type+"] "+message);
@@ -26,9 +26,9 @@ public class StdoutLogger implements Logger
   
   final static int PROGRESS_LENGTH = 20;
       
-  @Override public void startProgress(String message)
+  @Override public void startProgress(Log type, String message)
   {
-    System.out.println(message);
+    System.out.println("["+type+"] "+message);
     lastProgress = -1;
   }
   

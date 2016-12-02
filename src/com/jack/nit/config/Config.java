@@ -18,6 +18,7 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonSyntaxException;
 import com.jack.nit.exceptions.FatalErrorException;
 
 public class Config
@@ -38,9 +39,9 @@ public class Config
   public List<DatEntry> dats;
   public CfgOptions options;
   
-  private void verifyThatPathExists(Path path, String message)
+  private void verifyThatPathExists(Path path, boolean allowNull, String message)
   {
-    if (path != null && !Files.exists(path))
+    if ((allowNull || path != null) && !Files.exists(path))
       throw new FatalErrorException(new FileNotFoundException(path.toString()+": "+message));
   }
   
@@ -48,9 +49,9 @@ public class Config
   {
     for (DatEntry entry : dats)
     {
-      verifyThatPathExists(entry.datFile, "dat file doesn't exist");
-      verifyThatPathExists(entry.xmdbFile, "xmdb file doesn't exist");
-      verifyThatPathExists(entry.romsetPath, "romset path doesn't exist");
+      verifyThatPathExists(entry.datFile, false, "dat file doesn't exist");
+      verifyThatPathExists(entry.xmdbFile, true, "xmdb file doesn't exist");
+      verifyThatPathExists(entry.romsetPath, true, "romset path doesn't exist");
     }
   }
   
@@ -89,10 +90,13 @@ public class Config
       config.verify();
       return config;
     }
+    catch (JsonSyntaxException e)
+    {
+      throw new FatalErrorException(e);
+    }
     catch (IOException e)
     {
-      e.printStackTrace();
-      return null;
+      throw new FatalErrorException(e);
     }
   }
 }

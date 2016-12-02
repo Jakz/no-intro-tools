@@ -114,23 +114,6 @@ public class GameSetCreator
     
     public String toString() { return path.getFileName().toString() + entries.stream().map(p -> p.toString()).collect(Collectors.joining(", ", " [", "]")); }
   }
-  
-  private IInArchive openArchive(Path path) throws FormatUnrecognizedException
-  {
-    try (RandomAccessFileInStream rfile = new RandomAccessFileInStream(new RandomAccessFile(path.toFile(), "r")))
-    {
-      IInArchive archive = SevenZip.openInArchive(null, rfile);
-
-      if (archive.getArchiveFormat() == null)
-        throw new FormatUnrecognizedException(path, "Archive format unrecognized");
-      
-      return archive;
-    }
-    catch (IOException e)
-    {
-      throw new FormatUnrecognizedException(path, "Archive format unrecognized");
-    }
-  }
     
   private void prescanFiles() throws IOException
   {    
@@ -264,7 +247,7 @@ public class GameSetCreator
     count.set(0);
     
     prescanFiles();
-    Log.logger.startProgress(String.format("Found %s files to analyze for DAT creation", entries.size()));
+    Log.logger.startProgress(Log.INFO2, String.format("Found %s files to analyze for DAT creation", entries.size()));
     total = entries.size();
     analyze();
     Log.logger.endProgress();

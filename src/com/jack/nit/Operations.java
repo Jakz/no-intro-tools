@@ -158,9 +158,7 @@ public class Operations
     SimpleFrame<LogPanel> logFrame = new SimpleFrame<>("Log", new LogPanel(40,120), false);
     Main.frames.add("log", logFrame);
     Log.setLogger(logFrame.getContent());
-    
-    PathMatcher datMatcher = FileSystems.getDefault().getPathMatcher("glob:*.dat");
-    
+        
     List<GameSet> sets = config.dats.stream().map(StreamException.rethrowFunction(d -> {
       Path p = d.datFile;
       GameSet set = Operations.loadGameSet(Options.simpleDatLoad(p));

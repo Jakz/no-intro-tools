@@ -80,7 +80,7 @@ public class LogPanel extends JPanel implements Logger
   }
 
   @Override
-  public void startProgress(String message)
+  public void startProgress(Log log, String message)
   {
     // TODO Auto-generated method stub
     
