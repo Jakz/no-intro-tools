@@ -43,6 +43,7 @@ public class Renamer
     
     Map<Path, Set<Rom>> mappedFiles = new HashMap<>();
     
+    /* build a map of roms contained in each file */
     files.stream().forEach(rh -> mappedFiles.compute(rh.handle().file(), (r, v) -> {
       if (v == null)
         v = new HashSet<Rom>();
@@ -57,6 +58,8 @@ public class Renamer
     
     stream.forEach(StreamException.rethrowConsumer(rom -> {
       RomHandle handle = rom.handle();
+      
+      /* if rom is stored inside an archive together with other files */
       if (handle.isArchive() && mappedFiles.get(handle.file()).size() > 1)
       {
         Log.log(Log.WARNING, "Skipping rename of "+rom.game().name+" because it's archived together with other verified files");

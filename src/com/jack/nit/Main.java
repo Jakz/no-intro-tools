@@ -130,10 +130,10 @@ public class Main
           {
             setLNF();
             
-            Path path = Paths.get(rargs.getString("cfgfile")).normalize();
+            Path path = Paths.get(rargs.getString("cfgfile"));
             
-            if (!Files.exists(path))
-              throw new ArgumentParserException(String.format("path '%s' doesn't exist or it's not a directory", path.toString()), arguments);
+            if (!Files.exists(path) || Files.isDirectory(path))
+              throw new FatalErrorException(String.format("config file %s doesn't exists", path.toString()));
             
             Config cfg = Config.load(path);
             

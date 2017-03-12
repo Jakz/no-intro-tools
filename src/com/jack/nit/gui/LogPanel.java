@@ -12,8 +12,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
+import com.jack.nit.Main;
 import com.jack.nit.log.Log;
 import com.jack.nit.log.Logger;
+import com.pixbits.lib.gui.ProgressDialog;
 
 public class LogPanel extends JPanel implements Logger
 {
@@ -79,25 +81,54 @@ public class LogPanel extends JPanel implements Logger
     });
   }
 
-  @Override
-  public void startProgress(Log log, String message)
+  float lastProgress;
+  String progressMessage;
+  
+  private boolean running = false;
+  private Thread dialogThread = null;
+  private Runnable dialogUpdater = () -> {
+    try
+    {
+      while (running)
+      {
+        Thread.sleep(50);
+        SwingUtilities.invokeLater(() -> { 
+          if (running) ProgressDialog.update(lastProgress, progressMessage); 
+        });
+      }
+    }
+    catch (InterruptedException e)
+    {
+      ProgressDialog.finished();
+    }
+  };
+  
+  @Override public void startProgress(Log type, String message)
   {
-    // TODO Auto-generated method stub
-    
+    try
+    {
+      lastProgress = 0;
+      SwingUtilities.invokeAndWait(() -> ProgressDialog.init(Main.frames.get("main"), message, null));
+      dialogThread = new Thread(dialogUpdater);
+      running = true;
+      dialogThread.start();
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+    }
   }
-
-  @Override
-  public void updateProgress(float percent, String message)
+  
+  @Override public synchronized void updateProgress(float percent, String message)
   {
-    // TODO Auto-generated method stub
-    
+    lastProgress = percent;
+    progressMessage = message;
   }
-
-  @Override
-  public void endProgress()
+  
+  @Override public void endProgress()
   {
-    // TODO Auto-generated method stub
-    
+    running = false;
+    SwingUtilities.invokeLater(() -> ProgressDialog.finished());
   }
 
 }

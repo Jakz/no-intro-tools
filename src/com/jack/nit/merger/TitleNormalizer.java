@@ -7,14 +7,10 @@ import java.util.Set;
 public class TitleNormalizer
 {
   public final static Set<String> words = new HashSet<>();
-  public final static Set<String> languages = new HashSet<>();
+  //public final static Set<String> languages = new HashSet<>();
   
   static
-  {
-    languages.addAll(Arrays.asList(
-      "En", "It", "Es", "De", "Nl", "Fr", "Ja", "Sv"
-    ));
-    
+  { 
     words.addAll(Arrays.asList(
       "(Asia)",
       "(Australia)", 
