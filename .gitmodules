@@ -1,0 +1,3 @@
+[submodule "libs/pixlib"]
+	path = libs/pixlib
+	url = https://github.com/Jakz/java-pix-lib
