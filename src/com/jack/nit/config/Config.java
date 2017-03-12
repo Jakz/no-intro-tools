@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import com.jack.nit.data.System;
@@ -20,6 +19,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 import com.jack.nit.exceptions.FatalErrorException;
+import com.jack.nit.persistence.PathDeserializer;
 
 public class Config
 {
@@ -67,16 +67,6 @@ public class Config
       String string = context.deserialize(element, String.class);
       return com.jack.nit.data.System.forIdent(string);
     }    
-  }
-  
-  static class PathDeserializer implements JsonDeserializer<Path>
-  {
-    @Override
-    public Path deserialize(JsonElement element, Type type, JsonDeserializationContext context) throws JsonParseException
-    {
-      String string = context.deserialize(element, String.class);
-      return Paths.get(string);
-    }
   }
   
   public static Config load(Path fileName)

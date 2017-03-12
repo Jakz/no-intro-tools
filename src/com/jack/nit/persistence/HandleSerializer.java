@@ -1,0 +1,88 @@
+package com.jack.nit.persistence;
+
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.nio.file.Path;
+import java.util.Base64;
+import java.util.zip.GZIPOutputStream;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+import com.jack.nit.handles.ArchiveHandle;
+import com.jack.nit.handles.BinaryHandle;
+import com.jack.nit.handles.RomHandle;
+
+import net.sf.sevenzipjbinding.ArchiveFormat;
+
+public class HandleSerializer
+{
+  public final static int BINARY = 0;
+  public final static int ARCHIVE = 1;
+  public final static int NESTED_ARCHIVE = 2;
+
+  class RomHandleSerializer implements JsonDeserializer<RomHandle>, JsonSerializer<RomHandle>
+  {
+    @Override
+    public RomHandle deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException
+    {
+
+      return null;
+    }
+
+    @Override
+    public JsonElement serialize(RomHandle handle, Type type, JsonSerializationContext context)
+    {
+      JsonArray array = new JsonArray();
+      
+      if (handle instanceof BinaryHandle)
+      {
+        array.add(new JsonPrimitive(BINARY));
+        array.add(context.serialize(handle.file()));
+      }
+      else if (handle instanceof ArchiveHandle)
+      {
+        ArchiveHandle ahandle = (ArchiveHandle)handle;
+        
+        array.add(new JsonPrimitive(ARCHIVE));
+        array.add(context.serialize(ahandle.file()));
+        array.add(context.serialize(ahandle.format));
+        array.add(new JsonPrimitive(ahandle.internalName));
+        array.add(new JsonPrimitive(ahandle.indexInArchive));
+        array.add(new JsonPrimitive(ahandle.size));
+        array.add(new JsonPrimitive(ahandle.compressedSize));
+      }
+    
+      return array;
+    }
+    
+  }
+  
+  public String serialize(RomHandle handle) throws IOException
+  {
+    try
+    (
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        GZIPOutputStream zos = new GZIPOutputStream(bos);
+        DataOutputStream dos = new DataOutputStream(zos);
+    )
+    {
+      Base64.Encoder encoder = Base64.getEncoder();
+      
+      if (handle instanceof BinaryHandle)
+      {
+        
+      }
+    }
+    
+    return null;
+    
+  }
+}

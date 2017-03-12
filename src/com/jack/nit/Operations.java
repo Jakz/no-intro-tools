@@ -37,7 +37,7 @@ import com.jack.nit.scripts.ConsolePanel;
 import com.pixbits.lib.io.FileUtils;
 import com.pixbits.lib.io.FolderScanner;
 import com.pixbits.lib.io.XMLEmbeddedDTD;
-import com.pixbits.lib.io.XMLParser;
+import com.pixbits.lib.io.xml.XMLParser;
 import com.pixbits.lib.stream.StreamException;
 
 public class Operations

@@ -132,7 +132,7 @@ public class Main
             
             Path path = Paths.get(rargs.getString("cfgfile")).normalize();
             
-            if (!Files.exists(path) || !Files.isDirectory(path))
+            if (!Files.exists(path))
               throw new ArgumentParserException(String.format("path '%s' doesn't exist or it's not a directory", path.toString()), arguments);
             
             Config cfg = Config.load(path);

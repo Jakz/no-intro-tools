@@ -30,7 +30,7 @@ import com.jack.nit.data.System;
 import com.jack.nit.data.header.Header;
 import com.jack.nit.log.Log;
 import com.jack.nit.merger.TitleNormalizer;
-import com.pixbits.lib.io.XMLParser;
+import com.pixbits.lib.io.xml.XMLParser;
 import com.pixbits.lib.parser.SimpleParser;
 import com.pixbits.lib.parser.SimpleTreeBuilder;
 

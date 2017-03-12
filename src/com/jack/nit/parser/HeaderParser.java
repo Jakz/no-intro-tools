@@ -9,13 +9,18 @@ import com.jack.nit.data.header.Header;
 import com.jack.nit.data.header.Rule;
 import com.jack.nit.data.header.Test;
 import com.jack.nit.data.header.TestData;
-import com.pixbits.lib.io.XMLHandler;
+import com.pixbits.lib.io.xml.XMLHandler;
 
 public class HeaderParser extends XMLHandler<Header>
 {
   Header header;
   List<Rule> rules;
   List<Test> tests;
+  
+  @Override protected void init()
+  {
+    
+  }
   
   @Override protected void end(String name)
   {
