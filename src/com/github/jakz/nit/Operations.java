@@ -19,6 +19,7 @@ import org.xml.sax.SAXException;
 import com.github.jakz.nit.config.Config;
 import com.github.jakz.nit.config.GameSetConfig;
 import com.github.jakz.nit.config.MergeOptions;
+import com.github.jakz.nit.config.ScannerOptions;
 import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.xmdb.CloneSet;
 import com.github.jakz.nit.emitter.ClrMameProEmitter;
@@ -33,6 +34,8 @@ import com.github.jakz.nit.log.Log;
 import com.github.jakz.nit.parser.ClrMameProParser;
 import com.github.jakz.nit.parser.DatFormat;
 import com.github.jakz.nit.parser.XMDBParser;
+import com.github.jakz.nit.scanner.RomHandleSet;
+import com.github.jakz.nit.scanner.Scanner;
 import com.github.jakz.nit.scripts.ConsolePanel;
 import com.pixbits.lib.io.FileUtils;
 import com.pixbits.lib.io.FolderScanner;
@@ -53,7 +56,7 @@ public class Operations
   
   public static CloneSet loadCloneSetFromXMDB(GameSet set, Path path) throws IOException, SAXException
   {
-    XMLEmbeddedDTD resolver = new XMLEmbeddedDTD("GoodMerge.dtd", "com/jack/nit/parser/GoodMerge.dtd");    
+    XMLEmbeddedDTD resolver = new XMLEmbeddedDTD("GoodMerge.dtd", "com/github/jakz/nit/parser/GoodMerge.dtd");    
     XMDBParser xparser = new XMDBParser(set);
     XMLParser<CloneSet> xmdbParser = new XMLParser<>(xparser, resolver);
 
@@ -79,6 +82,12 @@ public class Operations
       Log.log("  %d found roms (%d%%)", found, (found*100)/set.size());
       Log.log("  %d missing roms", set.size() - found);
     }
+  }
+  
+  public static RomHandleSet scanEntriesForGameSet(GameSet set, ScannerOptions options) throws IOException
+  {
+    Scanner scanner = new Scanner(set, options);
+    return scanner.computeHandles();
   }
   
   public static void cleanMergePath(GameSet set, Options options) throws IOException

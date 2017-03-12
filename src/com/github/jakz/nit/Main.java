@@ -25,7 +25,7 @@ import com.github.jakz.nit.gui.SimpleFrame;
 import com.github.jakz.nit.log.Log;
 import com.github.jakz.nit.merger.Merger;
 import com.github.jakz.nit.scanner.Renamer;
-import com.github.jakz.nit.scanner.RomHandlesSet;
+import com.github.jakz.nit.scanner.RomHandleSet;
 import com.github.jakz.nit.scanner.Scanner;
 import com.github.jakz.nit.scanner.Verifier;
 import com.pixbits.lib.functional.StreamException;
@@ -163,8 +163,8 @@ public class Main
       set.setClones(clones);
 
       
-      Scanner scanner = new Scanner(set, options);
-      RomHandlesSet handles = scanner.computeHandles();
+      Scanner scanner = null;//new Scanner(set, options);
+      RomHandleSet handles = scanner.computeHandles();
       
       Verifier verifier = new Verifier(options, set);
       
