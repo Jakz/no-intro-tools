@@ -19,10 +19,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.github.jakz.nit.Options;
 import com.github.jakz.nit.Settings;
 import com.github.jakz.nit.Settings.ArchiveType;
+import com.github.jakz.nit.config.ScannerOptions;
 import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.exceptions.RomPathNotFoundException;
 import com.github.jakz.nit.handles.ArchiveExtractCallback;
@@ -49,9 +51,9 @@ public class Scanner
   final public static PathMatcher archiveMatcher = FileSystems.getDefault().getPathMatcher("glob:*.{zip,rar,7z}");
   
   final private GameSet set;
-  final private Options options;
+  final private ScannerOptions options;
   
-  public Scanner(GameSet set, Options options)
+  public Scanner(GameSet set, ScannerOptions options)
   {
     this.set = set;
     this.options = options;
@@ -82,25 +84,27 @@ public class Scanner
   public Set<Path> computeFileList() throws IOException
   {
     Set<Path> files = new TreeSet<>();
-    Path[] paths = options.dataPath;
     
-    boolean includeSubfolders = true;
-    final FolderScanner scanner = new FolderScanner(includeSubfolders);
+    final FolderScanner scanner = new FolderScanner(options.includeSubfolders);
     
-    Arrays.stream(paths).parallel()
-      .map(StreamException.rethrowFunction(p -> {
-        try 
-        {
-          return scanner.scan(p);
-        }
-        catch (FileNotFoundException e)
-        {
-          throw new RomPathNotFoundException(p);
-        }
-          
-      })).forEach(files::addAll);
+    Stream<Path> paths = options.paths.stream();
     
-    Log.log(Log.INFO1, "found %d files to scan in %d paths", files.size(), paths.length);
+    if (options.multithreaded)
+      paths = paths.parallel();
+    
+    paths.map(StreamException.rethrowFunction(p -> {
+      try 
+      {
+        return scanner.scan(p);
+      }
+      catch (FileNotFoundException e)
+      {
+        throw new RomPathNotFoundException(p);
+      }
+        
+    })).forEach(files::addAll);
+    
+    Log.log(Log.INFO1, "found %d files to scan in %d paths", files.size(), options.paths.size());
     
     return files;
   }
@@ -199,8 +203,8 @@ public class Scanner
         
         long crc = Integer.toUnsignedLong((Integer)archive.getProperty(i, PropID.CRC));
         
-        /* if rom has a size valid for the current set or we are not verify size match */
-        if (set.cache().isValidSize(size) || !options.verifier.matchSize)
+        /* if rom has a size valid for the current set or we are not verifying size match */
+        if (set.cache().isValidSize(size) || !options.discardUnknownSizes)
           return new ArchiveEntryData(fileName, size, compressedSize, crc); 
         /* otherwise skip the entry */
         else if (skipped != null)
@@ -216,7 +220,7 @@ public class Scanner
     return null;
   }
 
-  public RomHandlesSet computeHandles() throws IOException
+  public RomHandleSet computeHandles() throws IOException
   {
     Set<Path> paths = computeFileList();
     
@@ -261,7 +265,7 @@ public class Scanner
       else
       {
         /* if size of the file is compatible with the romset or if set has special rules add it to potential roms */
-        if (set.header != null || set.cache().isValidSize(Files.size(path)) || !options.verifier.matchSize)
+        if (set.header != null || set.cache().isValidSize(Files.size(path)) || !options.discardUnknownSizes)
           binaryHandles.add(new BinaryHandle(path));
         else
           skipped.add(path.getFileName().toString());    
@@ -282,6 +286,6 @@ public class Scanner
     
     skipped.forEach(s -> Log.log(Log.INFO3, "> %s", s));
 
-    return new RomHandlesSet(binaryHandles, archiveHandles, nestedHandles);
+    return new RomHandleSet(binaryHandles, archiveHandles, nestedHandles);
   }
 }

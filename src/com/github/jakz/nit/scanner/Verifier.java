@@ -28,7 +28,6 @@ import net.sf.sevenzipjbinding.IInArchive;
 
 public class Verifier
 {
-  private final Options options;
   private final VerifierOptions voptions;
   private final HashCache cache;
   private final GameSet set;
@@ -42,7 +41,6 @@ public class Verifier
   
   public Verifier(Options options, GameSet set)
   {
-    this.options = options;
     this.voptions = options.verifier;
     this.set = set;
     this.cache = set.cache();
@@ -50,7 +48,7 @@ public class Verifier
     this.digester = new Digester(new DigestOptions(Settings.DIGEST_BUFFER_SIZE, true, voptions.matchMD5, voptions.matchSHA1, options.multiThreaded));
   }
   
-  public int verify(RomHandlesSet handles) throws IOException
+  public int verify(RomHandleSet handles) throws IOException
   {
     Log.logger.startProgress(Log.INFO1, "Verifying roms...");
     current.set(0);
@@ -164,11 +162,18 @@ public class Verifier
     stream.forEach(StreamException.rethrowConsumer(path -> {      
       Log.logger.updateProgress(current.getAndIncrement() / total, path.file().getFileName().toString());
       Rom rom = verify(path);
-
+      
       if (rom != null)
       {
-        rom.setHandle(path);
-        count.incrementAndGet();
+        if (rom.handle() != null)
+        {
+          Log.log(Log.WARNING, "Duplicate ROM found for %s: %s", rom.name, path.toString());
+        }
+        else
+        {
+          rom.setHandle(path);
+          count.incrementAndGet();
+        }
       }
     }));
     
