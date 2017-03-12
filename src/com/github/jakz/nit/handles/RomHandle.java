@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 
-public abstract class RomHandle
+import com.pixbits.lib.io.digest.DigestedCRC;
+
+public abstract class RomHandle implements DigestedCRC
 {
   @Override
   public abstract String toString();
@@ -40,4 +42,6 @@ public abstract class RomHandle
    * @return compressed size in bytes of the handle, corresponds to <code>size()</code> for binary handles
    */
   public abstract long compressedSize();
+  
+  @Override public long getCRC32() { return crc(); }
 }

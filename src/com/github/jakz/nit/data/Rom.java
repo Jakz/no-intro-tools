@@ -4,8 +4,8 @@ import java.util.Arrays;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
-import com.github.jakz.nit.digest.DigestInfo;
 import com.github.jakz.nit.handles.RomHandle;
+import com.pixbits.lib.io.digest.DigestInfo;
 
 public class Rom
 {

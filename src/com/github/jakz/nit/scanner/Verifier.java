@@ -9,19 +9,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import com.github.jakz.nit.Options;
+import com.github.jakz.nit.Settings;
 import com.github.jakz.nit.config.VerifierOptions;
 import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.HashCache;
 import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.header.SkippingStream;
-import com.github.jakz.nit.digest.DigestInfo;
-import com.github.jakz.nit.digest.DigestOptions;
-import com.github.jakz.nit.digest.Digester;
 import com.github.jakz.nit.handles.MemoryArchive;
 import com.github.jakz.nit.handles.NestedArchiveHandle;
 import com.github.jakz.nit.handles.RomHandle;
 import com.github.jakz.nit.log.Log;
 import com.pixbits.lib.functional.StreamException;
+import com.pixbits.lib.io.digest.DigestInfo;
+import com.pixbits.lib.io.digest.DigestOptions;
+import com.pixbits.lib.io.digest.Digester;
 
 import net.sf.sevenzipjbinding.IInArchive;
 
@@ -46,7 +47,7 @@ public class Verifier
     this.set = set;
     this.cache = set.cache();
     this.multiThreaded = options.multiThreaded;
-    this.digester = new Digester(new DigestOptions(true, voptions.matchMD5, voptions.matchSHA1, options.multiThreaded));
+    this.digester = new Digester(new DigestOptions(Settings.DIGEST_BUFFER_SIZE, true, voptions.matchMD5, voptions.matchSHA1, options.multiThreaded));
   }
   
   public int verify(RomHandlesSet handles) throws IOException
@@ -117,7 +118,7 @@ public class Verifier
   
   private Rom verifyRawInputStream(RomHandle handle, InputStream is) throws IOException, NoSuchAlgorithmException
   {
-    DigestInfo info = digester.digest(handle, is, set.header != null);
+    DigestInfo info = digester.digest(set.header != null ? handle : null, is);
     
     Rom rom = cache.romForCrc(info.crc);
     

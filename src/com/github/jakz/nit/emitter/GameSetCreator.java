@@ -18,21 +18,22 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.github.jakz.nit.Settings;
 import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.GameSetInfo;
 import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.xmdb.CloneSet;
 import com.github.jakz.nit.data.xmdb.GameClone;
-import com.github.jakz.nit.digest.DigestInfo;
-import com.github.jakz.nit.digest.DigestOptions;
-import com.github.jakz.nit.digest.Digester;
 import com.github.jakz.nit.handles.Archive;
 import com.github.jakz.nit.handles.ArchiveHandle;
 import com.github.jakz.nit.handles.BinaryHandle;
 import com.github.jakz.nit.log.Log;
 import com.github.jakz.nit.scanner.FormatUnrecognizedException;
 import com.pixbits.lib.io.FileUtils;
+import com.pixbits.lib.io.digest.DigestInfo;
+import com.pixbits.lib.io.digest.DigestOptions;
+import com.pixbits.lib.io.digest.Digester;
 import com.pixbits.lib.functional.StreamException;
 
 import net.sf.sevenzipjbinding.IInArchive;
@@ -55,7 +56,7 @@ public class GameSetCreator
   public GameSetCreator(CreatorOptions options)
   {
     this.options = options;
-    digester = new Digester(new DigestOptions(options.shouldCalculateCRC(), options.shouldCalculateMD5(), options.shouldCalculateSHA1(), options.multiThreaded));
+    digester = new Digester(new DigestOptions(Settings.DIGEST_BUFFER_SIZE, options.shouldCalculateCRC(), options.shouldCalculateMD5(), options.shouldCalculateSHA1(), options.multiThreaded));
     
     entries = new HashSet<>();
     
@@ -146,7 +147,7 @@ public class GameSetCreator
       String name = FileUtils.fileNameWithoutExtension(e.path);
       long size = Files.size(e.path);
       BinaryHandle handle = new BinaryHandle(e.path);
-      DigestInfo info = digester.digest(handle, handle.getInputStream(), true);
+      DigestInfo info = digester.digest(handle, handle.getInputStream());
       
       Rom rom = new Rom(e.path.getFileName().toString(), size, info);
       rom.setHandle(handle);
@@ -180,7 +181,7 @@ public class GameSetCreator
         istream.filter(item -> Arrays.stream(options.binaryExtensions).anyMatch(ext -> item.path.endsWith(ext)))
         .forEach(StreamException.rethrowConsumer(item -> {
           ArchiveHandle handle = item.handle();
-          DigestInfo info = digester.digest(handle, handle.getInputStream(), false);
+          DigestInfo info = digester.digest(handle, handle.getInputStream());
           Rom rom = new Rom(item.path, item.size, info);
 
           /* merged mode: each entry in the archive is a clone of the game identifier by the archive itself */
