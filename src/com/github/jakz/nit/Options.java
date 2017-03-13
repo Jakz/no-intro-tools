@@ -8,7 +8,7 @@ import com.github.jakz.nit.config.MergeOptions;
 import com.github.jakz.nit.config.VerifierOptions;
 import com.github.jakz.nit.data.xmdb.BiasSet;
 import com.github.jakz.nit.data.xmdb.Zone;
-import com.github.jakz.nit.log.Log;
+import com.pixbits.lib.log.Log;
 
 import net.sourceforge.argparse4j.inf.Namespace;
 

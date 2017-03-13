@@ -72,7 +72,7 @@ public class GameSet implements Iterable<Game>
         .get(); 
   }
   
-  public void setSystem(System system) { this.system = system; }
+ public void setSystem(System system) { this.system = system; }
   public System system() { return system; }
   
   public GameSetConfig getConfig() { return config; }

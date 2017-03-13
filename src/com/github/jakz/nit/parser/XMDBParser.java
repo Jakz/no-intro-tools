@@ -12,11 +12,14 @@ import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.xmdb.CloneSet;
 import com.github.jakz.nit.data.xmdb.GameClone;
 import com.github.jakz.nit.data.xmdb.Zone;
-import com.github.jakz.nit.log.Log;
 import com.pixbits.lib.io.xml.XMLHandler;
+import com.pixbits.lib.log.Log;
+import com.pixbits.lib.log.Logger;
 
 public class XMDBParser extends XMLHandler<CloneSet>
 {
+  private final static Logger logger = Log.getLogger(XMDBParser.class);
+  
   List<GameClone> clones;
   GameSet set;
   Game[] zones;
@@ -59,7 +62,7 @@ public class XMDBParser extends XMLHandler<CloneSet>
       
       if (game == null)
       {
-        Log.log(Log.WARNING, "Zoned clone '"+attrString("name")+"' is not present in corresponding game set");
+        logger.w("Zoned clone '"+attrString("name")+"' is not present in corresponding game set");
         return;
       }
       if (zone == null)
@@ -73,7 +76,7 @@ public class XMDBParser extends XMLHandler<CloneSet>
 
       if (game == null)
       {
-        Log.log(Log.WARNING, "Game clone '"+attrString("name")+"' is not present in corresponding game set");
+        logger.w("Game clone '"+attrString("name")+"' is not present in corresponding game set");
         return;
       }
               

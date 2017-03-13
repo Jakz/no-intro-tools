@@ -27,8 +27,9 @@ import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.xmdb.GameClone;
 import com.github.jakz.nit.exceptions.FatalErrorException;
 import com.github.jakz.nit.handles.RomHandle;
-import com.github.jakz.nit.log.Log;
 import com.pixbits.lib.functional.StreamException;
+import com.pixbits.lib.log.Log;
+import com.pixbits.lib.log.Logger;
 
 import net.sf.sevenzipjbinding.IInArchive;
 import net.sf.sevenzipjbinding.PropID;
@@ -40,6 +41,8 @@ import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 
 public class Merger
 {
+  private final static Logger logger = Log.getLogger(Merger.class);
+  
   GameSet set;
   Options options;
   Compressor compressor;
@@ -145,7 +148,7 @@ public class Merger
         handles.add(new ArchiveInfo(normalizer.normalize(rom.game().name), rom.handle())); 
     }
     
-    Log.log(Log.INFO1, "Merger is going to create %d archives.", clones.size()+handles.size());
+    logger.i1("Merger is going to create %d archives.", clones.size()+handles.size());
         
     Consumer<ArchiveInfo> compress = StreamException.rethrowConsumer(a -> { 
         final Path path = dest.resolve(a.name+options.merge.archiveFormat.extension);
@@ -207,7 +210,7 @@ public class Merger
     switch (status)
     {
       case UP_TO_DATE:
-        Log.log(Log.INFO2, "Skipping creation of %s, already up to date.", dest.getFileName().toString());
+        logger.i2("Skipping creation of %s, already up to date.", dest.getFileName().toString());
         break;
       case CREATE:
         Files.deleteIfExists(dest); 
@@ -215,7 +218,7 @@ public class Merger
         break;
       case UPDATE:
       {
-        Log.log(Log.DEBUG, "Archive %s must be updated", dest.getFileName());
+        logger.d("Archive %s must be updated", dest.getFileName());
         
         /* if archive needs to be updated it means it alrady exists and already present roms should be merged with new roms to the archive
          * so we first rename the existing archive to a temporary name
@@ -234,7 +237,7 @@ public class Merger
         break;
       }
       case ERROR:
-        Log.log(Log.ERROR, "Error on checking status of existing archive %s", dest.getFileName().toString());
+        logger.e("Error on checking status of existing archive %s", dest.getFileName().toString());
         break;
     }
   }

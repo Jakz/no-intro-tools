@@ -38,6 +38,7 @@ public abstract class RomHandle implements DigestedCRC
    * @return size in bytes of the handle
    */
   public abstract long size();
+  
   /**
    * @return compressed size in bytes of the handle, corresponds to <code>size()</code> for binary handles
    */

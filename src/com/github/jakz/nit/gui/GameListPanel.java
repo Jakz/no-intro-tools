@@ -30,7 +30,6 @@ import com.github.jakz.nit.data.xmdb.Zone;
 import com.github.jakz.nit.merger.TitleNormalizer;
 import com.pixbits.lib.lang.StringUtils;
 
-@SuppressWarnings("serial")
 public class GameListPanel extends JPanel
 {
   private final JTree tree;

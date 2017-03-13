@@ -16,11 +16,14 @@ import java.util.stream.Stream;
 import com.github.jakz.nit.Options;
 import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.handles.RomHandle;
-import com.github.jakz.nit.log.Log;
 import com.pixbits.lib.functional.StreamException;
+import com.pixbits.lib.log.Log;
+import com.pixbits.lib.log.Logger;
 
 public class Renamer
 {
+  private static final Logger logger = Log.getLogger(Renamer.class);
+  
   private Function<Rom,String> renamer;
   private final Options options;
   
@@ -62,7 +65,7 @@ public class Renamer
       /* if rom is stored inside an archive together with other files */
       if (handle.isArchive() && mappedFiles.get(handle.file()).size() > 1)
       {
-        Log.log(Log.WARNING, "Skipping rename of "+rom.game().name+" because it's archived together with other verified files");
+        logger.w("Skipping rename of "+rom.game().name+" because it's archived together with other verified files");
         return;
       }
         
@@ -86,7 +89,7 @@ public class Renamer
         {
           if (mappedFiles.containsKey(finalPath))
           {
-            Log.log(Log.DEBUG, "Renaming found reference for %s to a temporary name to avoid name clashing with another found reference which should have its name.", finalName.toString());
+            logger.d("Renaming found reference for %s to a temporary name to avoid name clashing with another found reference which should have its name.", finalName.toString());
             Path temporaryFile = Files.createTempFile(finalPath.getParent(), "", "."+handle.getExtension());
             Files.move(finalPath, temporaryFile, StandardCopyOption.REPLACE_EXISTING);
             Set<Rom> references = mappedFiles.get(finalPath);
@@ -101,7 +104,7 @@ public class Renamer
           }
         }
 
-        Log.log(Log.DEBUG, "Renaming %s to %s.", handle.file().getFileName(), finalPath.getFileName());
+        logger.d("Renaming %s to %s.", handle.file().getFileName(), finalPath.getFileName());
         Files.move(handle.file(), finalPath);
         handle.relocate(finalPath);
       }

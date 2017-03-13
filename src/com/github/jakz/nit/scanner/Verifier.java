@@ -18,16 +18,20 @@ import com.github.jakz.nit.data.header.SkippingStream;
 import com.github.jakz.nit.handles.MemoryArchive;
 import com.github.jakz.nit.handles.NestedArchiveHandle;
 import com.github.jakz.nit.handles.RomHandle;
-import com.github.jakz.nit.log.Log;
 import com.pixbits.lib.functional.StreamException;
 import com.pixbits.lib.io.digest.DigestInfo;
 import com.pixbits.lib.io.digest.DigestOptions;
 import com.pixbits.lib.io.digest.Digester;
+import com.pixbits.lib.log.Log;
+import com.pixbits.lib.log.Logger;
 
 import net.sf.sevenzipjbinding.IInArchive;
 
 public class Verifier
 {
+  private static final Logger logger = Log.getLogger(Verifier.class);
+  
+  
   private final VerifierOptions voptions;
   private final HashCache cache;
   private final GameSet set;
@@ -50,7 +54,7 @@ public class Verifier
   
   public int verify(RomHandleSet handles) throws IOException
   {
-    Log.logger.startProgress(Log.INFO1, "Verifying roms...");
+    logger.startProgress(Log.INFO1, "Verifying roms...");
     current.set(0);
     total = handles.binaries.size() + handles.archives.size() 
       + handles.nestedArchives.stream().mapToInt(List::size).sum();
@@ -60,7 +64,7 @@ public class Verifier
     found = verify(handles.binaries) + verify(handles.archives);
     found += verifyNested(handles.nestedArchives);
       
-    Log.logger.endProgress();
+    logger.endProgress();
     
     return found;
   }
@@ -80,7 +84,7 @@ public class Verifier
       IInArchive iarchive = null;
       for (NestedArchiveHandle handle : batch)
       {
-        Log.logger.updateProgress(current.getAndIncrement() / total, handle.nestedInternalName);
+        logger.updateProgress(current.getAndIncrement() / total, handle.nestedInternalName);
 
         
         if (!onlyCRC)
@@ -160,14 +164,14 @@ public class Verifier
       stream = stream.parallel();
         
     stream.forEach(StreamException.rethrowConsumer(path -> {      
-      Log.logger.updateProgress(current.getAndIncrement() / total, path.file().getFileName().toString());
+      logger.updateProgress(current.getAndIncrement() / total, path.file().getFileName().toString());
       Rom rom = verify(path);
       
       if (rom != null)
       {
         if (rom.handle() != null)
         {
-          Log.log(Log.WARNING, "Duplicate ROM found for %s: %s", rom.name, path.toString());
+          logger.w("Duplicate ROM found for %s: %s", rom.name, path.toString());
         }
         else
         {

@@ -9,7 +9,8 @@ import java.util.Arrays;
 
 import com.github.jakz.nit.Options;
 import com.github.jakz.nit.handles.RomHandle;
-import com.github.jakz.nit.log.Log;
+import com.pixbits.lib.log.Log;
+import com.pixbits.lib.log.Logger;
 
 import net.sf.sevenzipjbinding.IOutCreateArchive7z;
 import net.sf.sevenzipjbinding.IOutCreateCallback;
@@ -25,6 +26,8 @@ import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream;
 
 public class Compressor
 { 
+  private static final Logger logger = Log.getLogger(Compressor.class);
+  
   Options options;
   
   public Compressor(Options options)
@@ -79,7 +82,7 @@ public class Compressor
 
     @Override public void setCompleted(long complete) throws SevenZipException
     {
-      Log.logger.updateProgress(complete/(float)totalSize, "");
+      logger.updateProgress(complete/(float)totalSize, "");
     }
 
     @Override
@@ -105,7 +108,7 @@ public class Compressor
       
       decorator.decorate(item, handle);
 
-      Log.log(Log.DEBUG, " [MERGER] Preparing item %s (%d bytes) to be archived", handle.fileName(), handle.size());
+      logger.d(" [MERGER] Preparing item %s (%d bytes) to be archived", handle.fileName(), handle.size());
       
       return item;
     }
@@ -154,7 +157,7 @@ public class Compressor
   {
     RandomAccessFile raf = new RandomAccessFile(dest.toFile(), "rw");
         
-    Log.logger.startProgress(Log.INFO2, "Creating archive "+dest.toString());
+    logger.startProgress(Log.INFO2, "Creating archive "+dest.toString());
 
     switch (options.merge.archiveFormat)
     {
@@ -178,6 +181,6 @@ public class Compressor
       }
     }
     
-    Log.logger.endProgress();
+    logger.endProgress();
   }
 }

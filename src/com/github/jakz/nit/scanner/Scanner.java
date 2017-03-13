@@ -2,7 +2,6 @@ package com.github.jakz.nit.scanner;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -10,44 +9,40 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.github.jakz.nit.Options;
 import com.github.jakz.nit.Settings;
-import com.github.jakz.nit.Settings.ArchiveType;
 import com.github.jakz.nit.config.ScannerOptions;
 import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.exceptions.RomPathNotFoundException;
-import com.github.jakz.nit.handles.ArchiveExtractCallback;
-import com.github.jakz.nit.handles.ArchiveExtractPipedStream;
 import com.github.jakz.nit.handles.ArchiveHandle;
 import com.github.jakz.nit.handles.BinaryHandle;
 import com.github.jakz.nit.handles.MemoryArchive;
 import com.github.jakz.nit.handles.NestedArchiveHandle;
-import com.github.jakz.nit.handles.RomHandle;
-import com.github.jakz.nit.log.Log;
 import com.pixbits.lib.io.FileUtils;
 import com.pixbits.lib.io.FolderScanner;
+import com.pixbits.lib.log.Log;
+import com.pixbits.lib.log.Logger;
 import com.pixbits.lib.functional.StreamException;
 
 import net.sf.sevenzipjbinding.ArchiveFormat;
 import net.sf.sevenzipjbinding.IInArchive;
-import net.sf.sevenzipjbinding.IInStream;
 import net.sf.sevenzipjbinding.PropID;
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 
 public class Scanner
 {
+  private static final Logger logger = Log.getLogger(Scanner.class);
+  
   final public static PathMatcher archiveMatcher = FileSystems.getDefault().getPathMatcher("glob:*.{zip,rar,7z}");
   
   final private GameSet set;
@@ -81,7 +76,7 @@ public class Scanner
     }
   }
   
-  public Set<Path> computeFileList() throws IOException
+  private Set<Path> computeFileList() throws IOException
   {
     Set<Path> files = new TreeSet<>();
     
@@ -95,7 +90,10 @@ public class Scanner
     paths.map(StreamException.rethrowFunction(p -> {
       try 
       {
-        return scanner.scan(p);
+        if (Files.isDirectory(p))
+          return scanner.scan(p);
+        else
+          return Collections.singleton(p);
       }
       catch (FileNotFoundException e)
       {
@@ -104,7 +102,7 @@ public class Scanner
         
     })).forEach(files::addAll);
     
-    Log.log(Log.INFO1, "found %d files to scan in %d paths", files.size(), options.paths.size());
+    logger.i1("found %d files to scan in %d paths", files.size(), options.paths.size());
     
     return files;
   }
@@ -139,7 +137,7 @@ public class Scanner
           ArchiveEntryData data = scanArchive(marchive, i, archivePath, null, null);
           if (data != null)
           { 
-            Log.log(Log.INFO3, "Found nested entry in memory nested inside %s: %s", fileName, data.fileName);
+            logger.i3("Found nested entry in memory nested inside %s: %s", fileName, data.fileName);
             
             handlesForArchive.add(new NestedArchiveHandle(archivePath, archive.getArchiveFormat(), fileName, index, 
                 marchive.getArchiveFormat(), data.fileName, i, data.size, data.compressedSize, data.crc));
@@ -191,7 +189,7 @@ public class Scanner
     /* if file ends with archive extension */
     if (nested != null && Arrays.asList(Settings.archiveExtensions).stream().anyMatch(f -> fileName.endsWith("."+f.extension)))
     {                
-      Log.log(Log.INFO3, "Found a nested archive inside %s: %s ", path.getFileName(), FileUtils.lastPathComponent(fileName));
+      logger.i3("Found a nested archive inside %s: %s ", path.getFileName(), FileUtils.lastPathComponent(fileName));
       nested.computeIfAbsent(path, p -> new TreeSet<>()).add(i);
     }
     else
@@ -227,7 +225,7 @@ public class Scanner
     Set<Path> faultyArchives = new HashSet<>();
     Set<String> skipped = new HashSet<>();
     
-    Log.logger.startProgress(Log.INFO2, "Finding files...");
+    logger.startProgress(Log.INFO2, "Finding files...");
     final float count = paths.size();
     final AtomicInteger current = new AtomicInteger(0);
     
@@ -236,7 +234,7 @@ public class Scanner
     Map<Path, Set<Integer>> nestedArchiveHandles = new HashMap<>();
 
     paths.stream().forEach(StreamException.rethrowConsumer(path -> {
-      Log.logger.updateProgress(current.getAndIncrement() / count, "");
+      logger.updateProgress(current.getAndIncrement() / count, "");
       
       boolean shouldBeArchive = archiveMatcher.matches(path.getFileName());
             
@@ -272,19 +270,19 @@ public class Scanner
       }    
     }));
     
-    Log.logger.endProgress();
+    logger.endProgress();
     
     List<List<NestedArchiveHandle>> nestedHandles = scanNestedArchives(nestedArchiveHandles);
     
-    faultyArchives.forEach(p -> Log.log(Log.WARNING, "File "+p.getFileName()+" is not a valid archive."));
+    faultyArchives.forEach(p -> logger.w("File "+p.getFileName()+" is not a valid archive."));
 
-    Log.log(Log.INFO1, "Found %d potential matches (%d binary, %d inside archives, %d nested inside archives).", 
+    logger.i1("Found %d potential matches (%d binary, %d inside archives, %d nested inside archives).", 
         binaryHandles.size()+archiveHandles.size()+nestedHandles.size(), binaryHandles.size(), archiveHandles.size(), nestedHandles.size());
     
     if (skipped.size() > 0)
-      Log.log(Log.INFO3, "Skipped %d entries:", skipped.size());
+      logger.i1("Skipped %d entries:", skipped.size());
     
-    skipped.forEach(s -> Log.log(Log.INFO3, "> %s", s));
+    skipped.forEach(s -> logger.i3("> %s", s));
 
     return new RomHandleSet(binaryHandles, archiveHandles, nestedHandles);
   }

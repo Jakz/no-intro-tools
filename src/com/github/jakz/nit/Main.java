@@ -4,6 +4,7 @@ import java.awt.Insets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -13,6 +14,7 @@ import javax.swing.UIManager.LookAndFeelInfo;
 
 import com.github.jakz.nit.config.Config;
 import com.github.jakz.nit.config.MergeOptions;
+import com.github.jakz.nit.config.ScannerOptions;
 import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.xmdb.CloneSet;
@@ -22,13 +24,16 @@ import com.github.jakz.nit.exceptions.RomPathNotFoundException;
 import com.github.jakz.nit.gui.FrameSet;
 import com.github.jakz.nit.gui.GameSetComparePanel;
 import com.github.jakz.nit.gui.SimpleFrame;
-import com.github.jakz.nit.log.Log;
 import com.github.jakz.nit.merger.Merger;
 import com.github.jakz.nit.scanner.Renamer;
 import com.github.jakz.nit.scanner.RomHandleSet;
 import com.github.jakz.nit.scanner.Scanner;
 import com.github.jakz.nit.scanner.Verifier;
 import com.pixbits.lib.functional.StreamException;
+import com.pixbits.lib.log.Log;
+import com.pixbits.lib.log.Logger;
+import com.pixbits.lib.log.LoggerFactory;
+import com.pixbits.lib.ui.UIUtils;
 
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.SevenZipNativeInitializationException;
@@ -46,28 +51,12 @@ public class Main
   {
     SevenZip.initSevenZipFromPlatformJAR();
   }
-  
-  public static void setLNF()
-  {
-    try {
-      for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-          if ("Nimbus".equals(info.getName())) {
-            
-            UIManager.setLookAndFeel(info.getClassName());
-            break;
-          }
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-        // If Nimbus is not available, you can set the GUI to another look and feel.
-    }
-  }
+  private static final Logger logger = Log.getLogger(Main.class);
   
   public static FrameSet frames;
   
   public static void main(String[] args)
   {
-    Log.init();
     ArgumentParser arguments = Args.generateParser();
         
     try
@@ -75,7 +64,7 @@ public class Main
       Config config = Config.load(Paths.get("./config.json"));
 
       
-      setLNF();
+      UIUtils.setNimbusLNF();
       //Operations.prepareGUIMode(config);
       
       //if (true)
@@ -83,7 +72,7 @@ public class Main
 
       initializeSevenZip();
       
-      if (args.length > 0)
+      if (false && args.length > 0)
       {
         Namespace rargs = arguments.parseArgs(args);
         System.out.println(rargs);
@@ -128,8 +117,8 @@ public class Main
           
           case GUI:
           {
-            setLNF();
-            
+            UIUtils.setNimbusLNF();
+
             Path path = Paths.get(rargs.getString("cfgfile"));
             
             if (!Files.exists(path) || Files.isDirectory(path))
@@ -144,7 +133,7 @@ public class Main
           
           case CONSOLE:
           {
-            setLNF();
+            UIUtils.setNimbusLNF();
             Operations.openConsole();
             break;
           }
@@ -154,23 +143,26 @@ public class Main
       }
       
       Options options = new Options();
-
-      
-      Log.init(options);
+      Log.setFactory(LoggerFactory.STDOUT_PROGRESS, true);
       
       GameSet set = Operations.loadGameSet(options);
       CloneSet clones = Operations.loadCloneSetFromXMDB(set, options.cloneDatPath);
       set.setClones(clones);
-
       
-      Scanner scanner = null;//new Scanner(set, options);
+      ScannerOptions soptions = new ScannerOptions();
+      soptions.discardUnknownSizes = true;
+      soptions.includeSubfolders = true;
+      soptions.multithreaded = false;
+      soptions.paths = Arrays.asList(options.dataPath);
+      
+      Scanner scanner = new Scanner(set, soptions);
       RomHandleSet handles = scanner.computeHandles();
       
       Verifier verifier = new Verifier(options, set);
       
       int foundCount = verifier.verify(handles);
       
-      Log.log(Log.INFO1, "Found %d verified roms", foundCount);
+      logger.i1("Found %d verified roms", foundCount);
       //found.forEach(r -> Logger.log(Log.INFO3, "> %s", r.rom.game.name));
       
       if (!options.skipRename)
@@ -211,7 +203,7 @@ public class Main
     catch (FatalErrorException e)
     {
       StackTraceElement[] stack = e.getStackTrace();
-      Log.log(Log.ERROR, "%s at %s.%s(...) : %d",
+      logger.e("%s at %s.%s(...) : %d",
           e.getMessage(), 
           stack[0].getClassName(),
           stack[0].getMethodName(),
@@ -219,11 +211,11 @@ public class Main
     }
     catch (RomPathNotFoundException e)
     {
-      Log.log(Log.ERROR, "unable to find specified rom path: "+e.path);
+      logger.e("unable to find specified rom path: "+e.path);
     }
     catch (SevenZipNativeInitializationException e)
     {
-      Log.log(Log.ERROR, "failed to initialize SevenZip library to manage archives, exiting:\n\t"+e.getMessage());
+      logger.e("failed to initialize SevenZip library to manage archives, exiting:\n\t"+e.getMessage());
     }
     catch (Exception e)
     {

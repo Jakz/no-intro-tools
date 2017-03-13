@@ -28,17 +28,20 @@ import com.github.jakz.nit.data.GameSetInfo;
 import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.System;
 import com.github.jakz.nit.data.header.Header;
-import com.github.jakz.nit.log.Log;
 import com.github.jakz.nit.merger.TitleNormalizer;
 import com.pixbits.lib.io.xml.XMLParser;
+import com.pixbits.lib.log.Log;
+import com.pixbits.lib.log.Logger;
 import com.pixbits.lib.parser.SimpleParser;
 import com.pixbits.lib.parser.SimpleTreeBuilder;
 
-public class ClrMameProParser
+public class ClrMameProParserDat
 {
+  private final static Logger logger = Log.getLogger(ClrMameProParserDat.class);
+  
   private final Options options;
   
-  public ClrMameProParser(Options options)
+  public ClrMameProParserDat(Options options)
   {
     this.options = options;
   }
@@ -151,7 +154,7 @@ public class ClrMameProParser
         if (!TitleNormalizer.words.contains("("+s+")"))
            tags.add(s);
       }
-      Log.log(Log.INFO3, "Tags which will not be automatically filtered: %s",tags.stream().collect(Collectors.joining(", ", "[", "]")));
+      logger.i3("Tags which will not be automatically filtered: %s",tags.stream().collect(Collectors.joining(", ", "[", "]")));
       
       return set;
       

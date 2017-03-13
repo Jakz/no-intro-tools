@@ -28,12 +28,13 @@ import com.github.jakz.nit.data.xmdb.GameClone;
 import com.github.jakz.nit.handles.Archive;
 import com.github.jakz.nit.handles.ArchiveHandle;
 import com.github.jakz.nit.handles.BinaryHandle;
-import com.github.jakz.nit.log.Log;
 import com.github.jakz.nit.scanner.FormatUnrecognizedException;
 import com.pixbits.lib.io.FileUtils;
 import com.pixbits.lib.io.digest.DigestInfo;
 import com.pixbits.lib.io.digest.DigestOptions;
 import com.pixbits.lib.io.digest.Digester;
+import com.pixbits.lib.log.Log;
+import com.pixbits.lib.log.Logger;
 import com.pixbits.lib.functional.StreamException;
 
 import net.sf.sevenzipjbinding.IInArchive;
@@ -42,6 +43,8 @@ import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 
 public class GameSetCreator
 {
+  private final static Logger logger = Log.getLogger(GameSetCreator.class);
+  
   private final CreatorOptions options;
   private final Digester digester;
   
@@ -134,7 +137,7 @@ public class GameSetCreator
       entries = entries.parallel();
     
     entries.forEach(StreamException.rethrowConsumer(e -> {
-      Log.logger.updateProgress(count.getAndIncrement()/total, e.path.getFileName().toString());
+      logger.updateProgress(count.getAndIncrement()/total, e.path.getFileName().toString());
       analyzeEntry(null, e); 
     }));
   }
@@ -248,10 +251,10 @@ public class GameSetCreator
     count.set(0);
     
     prescanFiles();
-    Log.logger.startProgress(Log.INFO2, String.format("Found %s files to analyze for DAT creation", entries.size()));
+    logger.startProgress(Log.INFO2, String.format("Found %s files to analyze for DAT creation", entries.size()));
     total = entries.size();
     analyze();
-    Log.logger.endProgress();
+    logger.endProgress();
     
     GameSet set = new GameSet(new GameSetInfo(options.name, options.description, options.version, options.comment, options.author), null, games.toArray(new Game[games.size()]));
     set.setClones(new CloneSet(set, clones.toArray(new GameClone[clones.size()])));

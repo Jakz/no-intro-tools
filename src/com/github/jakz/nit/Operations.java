@@ -30,8 +30,7 @@ import com.github.jakz.nit.gui.GameSetListPanel;
 import com.github.jakz.nit.gui.GameSetMenu;
 import com.github.jakz.nit.gui.LogPanel;
 import com.github.jakz.nit.gui.SimpleFrame;
-import com.github.jakz.nit.log.Log;
-import com.github.jakz.nit.parser.ClrMameProParser;
+import com.github.jakz.nit.parser.ClrMameProParserDat;
 import com.github.jakz.nit.parser.DatFormat;
 import com.github.jakz.nit.parser.XMDBParser;
 import com.github.jakz.nit.scanner.RomHandleSet;
@@ -41,15 +40,19 @@ import com.pixbits.lib.io.FileUtils;
 import com.pixbits.lib.io.FolderScanner;
 import com.pixbits.lib.io.xml.XMLEmbeddedDTD;
 import com.pixbits.lib.io.xml.XMLParser;
+import com.pixbits.lib.log.Log;
+import com.pixbits.lib.log.Logger;
 import com.pixbits.lib.functional.StreamException;
 
 public class Operations
 {
+  private final static Logger logger = Log.getLogger(Operations.class);
+  
   public static GameSet loadGameSet(Options options) throws IOException, SAXException
   {
-    ClrMameProParser parser = new ClrMameProParser(options);
+    ClrMameProParserDat parser = new ClrMameProParserDat(options);
     GameSet set = parser.load(options.datPath);
-    Log.log(Log.INFO1, "Loaded set \'"+set.info.name+"\' ("+set.size()+" games, "+set.realSize()+" roms)");
+    logger.i("Loaded set \'"+set.info.name+"\' ("+set.size()+" games, "+set.realSize()+" roms)");
 
     return set;
   }
@@ -62,7 +65,7 @@ public class Operations
 
     CloneSet cloneSet = xmdbParser.load(path);
         
-    Log.log(Log.INFO1, "Loaded clone set for \'"+set.info.name+"\' ("+set.size()+" games in "+cloneSet.size()+" entries)");
+    logger.i("Loaded clone set for \'"+set.info.name+"\' ("+set.size()+" games in "+cloneSet.size()+" entries)");
 
     return cloneSet;
   }
@@ -71,16 +74,16 @@ public class Operations
   {
     long found = set.foundRoms().count();
     
-    Log.log("Statistics for %s:", set.info.name);
-    Log.log("  %d total roms", set.size());
+    logger.i("Statistics for %s:", set.info.name);
+    logger.i("  %d total roms", set.size());
     
     if (set.clones() != null && set.clones().size() > 0)
-      Log.log("  %d total games", set.clones().size());
+      logger.i("  %d total games", set.clones().size());
     
     if (found > 0)
     {
-      Log.log("  %d found roms (%d%%)", found, (found*100)/set.size());
-      Log.log("  %d missing roms", set.size() - found);
+      logger.i("  %d found roms (%d%%)", found, (found*100)/set.size());
+      logger.i("  %d missing roms", set.size() - found);
     }
   }
   
@@ -92,7 +95,7 @@ public class Operations
   
   public static void cleanMergePath(GameSet set, Options options) throws IOException
   {
-    Log.log(Log.INFO1, "Cleaning merge path from unneeded files");
+    logger.i("Cleaning merge path from unneeded files");
     
     FolderScanner scanner = new FolderScanner(true);
     
@@ -110,7 +113,7 @@ public class Operations
     GameSetCreator creator = new GameSetCreator(options);
     GameSet set = creator.create();
     
-    Log.log(Log.INFO1, "Generated game set from folders.");
+    logger.i("Generated game set from folders.");
     printStatistics(set);
     
     return set;
@@ -134,7 +137,7 @@ public class Operations
       (game.isFound() ? have : miss).add(game.name);
     });
     
-    Log.log(Log.INFO1, "Saving found status on files.");
+    logger.i("Saving found status on files.");
 
     Path basePath = Files.isDirectory(options.dataPath[0]) ? options.dataPath[0] : options.dataPath[0].getParent();
     
@@ -166,7 +169,7 @@ public class Operations
     Main.frames = new FrameSet();
     SimpleFrame<LogPanel> logFrame = new SimpleFrame<>("Log", new LogPanel(40,120), false);
     Main.frames.add("log", logFrame);
-    Log.setLogger(logFrame.getContent());
+    Log.setFactory(logFrame.getContent(), true);
         
     List<GameSet> sets = config.dats.stream().map(StreamException.rethrowFunction(d -> {
       Path p = d.datFile;
