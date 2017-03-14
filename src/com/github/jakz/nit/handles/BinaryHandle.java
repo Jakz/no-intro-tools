@@ -7,7 +7,7 @@ import java.nio.file.Path;
 
 import com.pixbits.lib.io.FileUtils;
 
-public class BinaryHandle extends RomHandle
+public class BinaryHandle extends Handle
 {
   private Path file;
   private long crc;
@@ -70,9 +70,9 @@ public class BinaryHandle extends RomHandle
   }
   
   @Override
-  public RomHandle relocateInternal(String internalName)
+  public Handle relocateInternal(String internalName)
   {
-    throw new UnsupportedOperationException("a binary rompath doesn't have an internal filename");
+    throw new UnsupportedOperationException("a binary handle doesn't have an internal filename");
   }
 
   @Override

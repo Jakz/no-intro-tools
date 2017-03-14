@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 
-import com.pixbits.lib.io.digest.DigestedCRC;
+import com.pixbits.lib.io.digest.DigestableCRC;
 
-public abstract class RomHandle implements DigestedCRC
+public abstract class Handle implements DigestableCRC
 {
   @Override
   public abstract String toString();
@@ -17,7 +17,7 @@ public abstract class RomHandle implements DigestedCRC
   public abstract String plainName();
   public abstract String plainInternalName();
   public abstract void relocate(Path file);
-  public abstract RomHandle relocateInternal(String internalName);
+  public abstract Handle relocateInternal(String internalName);
   public abstract boolean isArchive();
   
   public String getExtension() {
@@ -43,6 +43,4 @@ public abstract class RomHandle implements DigestedCRC
    * @return compressed size in bytes of the handle, corresponds to <code>size()</code> for binary handles
    */
   public abstract long compressedSize();
-  
-  @Override public long getCRC32() { return crc(); }
 }

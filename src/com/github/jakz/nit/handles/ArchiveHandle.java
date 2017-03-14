@@ -12,7 +12,7 @@ import net.sf.sevenzipjbinding.IInArchive;
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 
-public class ArchiveHandle extends RomHandle
+public class ArchiveHandle extends Handle
 {
   private Path file;
   public final int indexInArchive;
@@ -82,7 +82,7 @@ public class ArchiveHandle extends RomHandle
   }
   
   @Override
-  public RomHandle relocateInternal(String internalName)
+  public Handle relocateInternal(String internalName)
   {
     return null;//new Zip7Handle(file, internalName);
   }

@@ -10,7 +10,7 @@ import java.util.zip.GZIPOutputStream;
 
 import com.github.jakz.nit.handles.ArchiveHandle;
 import com.github.jakz.nit.handles.BinaryHandle;
-import com.github.jakz.nit.handles.RomHandle;
+import com.github.jakz.nit.handles.Handle;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -28,17 +28,17 @@ public class HandleSerializer
   public final static int ARCHIVE = 1;
   public final static int NESTED_ARCHIVE = 2;
 
-  class RomHandleSerializer implements JsonDeserializer<RomHandle>, JsonSerializer<RomHandle>
+  class RomHandleSerializer implements JsonDeserializer<Handle>, JsonSerializer<Handle>
   {
     @Override
-    public RomHandle deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException
+    public Handle deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException
     {
 
       return null;
     }
 
     @Override
-    public JsonElement serialize(RomHandle handle, Type type, JsonSerializationContext context)
+    public JsonElement serialize(Handle handle, Type type, JsonSerializationContext context)
     {
       JsonArray array = new JsonArray();
       
@@ -65,7 +65,7 @@ public class HandleSerializer
     
   }
   
-  public String serialize(RomHandle handle) throws IOException
+  public String serialize(Handle handle) throws IOException
   {
     try
     (

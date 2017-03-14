@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 
 import com.github.jakz.nit.Options;
 import com.github.jakz.nit.data.Rom;
-import com.github.jakz.nit.handles.RomHandle;
+import com.github.jakz.nit.handles.Handle;
 import com.pixbits.lib.functional.StreamException;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
@@ -60,7 +60,7 @@ public class Renamer
       stream = stream.parallel(); //FIXME: this will create problems caused by Files.move which will make parallel tasks fail on relocate of path
     
     stream.forEach(StreamException.rethrowConsumer(rom -> {
-      RomHandle handle = rom.handle();
+      Handle handle = rom.handle();
       
       /* if rom is stored inside an archive together with other files */
       if (handle.isArchive() && mappedFiles.get(handle.file()).size() > 1)

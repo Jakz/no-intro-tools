@@ -26,7 +26,7 @@ import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.xmdb.GameClone;
 import com.github.jakz.nit.exceptions.FatalErrorException;
-import com.github.jakz.nit.handles.RomHandle;
+import com.github.jakz.nit.handles.Handle;
 import com.pixbits.lib.functional.StreamException;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
@@ -83,7 +83,7 @@ public class Merger
   
   private void mergeToSingleArchive(Path dest) throws SevenZipException, IOException
   {
-    RomHandle[] handles = found.stream().map(rom -> rom.handle()).toArray(i -> new RomHandle[i]);
+    Handle[] handles = found.stream().map(rom -> rom.handle()).toArray(i -> new Handle[i]);
     
     String archiveName = options.datPath.getFileName().toString();
     archiveName = archiveName.substring(0, archiveName.lastIndexOf('.')) + options.merge.archiveFormat.extension;
@@ -170,7 +170,7 @@ public class Merger
       found = found.parallel();
     
     found.forEach(StreamException.rethrowConsumer(rom -> {
-      RomHandle handle = rom.handle();
+      Handle handle = rom.handle();
       
       // TODO: manage src dest as same path
       // just copy the file
@@ -214,7 +214,7 @@ public class Merger
         break;
       case CREATE:
         Files.deleteIfExists(dest); 
-        compressor.createArchive(dest, info.handles.toArray(new RomHandle[info.handles.size()]));
+        compressor.createArchive(dest, info.handles.toArray(new Handle[info.handles.size()]));
         break;
       case UPDATE:
       {
@@ -229,7 +229,7 @@ public class Merger
         info.handles.stream().filter(rh -> rh.file().equals(dest)).forEach(rh -> rh.relocate(tempArchive));
         
         /* now we can create the new archive by merging items from old archive and the new files */
-        compressor.createArchive(dest, info.handles.toArray(new RomHandle[info.handles.size()]));
+        compressor.createArchive(dest, info.handles.toArray(new Handle[info.handles.size()]));
         
         /* now it's safe to delete temporary file because otherwise checkExistingArchiveStatus would have returned ArchiveStatus.ERROR */
         Files.delete(tempArchive);       
@@ -305,7 +305,7 @@ public class Merger
   private class ExistingArchive
   {
     final Path file;
-    final Set<RomHandle> handles;
+    final Set<Handle> handles;
     
     ExistingArchive(Path file)
     {

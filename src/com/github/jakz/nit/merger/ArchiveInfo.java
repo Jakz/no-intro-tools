@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.github.jakz.nit.handles.RomHandle;
+import com.github.jakz.nit.handles.Handle;
 
 class ArchiveInfo
 {
   public final String name;
-  public final List<RomHandle> handles;
+  public final List<Handle> handles;
   
   ArchiveInfo(String name)
   {
@@ -18,7 +18,7 @@ class ArchiveInfo
     this.handles = new ArrayList<>();
   }
   
-  ArchiveInfo(String name, RomHandle... handles)
+  ArchiveInfo(String name, Handle... handles)
   {
     this(name);
     this.handles.addAll(Arrays.asList(handles));

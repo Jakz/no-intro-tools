@@ -52,7 +52,7 @@ public class Operations
   {
     ClrMameProParserDat parser = new ClrMameProParserDat(options);
     GameSet set = parser.load(options.datPath);
-    logger.i("Loaded set \'"+set.info.name+"\' ("+set.size()+" games, "+set.realSize()+" roms)");
+    logger.i("Loaded set \'"+set.info.name+"\' ("+set.size()+" games, "+set.filesCount()+" roms)");
 
     return set;
   }
@@ -169,7 +169,7 @@ public class Operations
     Main.frames = new FrameSet();
     SimpleFrame<LogPanel> logFrame = new SimpleFrame<>("Log", new LogPanel(40,120), false);
     Main.frames.add("log", logFrame);
-    Log.setFactory(logFrame.getContent(), true);
+    Log.setFactory(logFrame.panel(), true);
         
     List<GameSet> sets = config.dats.stream().map(StreamException.rethrowFunction(d -> {
       Path p = d.datFile;

@@ -10,7 +10,6 @@ import java.util.List;
 
 import com.github.jakz.nit.data.System;
 import com.github.jakz.nit.exceptions.FatalErrorException;
-import com.github.jakz.nit.persistence.PathDeserializer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
@@ -19,6 +18,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
+import com.pixbits.lib.io.json.PathAdapter;
 
 public class Config
 {
@@ -71,7 +71,7 @@ public class Config
   public static Config load(Path fileName)
   {
     GsonBuilder builder = new GsonBuilder();
-    builder.registerTypeAdapter(Path.class, new PathDeserializer());
+    builder.registerTypeAdapter(Path.class, new PathAdapter());
     builder.registerTypeAdapter(com.github.jakz.nit.data.System.class, new SystemDeserializer());
     Gson gson = builder.create();
     

@@ -72,7 +72,7 @@ public class Main
 
       initializeSevenZip();
       
-      if (false && args.length > 0)
+      if (true && args.length > 0)
       {
         Namespace rargs = arguments.parseArgs(args);
         System.out.println(rargs);

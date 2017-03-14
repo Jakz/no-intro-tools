@@ -1,6 +1,5 @@
 package com.github.jakz.nit.scanner;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.FileSystems;
@@ -17,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.github.jakz.nit.Settings;
@@ -31,6 +31,7 @@ import com.pixbits.lib.io.FileUtils;
 import com.pixbits.lib.io.FolderScanner;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
+import com.pixbits.lib.exceptions.FileNotFoundException;
 import com.pixbits.lib.functional.StreamException;
 
 import net.sf.sevenzipjbinding.ArchiveFormat;
@@ -76,37 +77,6 @@ public class Scanner
     }
   }
   
-  private Set<Path> computeFileList() throws IOException
-  {
-    Set<Path> files = new TreeSet<>();
-    
-    final FolderScanner scanner = new FolderScanner(options.includeSubfolders);
-    
-    Stream<Path> paths = options.paths.stream();
-    
-    if (options.multithreaded)
-      paths = paths.parallel();
-    
-    paths.map(StreamException.rethrowFunction(p -> {
-      try 
-      {
-        if (Files.isDirectory(p))
-          return scanner.scan(p);
-        else
-          return Collections.singleton(p);
-      }
-      catch (FileNotFoundException e)
-      {
-        throw new RomPathNotFoundException(p);
-      }
-        
-    })).forEach(files::addAll);
-    
-    logger.i1("found %d files to scan in %d paths", files.size(), options.paths.size());
-    
-    return files;
-  }
-
   private List<List<NestedArchiveHandle>> scanNestedArchives(Map<Path, Set<Integer>> archives) throws IOException
   {
     List<List<NestedArchiveHandle>> handles = new ArrayList<>();
@@ -220,7 +190,17 @@ public class Scanner
 
   public RomHandleSet computeHandles() throws IOException
   {
-    Set<Path> paths = computeFileList();
+    FolderScanner folderScanner = new FolderScanner(options.includeSubfolders);
+    
+    Set<Path> paths = null;
+    try
+    {
+      paths = folderScanner.scan(options.paths);
+    }
+    catch (FileNotFoundException e)
+    {
+      throw new RomPathNotFoundException(e.path);
+    }
     
     Set<Path> faultyArchives = new HashSet<>();
     Set<String> skipped = new HashSet<>();

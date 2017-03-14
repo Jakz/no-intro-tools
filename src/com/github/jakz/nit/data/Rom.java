@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
-import com.github.jakz.nit.handles.RomHandle;
+import com.github.jakz.nit.handles.Handle;
 import com.pixbits.lib.io.digest.DigestInfo;
 
 public class Rom
@@ -17,7 +17,7 @@ public class Rom
   public final long size;
   
   private Game game;
-  private RomHandle handle;
+  private Handle handle;
   
   public Rom(String name, long size, long crc32, byte[] md5, byte[] sha1)
   {
@@ -34,8 +34,8 @@ public class Rom
     this(name, size, info.crc, info.md5, info.sha1);
   }
   
-  public void setHandle(RomHandle handle) { this.handle = handle; }
-  public RomHandle handle() { return handle; }
+  public void setHandle(Handle handle) { this.handle = handle; }
+  public Handle handle() { return handle; }
   
   void setGame(Game game) { this.game = game; }
   public Game game() { return game; }

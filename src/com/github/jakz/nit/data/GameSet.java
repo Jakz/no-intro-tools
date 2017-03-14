@@ -57,7 +57,7 @@ public class GameSet implements Iterable<Game>
   public Game get(int index) { return games[index]; }
   public int size() { return games.length; }
   
-  public int realSize() { return stream().mapToInt(Game::size).sum(); }
+  public int filesCount() { return stream().mapToInt(Game::size).sum(); }
   
   
   public Stream<Game> stream() { return Arrays.stream(games); }

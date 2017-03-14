@@ -20,7 +20,7 @@ public class HashCache
   
   public HashCache(GameSet set)
   {
-    cache = new HashMap<>(set.realSize());
+    cache = new HashMap<>(set.filesCount());
     sizes = new HashSet<>();
     precompute(set);
   }

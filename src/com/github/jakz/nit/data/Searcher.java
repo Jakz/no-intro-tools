@@ -6,35 +6,50 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 import com.github.jakz.nit.data.xmdb.GameClone;
+import com.pixbits.lib.searcher.BasicPredicate;
+import com.pixbits.lib.searcher.SearchPredicate;
+import com.pixbits.lib.searcher.BasicSearchParser;
+import com.pixbits.lib.searcher.LambdaPredicate;
 
 public class Searcher
 {
+  com.pixbits.lib.searcher.Searcher<Game> searcher;
+  
+  public Searcher()
+  {
+    final LambdaPredicate<Game> freeSearch = new LambdaPredicate<Game>(token -> (g -> g.name.toLowerCase().contains(token.toLowerCase())));
+    
+    final SearchPredicate<Game> isProper = new BasicPredicate<Game>()
+    {
+      @Override public Predicate<Game> buildPredicate(String token)
+      {
+        if (isSearchArg(splitWithDelimiter(token, ":"), "is", "proper"))
+          return g -> g.info().version == Version.PROPER;
+        else
+          return null;
+      }
+    };
+    
+    final SearchPredicate<Game> isLicensed = new BasicPredicate<Game>()
+    {
+      @Override public Predicate<Game> buildPredicate(String token)
+      {
+        if (isSearchArg(splitWithDelimiter(token, ":"), "is", "licensed"))
+          return g -> g.info().licensed;
+        else
+          return null;
+      }
+    };
+    
+    BasicSearchParser<Game> parser = new BasicSearchParser<>(freeSearch);
+    
+    searcher = new com.pixbits.lib.searcher.Searcher<>(parser, Arrays.asList(isProper, isLicensed));
+  }
+  
+  
   public Predicate<Game> buildPredicate(String text)
   {    
-    Predicate<Game> filter = g -> true;
-    
-    String[] tokens = text.split(" ");
-    for (String tokenz : tokens)
-    {
-      if (tokenz.length() == 0)
-        continue;
-      
-      Predicate<Game> predicate = null;
-      String token = tokenz.charAt(0) == '!' ? tokenz.substring(1) : tokenz;
-      boolean negated = tokenz.charAt(0) == '!';
-      
-      if (token.equals("is:proper"))
-        predicate = (g -> g.info().version == Version.PROPER);
-      else if (token.equals("is:licensed"))
-        predicate = (g -> g.info().licensed);
-      else
-        predicate = (g -> g.name.toLowerCase().contains(token.toLowerCase()));
-      
-      if (predicate != null)
-        filter = filter.and(negated ? predicate.negate() : predicate);
-    }
-        
-    return filter;
+    return searcher.search(text);
   }
   
   private Game findFirstClone(GameClone clone, Location... zones)

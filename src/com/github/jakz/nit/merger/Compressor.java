@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 
 import com.github.jakz.nit.Options;
-import com.github.jakz.nit.handles.RomHandle;
+import com.github.jakz.nit.handles.Handle;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
 
@@ -39,12 +39,12 @@ public class Compressor
   
   private static interface ItemDecorator<T>
   {
-    public void decorate(T item, RomHandle handle);
+    public void decorate(T item, Handle handle);
   }
   
   private static class ItemDecorator7z implements ItemDecorator<IOutItem7z>
   {
-    public void decorate(IOutItem7z item, RomHandle handle)
+    public void decorate(IOutItem7z item, Handle handle)
     {
       item.setDataSize(handle.size());
       item.setPropertyPath(handle.fileName());
@@ -53,7 +53,7 @@ public class Compressor
   
   private static class ItemDecoratorZip implements ItemDecorator<IOutItemZip>
   {
-    public void decorate(IOutItemZip item, RomHandle handle)
+    public void decorate(IOutItemZip item, Handle handle)
     {
       item.setDataSize(handle.size());
       item.setPropertyPath(handle.fileName());
@@ -62,16 +62,16 @@ public class Compressor
   
   private static final class CreateCallback<T extends IOutItemBase> implements IOutCreateCallback<T>
   {
-    private final RomHandle[] handles;
+    private final Handle[] handles;
     private final long totalSize;
     private final ItemDecorator<T> decorator;
     private int currentItem = -1;
     private InputStream currentStream = null;
     
-    CreateCallback(RomHandle[] handles, ItemDecorator<T> decorator)
+    CreateCallback(Handle[] handles, ItemDecorator<T> decorator)
     {
       this.handles = handles;
-      totalSize = Arrays.stream(handles).mapToLong(RomHandle::size).sum();
+      totalSize = Arrays.stream(handles).mapToLong(Handle::size).sum();
       this.decorator = decorator;
     }
     
@@ -104,7 +104,7 @@ public class Compressor
     {
       T item = factory.createOutItem();
       
-      RomHandle handle = handles[index];
+      Handle handle = handles[index];
       
       decorator.decorate(item, handle);
 
@@ -153,7 +153,7 @@ public class Compressor
     }
   }
   
-  public void createArchive(Path dest, RomHandle... handles) throws FileNotFoundException, SevenZipException
+  public void createArchive(Path dest, Handle... handles) throws FileNotFoundException, SevenZipException
   {
     RandomAccessFile raf = new RandomAccessFile(dest.toFile(), "rw");
         
@@ -171,7 +171,7 @@ public class Compressor
         if (solid)
         {
           archive.setSolidFiles(handles.length);
-          archive.setSolidSize(Arrays.stream(handles).mapToLong(RomHandle::size).sum());
+          archive.setSolidSize(Arrays.stream(handles).mapToLong(Handle::size).sum());
         }
         
         CreateCallback<IOutItem7z> callback = new CreateCallback<IOutItem7z>(handles, new ItemDecorator7z());

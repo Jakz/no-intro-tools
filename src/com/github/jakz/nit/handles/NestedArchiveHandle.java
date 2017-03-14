@@ -15,10 +15,8 @@ import net.sf.sevenzipjbinding.PropID;
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 
-public class NestedArchiveHandle extends RomHandle
-{
-  private static final NestedArchiveCache cache = new NestedArchiveCache();
-  
+public class NestedArchiveHandle extends Handle
+{  
   private Path file;
   public final int indexInArchive;
   public final String internalName;
@@ -115,7 +113,7 @@ public class NestedArchiveHandle extends RomHandle
   }
   
   @Override
-  public RomHandle relocateInternal(String internalName)
+  public Handle relocateInternal(String internalName)
   {
     return null;//new Zip7Handle(file, internalName);
   }

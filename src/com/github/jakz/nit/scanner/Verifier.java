@@ -17,7 +17,7 @@ import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.header.SkippingStream;
 import com.github.jakz.nit.handles.MemoryArchive;
 import com.github.jakz.nit.handles.NestedArchiveHandle;
-import com.github.jakz.nit.handles.RomHandle;
+import com.github.jakz.nit.handles.Handle;
 import com.pixbits.lib.functional.StreamException;
 import com.pixbits.lib.io.digest.DigestInfo;
 import com.pixbits.lib.io.digest.DigestOptions;
@@ -118,7 +118,7 @@ public class Verifier
     return count.get();
   }
   
-  private Rom verifyRawInputStream(RomHandle handle, InputStream is) throws IOException, NoSuchAlgorithmException
+  private Rom verifyRawInputStream(Handle handle, InputStream is) throws IOException, NoSuchAlgorithmException
   {
     DigestInfo info = digester.digest(set.header != null ? handle : null, is);
     
@@ -127,12 +127,12 @@ public class Verifier
     return rom != null && (info.md5 == null || Arrays.equals(info.md5, rom.md5)) && (info.sha1 == null || Arrays.equals(info.sha1, rom.sha1)) ? rom : null;
   }
   
-  private Rom verifyJustCRC(RomHandle handle)
+  private Rom verifyJustCRC(Handle handle)
   {
     return cache.romForCrc(digester.digestOnlyCRC(handle).crc);
   }
   
-  private Rom verify(RomHandle handle) throws IOException, NoSuchAlgorithmException
+  private Rom verify(Handle handle) throws IOException, NoSuchAlgorithmException
   {       
     Rom rom = null;
     
@@ -154,9 +154,9 @@ public class Verifier
     return rom;
   }
   
-  private int verify(List<? extends RomHandle> handles) throws IOException
+  private int verify(List<? extends Handle> handles) throws IOException
   {
-    Stream<? extends RomHandle> stream = handles.stream();
+    Stream<? extends Handle> stream = handles.stream();
     
     AtomicInteger count = new AtomicInteger();
     
