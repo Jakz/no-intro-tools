@@ -86,7 +86,11 @@ public class Operations
   
   public static HandleSet scanEntriesForGameSet(GameSet set, List<Path> paths, ScannerOptions options) throws IOException
   {
-    Scanner scanner = new Scanner(set, options);
+    Scanner scanner = new Scanner(options);
+    
+    options.assumeCRCisCorrect = set.header == null;
+    options.shouldSkip = s -> set.cache().isValidSize(s.size) || !options.discardUnknownSizes;
+    
     return scanner.computeHandles(paths);
   }
   

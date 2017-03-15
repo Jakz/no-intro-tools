@@ -150,9 +150,8 @@ public class Main
       soptions.includeSubfolders = true;
       soptions.multithreaded = false;
       
-      Scanner scanner = new Scanner(set, soptions);
-      HandleSet handles = scanner.computeHandles(Arrays.asList(options.dataPath));
-      
+      HandleSet handles = Operations.scanEntriesForGameSet(set, Arrays.asList(options.dataPath), soptions);
+
       Verifier verifier = new Verifier(options, set);
       
       int foundCount = verifier.verify(handles);

@@ -41,14 +41,13 @@ public class Scanner
   
   final public static PathMatcher archiveMatcher = ArchiveFormat.getReadableMatcher();
   
-  final private GameSet set;
+  //final private GameSet set;
   final private ScannerOptions options;
   
   public void setProgressLogger(ProgressLogger logger) { this.progressLogger = logger; }
   
-  public Scanner(GameSet set, ScannerOptions options)
+  public Scanner(ScannerOptions options)
   {
-    this.set = set;
     this.options = options;
   }
       
@@ -101,7 +100,7 @@ public class Scanner
   
         for (int i = 0; i < itemCount; ++i)
         {
-          ArchiveEntryData data = scanArchive(marchive, i, archivePath, null, null);
+          ScannerEntry data = scanArchive(marchive, i, archivePath, null, null);
           if (data != null)
           { 
             logger.i3("Found nested entry in memory nested inside %s: %s", fileName, data.fileName);
@@ -125,23 +124,7 @@ public class Scanner
     return handles;
   }
   
-  private class ArchiveEntryData
-  {
-    final String fileName;
-    final long compressedSize;
-    final long size;
-    final long crc;
-    
-    ArchiveEntryData(String fileName, long size, long compressedSize, long crc)
-    {
-      this.fileName = fileName;
-      this.size = size;
-      this.compressedSize = compressedSize;
-      this.crc = crc;
-    }
-  }
-  
-  public ArchiveEntryData scanArchive(IInArchive archive, int i, Path path, Map<Path,Set<Integer>> nested, Set<String> skipped) throws IOException
+  public ScannerEntry scanArchive(IInArchive archive, int i, Path path, Map<Path,Set<Integer>> nested, Set<String> skipped) throws IOException
   {
     long size = (long)archive.getProperty(i, PropID.SIZE);
     Long lcompressedSize = (Long)archive.getProperty(i, PropID.PACKED_SIZE);
@@ -165,25 +148,19 @@ public class Scanner
     }
     else
     {
-      /* if header is null then we can compute crc and check size to filter out elements */
-      if (set.header == null)
-      {           
-        //System.out.println("PATH: "+fileName);
-        
-        long crc = Integer.toUnsignedLong((Integer)archive.getProperty(i, PropID.CRC));
-        
-        /* if rom has a size valid for the current set or we are not verifying size match */
-        if (set.cache().isValidSize(size) || !options.discardUnknownSizes)
-          return new ArchiveEntryData(fileName, size, compressedSize, crc); 
-        /* otherwise skip the entry */
-        else if (skipped != null)
-          skipped.add(fileName+" in "+path.getFileName());
-      }
-      /* otherwise we're out of luck we must delay the checks */
-      else
+      /* if crc is considered valid then we can get it and check size to filter out elements */
+      long crc = options.assumeCRCisCorrect ? Integer.toUnsignedLong((Integer)archive.getProperty(i, PropID.CRC)) : -1;
+      ScannerEntry entry = new ScannerEntry(fileName, size, compressedSize, crc);;
+      
+      /* if predicate tells that entry should be skipped */
+      if (options.shouldSkip.test(entry))
       {
-        return new ArchiveEntryData(fileName, size, compressedSize, -1); 
+        if (skipped != null)
+          skipped.add(fileName + " in " + path.getFileName());
       }
+      /* otherwise return the entry */
+      else
+        return entry;
     }
     
     return null;
@@ -194,18 +171,17 @@ public class Scanner
     FolderScanner folderScanner = new FolderScanner(options.includeSubfolders);
     
     Set<Path> paths = folderScanner.scan(spaths);
-
-    Set<Path> faultyArchives = new HashSet<>();
-    Set<String> skipped = new HashSet<>();
     
     progressLogger.startProgress(Log.INFO2, "Finding files...");
     final float count = paths.size();
     final AtomicInteger current = new AtomicInteger(0);
-    
+        
     List<BinaryHandle> binaryHandles = new ArrayList<>();
     List<ArchiveHandle> archiveHandles = new ArrayList<>();
     Map<Path, Set<Integer>> nestedArchiveHandles = new HashMap<>();
-
+    Set<Path> faultyArchives = new HashSet<>();
+    Set<String> skipped = new HashSet<>();
+    
     paths.stream().forEach(StreamException.rethrowConsumer(path -> {
       progressLogger.updateProgress(current.getAndIncrement() / count, "");
       
@@ -222,7 +198,7 @@ public class Scanner
             for (int i = 0; i < itemCount; ++i)
             {
               /* TODO: check extension of file? */
-              ArchiveEntryData data = scanArchive(archive, i, path, nestedArchiveHandles, skipped);
+              ScannerEntry data = scanArchive(archive, i, path, nestedArchiveHandles, skipped);
               if (data != null)
                 archiveHandles.add(new ArchiveHandle(path, ArchiveFormat.formatForNative(archive.getArchiveFormat()), data.fileName, i, data.size, data.compressedSize, data.crc));              
             }
@@ -235,11 +211,14 @@ public class Scanner
       }
       else
       {
-        /* if size of the file is compatible with the romset or if set has special rules add it to potential roms */
-        if (set.header != null || set.cache().isValidSize(Files.size(path)) || !options.discardUnknownSizes)
-          binaryHandles.add(new BinaryHandle(path));
-        else
+        long size = Files.size(path);
+        ScannerEntry entry = new ScannerEntry(path.getFileName().toString(), size, size, -1);
+       
+        /* check if file should be skipped according to predicate */
+        if (options.shouldSkip.test(entry))
           skipped.add(path.getFileName().toString());    
+        else
+          binaryHandles.add(new BinaryHandle(path));   
       }    
     }));
     
