@@ -3,7 +3,7 @@ package com.github.jakz.nit.config;
 import java.util.Arrays;
 
 import com.github.jakz.nit.Args;
-import com.github.jakz.nit.Options.ArchiveFormat;
+import com.pixbits.lib.io.archive.ArchiveFormat;
 
 import net.sourceforge.argparse4j.inf.Namespace;
 

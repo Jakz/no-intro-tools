@@ -4,9 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 
+import com.pixbits.lib.io.archive.Compressible;
 import com.pixbits.lib.io.digest.DigestableCRC;
 
-public abstract class Handle implements DigestableCRC
+public abstract class Handle implements DigestableCRC, Compressible
 {
   @Override
   public abstract String toString();

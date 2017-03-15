@@ -8,6 +8,7 @@ import com.github.jakz.nit.config.MergeOptions;
 import com.github.jakz.nit.config.VerifierOptions;
 import com.github.jakz.nit.data.xmdb.BiasSet;
 import com.github.jakz.nit.data.xmdb.Zone;
+import com.pixbits.lib.io.archive.CompressorOptions;
 import com.pixbits.lib.log.Log;
 
 import net.sourceforge.argparse4j.inf.Namespace;
@@ -15,16 +16,6 @@ import net.sourceforge.argparse4j.inf.Namespace;
 public class Options
 {
 
-  
-  public static enum ArchiveFormat
-  {
-    _7ZIP(".7z")
-    ;
-    
-    private ArchiveFormat(String extension) { this.extension = extension; }
-    
-    public final String extension;
-  };
   
   public Log logLevel;
   
@@ -51,6 +42,11 @@ public class Options
   private Path wholeArchivePath;
   
   public final BiasSet zonePriority;
+  
+  public CompressorOptions getCompressorOptions()
+  {
+    return new CompressorOptions(merge.archiveFormat, merge.useSolidArchives, merge.compressionLevel);
+  }
   
   public Options(Namespace args)
   {

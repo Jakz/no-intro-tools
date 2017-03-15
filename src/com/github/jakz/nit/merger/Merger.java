@@ -28,6 +28,7 @@ import com.github.jakz.nit.data.xmdb.GameClone;
 import com.github.jakz.nit.exceptions.FatalErrorException;
 import com.github.jakz.nit.handles.Handle;
 import com.pixbits.lib.functional.StreamException;
+import com.pixbits.lib.io.archive.Compressor;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
 
@@ -45,7 +46,7 @@ public class Merger
   
   GameSet set;
   Options options;
-  Compressor compressor;
+  Compressor<Handle> compressor;
   List<Rom> found;
   
   TitleNormalizer normalizer;
@@ -54,7 +55,8 @@ public class Merger
   {
     this.set = set;
     this.options = options;
-    this.compressor = new Compressor(options);
+    this.compressor = new Compressor<Handle>(options.getCompressorOptions());
+    this.compressor.setCallbackOnAddingEntryToArchive(handle -> logger.d("Preparing item %s (%d bytes) to be archived", handle.fileName(), handle.size()));
     this.found = set.foundRoms().filter(r -> filter.test(r.game())).collect(Collectors.toList());
     this.normalizer = new TitleNormalizer();
   }
@@ -83,7 +85,7 @@ public class Merger
   
   private void mergeToSingleArchive(Path dest) throws SevenZipException, IOException
   {
-    Handle[] handles = found.stream().map(rom -> rom.handle()).toArray(i -> new Handle[i]);
+    List<Handle> handles = found.stream().map(rom -> rom.handle()).collect(Collectors.toList());
     
     String archiveName = options.datPath.getFileName().toString();
     archiveName = archiveName.substring(0, archiveName.lastIndexOf('.')) + options.merge.archiveFormat.extension;
@@ -96,8 +98,9 @@ public class Merger
       //TODO: if merge is in place we should probably just update existing archive
     }
     
+    logger.startProgress(Log.INFO2, "Creating single archive "+dest.toString());
     compressor.createArchive(dest.resolve(archiveName), handles);
-    Arrays.stream(handles).forEach(h -> h.relocate(destArchive));
+    handles.forEach(h -> h.relocate(destArchive));
   }
   
   private void mergeToOneArchivePerGame(Path dest) throws FileNotFoundException, SevenZipException
@@ -214,7 +217,8 @@ public class Merger
         break;
       case CREATE:
         Files.deleteIfExists(dest); 
-        compressor.createArchive(dest, info.handles.toArray(new Handle[info.handles.size()]));
+        logger.startProgress(Log.INFO2, "Creating archive "+dest.toString());
+        compressor.createArchive(dest, info.handles);
         break;
       case UPDATE:
       {
@@ -229,7 +233,8 @@ public class Merger
         info.handles.stream().filter(rh -> rh.file().equals(dest)).forEach(rh -> rh.relocate(tempArchive));
         
         /* now we can create the new archive by merging items from old archive and the new files */
-        compressor.createArchive(dest, info.handles.toArray(new Handle[info.handles.size()]));
+        logger.startProgress(Log.INFO2, "Updating archive "+dest.toString());
+        compressor.createArchive(dest, info.handles);
         
         /* now it's safe to delete temporary file because otherwise checkExistingArchiveStatus would have returned ArchiveStatus.ERROR */
         Files.delete(tempArchive);       
