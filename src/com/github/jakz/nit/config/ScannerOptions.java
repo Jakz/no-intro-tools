@@ -5,8 +5,9 @@ import java.util.List;
 
 public class ScannerOptions
 {
-  public List<Path> paths;
   public boolean multithreaded;
   public boolean includeSubfolders;
   public boolean discardUnknownSizes;
+  public boolean scanArchives = true;
+  public boolean scanNestedArchives = true;
 }

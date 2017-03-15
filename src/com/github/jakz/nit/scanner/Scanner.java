@@ -2,13 +2,10 @@ package com.github.jakz.nit.scanner;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,12 +13,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import com.github.jakz.nit.Settings;
 import com.github.jakz.nit.config.ScannerOptions;
 import com.github.jakz.nit.data.GameSet;
+import com.github.jakz.nit.emitter.GameSetCreator;
 import com.github.jakz.nit.exceptions.RomPathNotFoundException;
 import com.pixbits.lib.io.FileUtils;
 import com.pixbits.lib.io.FolderScanner;
@@ -33,6 +28,7 @@ import com.pixbits.lib.io.archive.handles.MemoryArchive;
 import com.pixbits.lib.io.archive.handles.NestedArchiveHandle;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
+import com.pixbits.lib.log.ProgressLogger;
 import com.pixbits.lib.exceptions.FileNotFoundException;
 import com.pixbits.lib.functional.StreamException;
 
@@ -44,11 +40,14 @@ import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 public class Scanner
 {
   private static final Logger logger = Log.getLogger(Scanner.class);
+  private ProgressLogger progressLogger = Log.getProgressLogger(Scanner.class);
   
   final public static PathMatcher archiveMatcher = ArchiveFormat.getReadableMatcher();
   
   final private GameSet set;
   final private ScannerOptions options;
+  
+  public void setProgressLogger(ProgressLogger logger) { this.progressLogger = logger; }
   
   public Scanner(GameSet set, ScannerOptions options)
   {
@@ -160,8 +159,12 @@ public class Scanner
     /* if file ends with archive extension */
     if (nested != null && ArchiveFormat.guessFormat(fileName) != null)
     {                
-      logger.i3("Found a nested archive inside %s: %s ", path.getFileName(), FileUtils.lastPathComponent(fileName));
-      nested.computeIfAbsent(path, p -> new TreeSet<>()).add(i);
+      // TODO: if archived file has archive extension but it's binary then it's skipped, maybe move check to outside condition
+      if (options.scanNestedArchives)
+      {
+        logger.i3("Found a nested archive inside %s: %s ", path.getFileName(), FileUtils.lastPathComponent(fileName));
+        nested.computeIfAbsent(path, p -> new TreeSet<>()).add(i);
+      }
     }
     else
     {
@@ -189,14 +192,14 @@ public class Scanner
     return null;
   }
 
-  public RomHandleSet computeHandles() throws IOException
+  public HandleSet computeHandles(List<Path> spaths) throws IOException
   {
     FolderScanner folderScanner = new FolderScanner(options.includeSubfolders);
     
     Set<Path> paths = null;
     try
     {
-      paths = folderScanner.scan(options.paths);
+      paths = folderScanner.scan(spaths);
     }
     catch (FileNotFoundException e)
     {
@@ -206,7 +209,7 @@ public class Scanner
     Set<Path> faultyArchives = new HashSet<>();
     Set<String> skipped = new HashSet<>();
     
-    logger.startProgress(Log.INFO2, "Finding files...");
+    progressLogger.startProgress(Log.INFO2, "Finding files...");
     final float count = paths.size();
     final AtomicInteger current = new AtomicInteger(0);
     
@@ -215,11 +218,11 @@ public class Scanner
     Map<Path, Set<Integer>> nestedArchiveHandles = new HashMap<>();
 
     paths.stream().forEach(StreamException.rethrowConsumer(path -> {
-      logger.updateProgress(current.getAndIncrement() / count, "");
+      progressLogger.updateProgress(current.getAndIncrement() / count, "");
       
       boolean shouldBeArchive = archiveMatcher.matches(path.getFileName());
             
-      if (shouldBeArchive)
+      if (options.scanArchives && shouldBeArchive)
       {      
         try (IInArchive archive = openArchive(path, false))
         {
@@ -251,7 +254,7 @@ public class Scanner
       }    
     }));
     
-    logger.endProgress();
+    progressLogger.endProgress();
     
     List<List<NestedArchiveHandle>> nestedHandles = scanNestedArchives(nestedArchiveHandles);
     
@@ -265,6 +268,6 @@ public class Scanner
     
     skipped.forEach(s -> logger.i3("> %s", s));
 
-    return new RomHandleSet(binaryHandles, archiveHandles, nestedHandles);
+    return new HandleSet(binaryHandles, archiveHandles, nestedHandles, faultyArchives);
   }
 }

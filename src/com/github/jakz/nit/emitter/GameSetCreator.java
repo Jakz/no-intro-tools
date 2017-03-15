@@ -34,7 +34,7 @@ import com.pixbits.lib.io.digest.DigestInfo;
 import com.pixbits.lib.io.digest.DigestOptions;
 import com.pixbits.lib.io.digest.Digester;
 import com.pixbits.lib.log.Log;
-import com.pixbits.lib.log.Logger;
+import com.pixbits.lib.log.ProgressLogger;
 import com.pixbits.lib.functional.StreamException;
 
 import net.sf.sevenzipjbinding.IInArchive;
@@ -43,7 +43,8 @@ import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 
 public class GameSetCreator
 {
-  private final static Logger logger = Log.getLogger(GameSetCreator.class);
+  private final static ProgressLogger progressLogger = Log.getProgressLogger(GameSetCreator.class);
+
   
   private final CreatorOptions options;
   private final Digester digester;
@@ -137,7 +138,7 @@ public class GameSetCreator
       entries = entries.parallel();
     
     entries.forEach(StreamException.rethrowConsumer(e -> {
-      logger.updateProgress(count.getAndIncrement()/total, e.path.getFileName().toString());
+      progressLogger.updateProgress(count.getAndIncrement()/total, e.path.getFileName().toString());
       analyzeEntry(null, e); 
     }));
   }
@@ -251,10 +252,10 @@ public class GameSetCreator
     count.set(0);
     
     prescanFiles();
-    logger.startProgress(Log.INFO2, String.format("Found %s files to analyze for DAT creation", entries.size()));
+    progressLogger.startProgress(Log.INFO2, String.format("Found %s files to analyze for DAT creation", entries.size()));
     total = entries.size();
     analyze();
-    logger.endProgress();
+    progressLogger.endProgress();
     
     GameSet set = new GameSet(new GameSetInfo(options.name, options.description, options.version, options.comment, options.author), null, games.toArray(new Game[games.size()]));
     set.setClones(new CloneSet(set, clones.toArray(new GameClone[clones.size()])));

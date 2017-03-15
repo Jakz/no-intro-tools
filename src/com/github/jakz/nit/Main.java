@@ -26,13 +26,14 @@ import com.github.jakz.nit.gui.GameSetComparePanel;
 import com.github.jakz.nit.gui.SimpleFrame;
 import com.github.jakz.nit.merger.Merger;
 import com.github.jakz.nit.scanner.Renamer;
-import com.github.jakz.nit.scanner.RomHandleSet;
+import com.github.jakz.nit.scanner.HandleSet;
 import com.github.jakz.nit.scanner.Scanner;
 import com.github.jakz.nit.scanner.Verifier;
 import com.pixbits.lib.functional.StreamException;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
 import com.pixbits.lib.log.LoggerFactory;
+import com.pixbits.lib.log.ProgressLogger;
 import com.pixbits.lib.ui.UIUtils;
 
 import net.sf.sevenzipjbinding.SevenZip;
@@ -143,7 +144,7 @@ public class Main
       }
       
       Options options = new Options();
-      Log.setFactory(LoggerFactory.STDOUT_PROGRESS, true);
+      Log.setProgressLogger(ProgressLogger.STDOUT_PROGRESS);
       
       GameSet set = Operations.loadGameSet(options);
       CloneSet clones = Operations.loadCloneSetFromXMDB(set, options.cloneDatPath);
@@ -153,10 +154,9 @@ public class Main
       soptions.discardUnknownSizes = true;
       soptions.includeSubfolders = true;
       soptions.multithreaded = false;
-      soptions.paths = Arrays.asList(options.dataPath);
       
       Scanner scanner = new Scanner(set, soptions);
-      RomHandleSet handles = scanner.computeHandles();
+      HandleSet handles = scanner.computeHandles(Arrays.asList(options.dataPath));
       
       Verifier verifier = new Verifier(options, set);
       

@@ -33,7 +33,7 @@ import com.github.jakz.nit.gui.SimpleFrame;
 import com.github.jakz.nit.parser.ClrMameProParserDat;
 import com.github.jakz.nit.parser.DatFormat;
 import com.github.jakz.nit.parser.XMDBParser;
-import com.github.jakz.nit.scanner.RomHandleSet;
+import com.github.jakz.nit.scanner.HandleSet;
 import com.github.jakz.nit.scanner.Scanner;
 import com.github.jakz.nit.scripts.ConsolePanel;
 import com.pixbits.lib.io.FileUtils;
@@ -87,10 +87,10 @@ public class Operations
     }
   }
   
-  public static RomHandleSet scanEntriesForGameSet(GameSet set, ScannerOptions options) throws IOException
+  public static HandleSet scanEntriesForGameSet(GameSet set, List<Path> paths, ScannerOptions options) throws IOException
   {
     Scanner scanner = new Scanner(set, options);
-    return scanner.computeHandles();
+    return scanner.computeHandles(paths);
   }
   
   public static void cleanMergePath(GameSet set, Options options) throws IOException

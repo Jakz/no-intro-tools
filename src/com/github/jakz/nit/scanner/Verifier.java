@@ -24,13 +24,15 @@ import com.pixbits.lib.io.digest.DigestOptions;
 import com.pixbits.lib.io.digest.Digester;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
+import com.pixbits.lib.log.ProgressLogger;
 
 import net.sf.sevenzipjbinding.IInArchive;
 
 public class Verifier
 {
   private static final Logger logger = Log.getLogger(Verifier.class);
-  
+  private static final ProgressLogger progressLogger = Log.getProgressLogger(Verifier.class);
+
   
   private final VerifierOptions voptions;
   private final HashCache cache;
@@ -52,9 +54,9 @@ public class Verifier
     this.digester = new Digester(new DigestOptions(Settings.DIGEST_BUFFER_SIZE, true, voptions.matchMD5, voptions.matchSHA1, options.multiThreaded));
   }
   
-  public int verify(RomHandleSet handles) throws IOException
+  public int verify(HandleSet handles) throws IOException
   {
-    logger.startProgress(Log.INFO1, "Verifying roms...");
+    progressLogger.startProgress(Log.INFO1, "Verifying roms...");
     current.set(0);
     total = handles.binaries.size() + handles.archives.size() 
       + handles.nestedArchives.stream().mapToInt(List::size).sum();
@@ -64,7 +66,7 @@ public class Verifier
     found = verify(handles.binaries) + verify(handles.archives);
     found += verifyNested(handles.nestedArchives);
       
-    logger.endProgress();
+    progressLogger.endProgress();
     
     return found;
   }
@@ -84,7 +86,7 @@ public class Verifier
       IInArchive iarchive = null;
       for (NestedArchiveHandle handle : batch)
       {
-        logger.updateProgress(current.getAndIncrement() / total, handle.nestedInternalName);
+        progressLogger.updateProgress(current.getAndIncrement() / total, handle.nestedInternalName);
 
         
         if (!onlyCRC)
@@ -164,7 +166,7 @@ public class Verifier
       stream = stream.parallel();
         
     stream.forEach(StreamException.rethrowConsumer(path -> {      
-      logger.updateProgress(current.getAndIncrement() / total, path.file().getFileName().toString());
+      progressLogger.updateProgress(current.getAndIncrement() / total, path.file().getFileName().toString());
       Rom rom = verify(path);
       
       if (rom != null)

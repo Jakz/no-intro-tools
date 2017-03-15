@@ -26,12 +26,14 @@ import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.xmdb.GameClone;
 import com.github.jakz.nit.exceptions.FatalErrorException;
+import com.github.jakz.nit.scanner.Verifier;
 import com.pixbits.lib.functional.StreamException;
 import com.pixbits.lib.io.archive.Compressor;
 import com.pixbits.lib.io.archive.handles.ArchivePipedInputStream;
 import com.pixbits.lib.io.archive.handles.Handle;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
+import com.pixbits.lib.log.ProgressLogger;
 
 import net.sf.sevenzipjbinding.IInArchive;
 import net.sf.sevenzipjbinding.PropID;
@@ -44,6 +46,7 @@ import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 public class Merger
 {
   private final static Logger logger = Log.getLogger(Merger.class);
+  private final static ProgressLogger progressLogger = Log.getProgressLogger(Merger.class);
   
   GameSet set;
   Options options;
@@ -99,7 +102,7 @@ public class Merger
       //TODO: if merge is in place we should probably just update existing archive
     }
     
-    logger.startProgress(Log.INFO2, "Creating single archive "+dest.toString());
+    progressLogger.startProgress(Log.INFO2, "Creating single archive "+dest.toString());
     compressor.createArchive(dest.resolve(archiveName), handles);
     handles.forEach(h -> h.relocate(destArchive));
   }
@@ -218,7 +221,7 @@ public class Merger
         break;
       case CREATE:
         Files.deleteIfExists(dest); 
-        logger.startProgress(Log.INFO2, "Creating archive "+dest.toString());
+        progressLogger.startProgress(Log.INFO2, "Creating archive "+dest.toString());
         compressor.createArchive(dest, info.handles);
         break;
       case UPDATE:
@@ -234,7 +237,7 @@ public class Merger
         info.handles.stream().filter(rh -> rh.file().equals(dest)).forEach(rh -> rh.relocate(tempArchive));
         
         /* now we can create the new archive by merging items from old archive and the new files */
-        logger.startProgress(Log.INFO2, "Updating archive "+dest.toString());
+        progressLogger.startProgress(Log.INFO2, "Updating archive "+dest.toString());
         compressor.createArchive(dest, info.handles);
         
         /* now it's safe to delete temporary file because otherwise checkExistingArchiveStatus would have returned ArchiveStatus.ERROR */

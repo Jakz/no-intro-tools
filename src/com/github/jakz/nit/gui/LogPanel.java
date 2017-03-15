@@ -18,9 +18,10 @@ import com.pixbits.lib.log.LogAttribute;
 import com.pixbits.lib.log.LogScope;
 import com.pixbits.lib.log.Logger;
 import com.pixbits.lib.log.LoggerFactory;
+import com.pixbits.lib.log.ProgressLogger;
 import com.pixbits.lib.ui.elements.ProgressDialog;
 
-public class LogPanel extends JPanel implements LoggerFactory
+public class LogPanel extends JPanel implements LoggerFactory, ProgressLogger
 {
   private class LoggerReceiver extends Logger
   {
@@ -37,59 +38,8 @@ public class LogPanel extends JPanel implements LoggerFactory
         entries.add(new LogEntry(type, message));
       });
     }
-
-    float lastProgress;
-    String progressMessage;
-    
-    private boolean running = false;
-    private Thread dialogThread = null;
-    private Runnable dialogUpdater = () -> {
-      try
-      {
-        while (running)
-        {
-          Thread.sleep(50);
-          SwingUtilities.invokeLater(() -> { 
-            if (running) manager.update(lastProgress, progressMessage); 
-          });
-        }
-      }
-      catch (InterruptedException e)
-      {
-        manager.finished();
-      }
-    };
-    
-    @Override public void startProgress(Log type, String message)
-    {
-      try
-      {
-        lastProgress = 0;
-        SwingUtilities.invokeAndWait(() -> manager.show(Main.frames.get("main"), message, null));
-        dialogThread = new Thread(dialogUpdater);
-        running = true;
-        dialogThread.start();
-      }
-      catch (Exception e)
-      {
-        e.printStackTrace();
-      }
-    }
-    
-    @Override public synchronized void updateProgress(float percent, String message)
-    {
-      lastProgress = percent;
-      progressMessage = message;
-    }
-    
-    @Override public void endProgress()
-    {
-      running = false;
-      SwingUtilities.invokeLater(manager::finished);
-    }
-    
   }
-  
+    
   private final ProgressDialog.Manager manager = new ProgressDialog.Manager();
   private final LoggerReceiver receiver = new LoggerReceiver(LogScope.ANY);
   
@@ -150,6 +100,56 @@ public class LogPanel extends JPanel implements LoggerFactory
   public Logger build(LogScope scope)
   {
     return receiver;
+  }
+  
+  float lastProgress;
+  String progressMessage;
+  
+  private boolean running = false;
+  private Thread dialogThread = null;
+  private Runnable dialogUpdater = () -> {
+    try
+    {
+      while (running)
+      {
+        Thread.sleep(50);
+        SwingUtilities.invokeLater(() -> { 
+          if (running) manager.update(lastProgress, progressMessage); 
+        });
+      }
+    }
+    catch (InterruptedException e)
+    {
+      manager.finished();
+    }
+  }; 
+  
+  @Override public void startProgress(Log type, String message)
+  {
+    try
+    {
+      lastProgress = 0;
+      SwingUtilities.invokeAndWait(() -> manager.show(Main.frames.get("main"), message, null));
+      dialogThread = new Thread(dialogUpdater);
+      running = true;
+      dialogThread.start();
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+    }
+  }
+  
+  @Override public synchronized void updateProgress(float percent, String message)
+  {
+    lastProgress = percent;
+    progressMessage = message;
+  }
+  
+  @Override public void endProgress()
+  {
+    running = false;
+    SwingUtilities.invokeLater(manager::finished);
   }
 
 }
