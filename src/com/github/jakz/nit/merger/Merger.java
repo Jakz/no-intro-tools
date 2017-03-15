@@ -26,9 +26,10 @@ import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.xmdb.GameClone;
 import com.github.jakz.nit.exceptions.FatalErrorException;
-import com.github.jakz.nit.handles.Handle;
 import com.pixbits.lib.functional.StreamException;
 import com.pixbits.lib.io.archive.Compressor;
+import com.pixbits.lib.io.archive.handles.ArchivePipedInputStream;
+import com.pixbits.lib.io.archive.handles.Handle;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
 
@@ -88,7 +89,7 @@ public class Merger
     List<Handle> handles = found.stream().map(rom -> rom.handle()).collect(Collectors.toList());
     
     String archiveName = options.datPath.getFileName().toString();
-    archiveName = archiveName.substring(0, archiveName.lastIndexOf('.')) + options.merge.archiveFormat.extension;
+    archiveName = archiveName.substring(0, archiveName.lastIndexOf('.')) + options.merge.archiveFormat.dottedExtension();
     Path destArchive = dest.resolve(archiveName);
     
     if (!options.doesMergeInPlace() && Files.exists(destArchive))
@@ -107,7 +108,7 @@ public class Merger
   {
     found.forEach(StreamException.rethrowConsumer(rom -> {
       //TODO: manage games with multiple roms per game
-      final Path finalPath = dest.resolve(rom.game().name+options.merge.archiveFormat.extension);
+      final Path finalPath = dest.resolve(rom.game().name+options.merge.archiveFormat.dottedExtension());
       final ArchiveInfo archive = new ArchiveInfo(rom.game().name, rom.handle());
       createArchive(finalPath, archive);
       archive.relocate(finalPath);
@@ -154,7 +155,7 @@ public class Merger
     logger.i1("Merger is going to create %d archives.", clones.size()+handles.size());
         
     Consumer<ArchiveInfo> compress = StreamException.rethrowConsumer(a -> { 
-        final Path path = dest.resolve(a.name+options.merge.archiveFormat.extension);
+        final Path path = dest.resolve(a.name+options.merge.archiveFormat.dottedExtension());
         createArchive(path, a);
         a.relocate(path);
     });
@@ -191,7 +192,7 @@ public class Merger
         {
           try (OutputStream os = Files.newOutputStream(path))
           {
-            byte[] buffer = new byte[Settings.PIPED_BUFFER_SIZE];
+            byte[] buffer = new byte[ArchivePipedInputStream.getBufferSize()];
             int i = -1;
             
             while ((i = is.read(buffer)) > 0)
@@ -227,7 +228,7 @@ public class Merger
         /* if archive needs to be updated it means it alrady exists and already present roms should be merged with new roms to the archive
          * so we first rename the existing archive to a temporary name
          */
-        Path tempArchive = Files.createTempFile(dest.getParent(), "", "." + options.merge.archiveFormat.extension);
+        Path tempArchive = Files.createTempFile(dest.getParent(), "", options.merge.archiveFormat.dottedExtension());
         
         /* then we update all references to old archive to new name */
         info.handles.stream().filter(rh -> rh.file().equals(dest)).forEach(rh -> rh.relocate(tempArchive));

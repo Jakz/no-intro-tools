@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.github.jakz.nit.handles.Handle;
+import com.pixbits.lib.io.archive.handles.Handle;
 
 class ArchiveInfo
 {

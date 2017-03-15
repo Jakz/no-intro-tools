@@ -14,6 +14,7 @@ import com.github.jakz.nit.Args;
 import com.github.jakz.nit.Settings;
 import com.github.jakz.nit.exceptions.FatalErrorException;
 import com.github.jakz.nit.parser.DatFormat;
+import com.pixbits.lib.io.archive.ArchiveFormat;
 
 public class CreatorOptions
 {
@@ -61,9 +62,7 @@ public class CreatorOptions
     format = (DatFormat)properties.get("format");
     mode = (Mode)properties.get("mode");
     
-    archiveMatcher = FileSystems.getDefault().getPathMatcher(Arrays.asList(Settings.archiveExtensions).stream()
-        .map(f -> f.extension)
-        .collect(Collectors.joining(",", "glob:*.{", "}")));
+    archiveMatcher = ArchiveFormat.getReadableMatcher();
     
     List<String> extensions = (List<String>)properties.get("exts");
     binaryExtensions = extensions.toArray(new String[extensions.size()]);

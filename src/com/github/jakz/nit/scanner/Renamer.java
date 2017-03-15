@@ -15,8 +15,8 @@ import java.util.stream.Stream;
 
 import com.github.jakz.nit.Options;
 import com.github.jakz.nit.data.Rom;
-import com.github.jakz.nit.handles.Handle;
 import com.pixbits.lib.functional.StreamException;
+import com.pixbits.lib.io.archive.handles.Handle;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
 

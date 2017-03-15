@@ -8,9 +8,6 @@ import java.nio.file.Path;
 import java.util.Base64;
 import java.util.zip.GZIPOutputStream;
 
-import com.github.jakz.nit.handles.ArchiveHandle;
-import com.github.jakz.nit.handles.BinaryHandle;
-import com.github.jakz.nit.handles.Handle;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -19,6 +16,9 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.pixbits.lib.io.archive.handles.ArchiveHandle;
+import com.pixbits.lib.io.archive.handles.BinaryHandle;
+import com.pixbits.lib.io.archive.handles.Handle;
 
 import net.sf.sevenzipjbinding.ArchiveFormat;
 

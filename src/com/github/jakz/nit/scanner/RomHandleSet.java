@@ -2,9 +2,9 @@ package com.github.jakz.nit.scanner;
 
 import java.util.List;
 
-import com.github.jakz.nit.handles.ArchiveHandle;
-import com.github.jakz.nit.handles.BinaryHandle;
-import com.github.jakz.nit.handles.NestedArchiveHandle;
+import com.pixbits.lib.io.archive.handles.ArchiveHandle;
+import com.pixbits.lib.io.archive.handles.BinaryHandle;
+import com.pixbits.lib.io.archive.handles.NestedArchiveHandle;
 
 public class RomHandleSet
 {

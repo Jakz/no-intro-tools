@@ -23,18 +23,19 @@ import com.github.jakz.nit.Settings;
 import com.github.jakz.nit.config.ScannerOptions;
 import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.exceptions.RomPathNotFoundException;
-import com.github.jakz.nit.handles.ArchiveHandle;
-import com.github.jakz.nit.handles.BinaryHandle;
-import com.github.jakz.nit.handles.MemoryArchive;
-import com.github.jakz.nit.handles.NestedArchiveHandle;
 import com.pixbits.lib.io.FileUtils;
 import com.pixbits.lib.io.FolderScanner;
+import com.pixbits.lib.io.archive.ArchiveFormat;
+import com.pixbits.lib.io.archive.FormatUnrecognizedException;
+import com.pixbits.lib.io.archive.handles.ArchiveHandle;
+import com.pixbits.lib.io.archive.handles.BinaryHandle;
+import com.pixbits.lib.io.archive.handles.MemoryArchive;
+import com.pixbits.lib.io.archive.handles.NestedArchiveHandle;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
 import com.pixbits.lib.exceptions.FileNotFoundException;
 import com.pixbits.lib.functional.StreamException;
 
-import net.sf.sevenzipjbinding.ArchiveFormat;
 import net.sf.sevenzipjbinding.IInArchive;
 import net.sf.sevenzipjbinding.PropID;
 import net.sf.sevenzipjbinding.SevenZip;
@@ -44,7 +45,7 @@ public class Scanner
 {
   private static final Logger logger = Log.getLogger(Scanner.class);
   
-  final public static PathMatcher archiveMatcher = FileSystems.getDefault().getPathMatcher("glob:*.{zip,rar,7z}");
+  final public static PathMatcher archiveMatcher = ArchiveFormat.getReadableMatcher();
   
   final private GameSet set;
   final private ScannerOptions options;
@@ -60,9 +61,9 @@ public class Scanner
     try
     {
       RandomAccessFileInStream rfile = new RandomAccessFileInStream(new RandomAccessFile(path.toFile(), "r"));
-      ArchiveFormat format = Settings.guessFormatForFilename(path.getFileName().toString());
+      ArchiveFormat format = ArchiveFormat.guessFormat(path);
       
-      IInArchive archive = SevenZip.openInArchive(format, rfile);
+      IInArchive archive = SevenZip.openInArchive(format.nativeFormat, rfile);
 
       if (archive.getArchiveFormat() == null)
         throw new FormatUnrecognizedException(path, "Archive format unrecognized");
@@ -95,8 +96,8 @@ public class Scanner
 
         MemoryArchive memoryArchive = MemoryArchive.load(archive, index, size);
 
-        ArchiveFormat format = Settings.guessFormatForFilename(fileName);
-        IInArchive marchive = memoryArchive.open(format);
+        ArchiveFormat format = ArchiveFormat.guessFormat(fileName);
+        IInArchive marchive = memoryArchive.open(format.nativeFormat);
         
         int itemCount = marchive.getNumberOfItems();
         
@@ -109,8 +110,8 @@ public class Scanner
           { 
             logger.i3("Found nested entry in memory nested inside %s: %s", fileName, data.fileName);
             
-            handlesForArchive.add(new NestedArchiveHandle(archivePath, archive.getArchiveFormat(), fileName, index, 
-                marchive.getArchiveFormat(), data.fileName, i, data.size, data.compressedSize, data.crc));
+            handlesForArchive.add(new NestedArchiveHandle(archivePath, ArchiveFormat.formatForNative(archive.getArchiveFormat()), fileName, index, 
+                ArchiveFormat.formatForNative(marchive.getArchiveFormat()), data.fileName, i, data.size, data.compressedSize, data.crc));
           }
         }
         
@@ -157,7 +158,7 @@ public class Scanner
       return null;
     
     /* if file ends with archive extension */
-    if (nested != null && Arrays.asList(Settings.archiveExtensions).stream().anyMatch(f -> fileName.endsWith("."+f.extension)))
+    if (nested != null && ArchiveFormat.guessFormat(fileName) != null)
     {                
       logger.i3("Found a nested archive inside %s: %s ", path.getFileName(), FileUtils.lastPathComponent(fileName));
       nested.computeIfAbsent(path, p -> new TreeSet<>()).add(i);
@@ -231,7 +232,7 @@ public class Scanner
               /* TODO: check extension of file? */
               ArchiveEntryData data = scanArchive(archive, i, path, nestedArchiveHandles, skipped);
               if (data != null)
-                archiveHandles.add(new ArchiveHandle(path, archive.getArchiveFormat(), data.fileName, i, data.size, data.compressedSize, data.crc));              
+                archiveHandles.add(new ArchiveHandle(path, ArchiveFormat.formatForNative(archive.getArchiveFormat()), data.fileName, i, data.size, data.compressedSize, data.crc));              
             }
           }
         }
