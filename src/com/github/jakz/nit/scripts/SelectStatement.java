@@ -6,8 +6,7 @@ import com.github.jakz.nit.data.Game;
 
 public class SelectStatement implements Statement
 {
-  private final Predicate<Game> query;
-  SelectStatement(Predicate<Game> query) { this.query = query; }
+  SelectStatement(Predicate<Game> query) { }
   
   public void execute(ScriptEnvironment env)
   {

@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.nio.file.Path;
 import java.util.Base64;
 import java.util.zip.GZIPOutputStream;
 
@@ -19,8 +18,6 @@ import com.google.gson.JsonSerializer;
 import com.pixbits.lib.io.archive.handles.ArchiveHandle;
 import com.pixbits.lib.io.archive.handles.BinaryHandle;
 import com.pixbits.lib.io.archive.handles.Handle;
-
-import net.sf.sevenzipjbinding.ArchiveFormat;
 
 public class HandleSerializer
 {
@@ -74,7 +71,7 @@ public class HandleSerializer
         DataOutputStream dos = new DataOutputStream(zos);
     )
     {
-      Base64.Encoder encoder = Base64.getEncoder();
+      Base64.getEncoder();
       
       if (handle instanceof BinaryHandle)
       {

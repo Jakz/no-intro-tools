@@ -16,8 +16,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.github.jakz.nit.config.ScannerOptions;
 import com.github.jakz.nit.data.GameSet;
-import com.github.jakz.nit.emitter.GameSetCreator;
-import com.github.jakz.nit.exceptions.RomPathNotFoundException;
 import com.pixbits.lib.io.FileUtils;
 import com.pixbits.lib.io.FolderScanner;
 import com.pixbits.lib.io.archive.ArchiveFormat;
@@ -29,7 +27,6 @@ import com.pixbits.lib.io.archive.handles.NestedArchiveHandle;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
 import com.pixbits.lib.log.ProgressLogger;
-import com.pixbits.lib.exceptions.FileNotFoundException;
 import com.pixbits.lib.functional.StreamException;
 
 import net.sf.sevenzipjbinding.IInArchive;
@@ -196,16 +193,8 @@ public class Scanner
   {
     FolderScanner folderScanner = new FolderScanner(options.includeSubfolders);
     
-    Set<Path> paths = null;
-    try
-    {
-      paths = folderScanner.scan(spaths);
-    }
-    catch (FileNotFoundException e)
-    {
-      throw new RomPathNotFoundException(e.path);
-    }
-    
+    Set<Path> paths = folderScanner.scan(spaths);
+
     Set<Path> faultyArchives = new HashSet<>();
     Set<String> skipped = new HashSet<>();
     

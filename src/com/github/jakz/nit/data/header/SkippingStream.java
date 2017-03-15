@@ -10,7 +10,6 @@ public class SkippingStream extends InputStream
   private final byte[] values;
   private final int bytesToSkip;
   
-  private int offset;
   private final byte[] buffer;
   
   private InputStream is;
@@ -27,7 +26,6 @@ public class SkippingStream extends InputStream
   
   public SkippingStream(InputStream is, byte[] values, int bytesToSkip)
   {
-    offset = 0;
     this.values = values;
     this.bytesToSkip = bytesToSkip;
     this.is = is;

@@ -2,7 +2,6 @@ package com.github.jakz.nit.emitter;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -37,7 +36,6 @@ import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.ProgressLogger;
 import com.pixbits.lib.functional.StreamException;
 
-import net.sf.sevenzipjbinding.IInArchive;
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 
@@ -265,12 +263,9 @@ public class GameSetCreator
   public class FileScanner
   {
     private FolderAsArchiveEntry folderArchive;
-    private GameSetCreator creator;
-    
     public FileScanner()
     {
       folderArchive = null;
-      creator = GameSetCreator.this;
     }
 
     public void scan(Path root) throws IOException

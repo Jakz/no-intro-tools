@@ -26,7 +26,6 @@ import com.github.jakz.nit.data.GameCataloguer;
 import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.GameSetInfo;
 import com.github.jakz.nit.data.Rom;
-import com.github.jakz.nit.data.System;
 import com.github.jakz.nit.data.header.Header;
 import com.github.jakz.nit.merger.TitleNormalizer;
 import com.pixbits.lib.io.xml.XMLParser;

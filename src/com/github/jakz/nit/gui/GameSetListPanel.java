@@ -7,14 +7,9 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
-
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -26,7 +21,6 @@ import javax.swing.border.Border;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 
-import com.github.jakz.nit.config.GameSetConfig;
 import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.scanner.Scanner;
 import com.pixbits.lib.lang.StringUtils;
@@ -37,7 +31,6 @@ public class GameSetListPanel extends JPanel
   private class SetTableRenderer implements TableCellRenderer
   {
     private final TableCellRenderer renderer;
-    public Color evenColor = Color.white;
     public Color oddColor = UIManager.getColor("Table.alternateRowColor");
     public Color selectedColor = UIManager.getColor("Table[Enabled+Selected].textBackground");
     
@@ -151,7 +144,7 @@ public class GameSetListPanel extends JPanel
     
     void verify()
     {
-      Path path = romsetPath.getPath();
+      romsetPath.getPath();
       
       
       

@@ -46,7 +46,7 @@ public class ClrMameProEmitter implements Emitter
     
     if (set.clones().size() > 0)
     {
-      CloneSet clones = set.clones();
+      set.clones();
     }
   }
 }

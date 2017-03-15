@@ -5,13 +5,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.github.jakz.nit.Args;
-import com.github.jakz.nit.Settings;
 import com.github.jakz.nit.exceptions.FatalErrorException;
 import com.github.jakz.nit.parser.DatFormat;
 import com.pixbits.lib.io.archive.ArchiveFormat;

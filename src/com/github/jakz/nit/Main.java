@@ -1,6 +1,5 @@
 package com.github.jakz.nit;
 
-import java.awt.Insets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -8,9 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 
 import com.github.jakz.nit.config.Config;
 import com.github.jakz.nit.config.MergeOptions;
@@ -20,7 +16,6 @@ import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.xmdb.CloneSet;
 import com.github.jakz.nit.emitter.CreatorOptions;
 import com.github.jakz.nit.exceptions.FatalErrorException;
-import com.github.jakz.nit.exceptions.RomPathNotFoundException;
 import com.github.jakz.nit.gui.FrameSet;
 import com.github.jakz.nit.gui.GameSetComparePanel;
 import com.github.jakz.nit.gui.SimpleFrame;
@@ -29,10 +24,10 @@ import com.github.jakz.nit.scanner.Renamer;
 import com.github.jakz.nit.scanner.HandleSet;
 import com.github.jakz.nit.scanner.Scanner;
 import com.github.jakz.nit.scanner.Verifier;
+import com.pixbits.lib.exceptions.FileNotFoundException;
 import com.pixbits.lib.functional.StreamException;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
-import com.pixbits.lib.log.LoggerFactory;
 import com.pixbits.lib.log.ProgressLogger;
 import com.pixbits.lib.ui.UIUtils;
 
@@ -62,7 +57,7 @@ public class Main
         
     try
     {
-      Config config = Config.load(Paths.get("./config.json"));
+      Config.load(Paths.get("./config.json"));
 
       
       UIUtils.setNimbusLNF();
@@ -209,9 +204,9 @@ public class Main
           stack[0].getMethodName(),
           stack[0].getLineNumber());
     }
-    catch (RomPathNotFoundException e)
+    catch (FileNotFoundException e)
     {
-      logger.e("unable to find specified rom path: "+e.path);
+      logger.e("unable to find specified path: "+e.path);
     }
     catch (SevenZipNativeInitializationException e)
     {

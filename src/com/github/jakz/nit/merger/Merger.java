@@ -8,7 +8,6 @@ import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -20,13 +19,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.github.jakz.nit.Options;
-import com.github.jakz.nit.Settings;
 import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.xmdb.GameClone;
 import com.github.jakz.nit.exceptions.FatalErrorException;
-import com.github.jakz.nit.scanner.Verifier;
 import com.pixbits.lib.functional.StreamException;
 import com.pixbits.lib.io.archive.Compressor;
 import com.pixbits.lib.io.archive.handles.ArchivePipedInputStream;
@@ -313,12 +310,10 @@ public class Merger
   
   private class ExistingArchive
   {
-    final Path file;
     final Set<Handle> handles;
     
     ExistingArchive(Path file)
     {
-      this.file = file;
       this.handles = new HashSet<>();
     }
   };

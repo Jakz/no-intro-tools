@@ -6,8 +6,7 @@ import com.github.jakz.nit.data.Game;
 
 public class FindStatement implements Statement
 {
-  private final Predicate<Game> query;
-  FindStatement(Predicate<Game> query) { this.query = query; }
+  FindStatement(Predicate<Game> query) { }
   
   public void execute(ScriptEnvironment env)
   {

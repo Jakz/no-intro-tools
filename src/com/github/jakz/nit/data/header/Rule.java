@@ -17,13 +17,10 @@ public class Rule
   public final long endOffset;
   public final Type type;
   
-  private final Test[] tests;
-
   public Rule(Type type, long startOffset, long endOffset, Test[] tests)
   {
     this.type = type;
     this.startOffset = startOffset;
     this.endOffset = endOffset;
-    this.tests = tests;
   }
 }

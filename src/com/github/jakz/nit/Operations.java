@@ -8,7 +8,6 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,7 +16,6 @@ import javax.swing.JFrame;
 import org.xml.sax.SAXException;
 
 import com.github.jakz.nit.config.Config;
-import com.github.jakz.nit.config.GameSetConfig;
 import com.github.jakz.nit.config.MergeOptions;
 import com.github.jakz.nit.config.ScannerOptions;
 import com.github.jakz.nit.data.GameSet;
@@ -36,7 +34,6 @@ import com.github.jakz.nit.parser.XMDBParser;
 import com.github.jakz.nit.scanner.HandleSet;
 import com.github.jakz.nit.scanner.Scanner;
 import com.github.jakz.nit.scripts.ConsolePanel;
-import com.pixbits.lib.io.FileUtils;
 import com.pixbits.lib.io.FolderScanner;
 import com.pixbits.lib.io.xml.XMLEmbeddedDTD;
 import com.pixbits.lib.io.xml.XMLParser;
@@ -201,9 +198,8 @@ public class Operations
   
   public static void openLogFrame() throws IOException
   {
-    JFrame main = Main.frames.get("main");
-    JFrame frame = Main.frames.get("log");
-    //if (frame == null)
+    Main.frames.get("main");
+    Main.frames.get("log");
       
   }
   
