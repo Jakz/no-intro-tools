@@ -98,7 +98,7 @@ public class Options
     headerPath = Paths.get("dats/headers");
     cloneDatPath = Paths.get("dats/gb.xmdb");
     
-    dataPath = new Path[] { Paths.get("/Users/jack/Desktop/gb.zip") };
+    dataPath = new Path[] { Paths.get("/Users/jack/Desktop/gb") };
     //dataPath = new Path[] { Paths.get("/Users/jack/Desktop/romset/gb") };
 
     mergePath = Paths.get("/Users/jack/Desktop/gbcm");

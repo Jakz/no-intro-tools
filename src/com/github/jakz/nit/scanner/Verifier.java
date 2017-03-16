@@ -16,6 +16,7 @@ import com.github.jakz.nit.data.HashCache;
 import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.header.SkippingStream;
 import com.pixbits.lib.functional.StreamException;
+import com.pixbits.lib.io.archive.HandleSet;
 import com.pixbits.lib.io.archive.handles.Handle;
 import com.pixbits.lib.io.archive.handles.MemoryArchive;
 import com.pixbits.lib.io.archive.handles.NestedArchiveHandle;

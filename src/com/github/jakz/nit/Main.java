@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 import com.github.jakz.nit.config.Config;
 import com.github.jakz.nit.config.MergeOptions;
-import com.github.jakz.nit.config.ScannerOptions;
 import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.xmdb.CloneSet;
@@ -21,11 +20,12 @@ import com.github.jakz.nit.gui.GameSetComparePanel;
 import com.github.jakz.nit.gui.SimpleFrame;
 import com.github.jakz.nit.merger.Merger;
 import com.github.jakz.nit.scanner.Renamer;
-import com.github.jakz.nit.scanner.HandleSet;
-import com.github.jakz.nit.scanner.Scanner;
 import com.github.jakz.nit.scanner.Verifier;
 import com.pixbits.lib.exceptions.FileNotFoundException;
 import com.pixbits.lib.functional.StreamException;
+import com.pixbits.lib.io.archive.HandleSet;
+import com.pixbits.lib.io.archive.Scanner;
+import com.pixbits.lib.io.archive.ScannerOptions;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
 import com.pixbits.lib.log.ProgressLogger;
@@ -147,7 +147,7 @@ public class Main
       
       ScannerOptions soptions = new ScannerOptions();
       soptions.discardUnknownSizes = true;
-      soptions.includeSubfolders = true;
+      soptions.scanSubfolders = true;
       soptions.multithreaded = false;
       
       HandleSet handles = Operations.scanEntriesForGameSet(set, Arrays.asList(options.dataPath), soptions);

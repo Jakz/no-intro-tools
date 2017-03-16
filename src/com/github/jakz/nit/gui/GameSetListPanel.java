@@ -22,7 +22,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 
 import com.github.jakz.nit.data.GameSet;
-import com.github.jakz.nit.scanner.Scanner;
+import com.pixbits.lib.io.archive.Scanner;
 import com.pixbits.lib.lang.StringUtils;
 import com.pixbits.lib.ui.elements.BrowseButton;
 

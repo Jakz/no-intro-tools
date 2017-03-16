@@ -9,6 +9,7 @@ import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import javax.swing.JFrame;
@@ -17,7 +18,6 @@ import org.xml.sax.SAXException;
 
 import com.github.jakz.nit.config.Config;
 import com.github.jakz.nit.config.MergeOptions;
-import com.github.jakz.nit.config.ScannerOptions;
 import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.xmdb.CloneSet;
 import com.github.jakz.nit.emitter.ClrMameProEmitter;
@@ -31,10 +31,11 @@ import com.github.jakz.nit.gui.SimpleFrame;
 import com.github.jakz.nit.parser.ClrMameProParserDat;
 import com.github.jakz.nit.parser.DatFormat;
 import com.github.jakz.nit.parser.XMDBParser;
-import com.github.jakz.nit.scanner.HandleSet;
-import com.github.jakz.nit.scanner.Scanner;
 import com.github.jakz.nit.scripts.ConsolePanel;
 import com.pixbits.lib.io.FolderScanner;
+import com.pixbits.lib.io.archive.HandleSet;
+import com.pixbits.lib.io.archive.Scanner;
+import com.pixbits.lib.io.archive.ScannerOptions;
 import com.pixbits.lib.io.xml.XMLEmbeddedDTD;
 import com.pixbits.lib.io.xml.XMLParser;
 import com.pixbits.lib.log.Log;
@@ -86,12 +87,29 @@ public class Operations
   
   public static HandleSet scanEntriesForGameSet(GameSet set, List<Path> paths, ScannerOptions options) throws IOException
   {
+    Logger logger = Log.getLogger(Scanner.class);
+    
     Scanner scanner = new Scanner(options);
     
+    scanner.setOnEntryFound(h -> logger.i("Found entry: %s", h.toString()));
+       
     options.assumeCRCisCorrect = set.header == null;
-    options.shouldSkip = s -> set.cache().isValidSize(s.size) || !options.discardUnknownSizes;
+    options.shouldSkip = s -> !set.cache().isValidSize(s.size) && options.discardUnknownSizes;
+    // set.cache().isValidSize(s.size) || !options.discardUnknownSizes; //
     
-    return scanner.computeHandles(paths);
+    HandleSet handles = scanner.computeHandles(paths);
+    
+    handles.faultyArchives.forEach(p -> logger.w("File "+p.getFileName()+" is not a valid archive."));
+
+    logger.i1("Found %d potential matches (%d binary, %d inside archives, %d nested inside %d archives).", 
+        handles.total(), handles.binaryCount(), handles.archivedCount(), handles.nestedCount(), handles.nestedArchives.size());
+    
+    if (!handles.skipped.isEmpty())
+      logger.i1("Skipped %d entries:", handles.skipped.size());
+    
+    handles.skipped.forEach(s -> logger.i3("> %s", s));
+    
+    return handles;
   }
   
   public static void cleanMergePath(GameSet set, Options options) throws IOException
