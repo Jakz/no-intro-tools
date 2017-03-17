@@ -4,10 +4,12 @@ import java.util.Arrays;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
+import com.pixbits.lib.io.archive.Verifiable;
 import com.pixbits.lib.io.archive.handles.Handle;
 import com.pixbits.lib.io.digest.DigestInfo;
+import com.pixbits.lib.io.digest.DigestableCRC;
 
-public class Rom
+public class Rom implements Verifiable
 {
   public final String name;
   
@@ -34,7 +36,7 @@ public class Rom
     this(name, size, info.crc, info.md5, info.sha1);
   }
   
-  public void setHandle(Handle handle) { this.handle = handle; }
+  @Override public void setHandle(Handle handle) { this.handle = handle; }
   public Handle handle() { return handle; }
   
   void setGame(Game game) { this.game = game; }
@@ -68,5 +70,14 @@ public class Rom
   {
     return size == rom.size && crc32 == rom.crc32 && (md5 == null || rom.md5 == null || Arrays.equals(md5,rom.md5)) && (sha1 == null || rom.sha1 == null || Arrays.equals(sha1,rom.sha1));
   }
+  
+  @Override public String name() { return name; }
+
+  @Override public long size() { return size; }
+  @Override public long crc() { return crc32; }
+  @Override public byte[] sha1() { return sha1; }
+  @Override public byte[] md5() { return md5; }
+  
+  @Override public boolean alreadyHasHandle() { return handle != null; }
   
 }

@@ -12,6 +12,7 @@ import com.github.jakz.nit.config.Config;
 import com.github.jakz.nit.config.MergeOptions;
 import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.GameSet;
+import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.xmdb.CloneSet;
 import com.github.jakz.nit.emitter.CreatorOptions;
 import com.github.jakz.nit.exceptions.FatalErrorException;
@@ -20,12 +21,15 @@ import com.github.jakz.nit.gui.GameSetComparePanel;
 import com.github.jakz.nit.gui.SimpleFrame;
 import com.github.jakz.nit.merger.Merger;
 import com.github.jakz.nit.scanner.Renamer;
-import com.github.jakz.nit.scanner.Verifier;
 import com.pixbits.lib.exceptions.FileNotFoundException;
 import com.pixbits.lib.functional.StreamException;
 import com.pixbits.lib.io.archive.HandleSet;
 import com.pixbits.lib.io.archive.Scanner;
 import com.pixbits.lib.io.archive.ScannerOptions;
+import com.pixbits.lib.io.archive.Verifier;
+import com.pixbits.lib.io.archive.VerifierHelper;
+import com.pixbits.lib.io.digest.DigestOptions;
+import com.pixbits.lib.io.digest.Digester;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
 import com.pixbits.lib.log.ProgressLogger;
@@ -152,8 +156,10 @@ public class Main
       
       HandleSet handles = Operations.scanEntriesForGameSet(set, Arrays.asList(options.dataPath), soptions);
 
-      Verifier verifier = new Verifier(options, set);
-      
+      options.verifier.matchMD5 = true;
+      options.verifier.matchSHA1 = true;
+            
+      VerifierHelper<Rom> verifier = new VerifierHelper<Rom>(options.verifier, options.multiThreaded, set.cache());
       int foundCount = verifier.verify(handles);
       
       logger.i1("Found %d verified roms", foundCount);

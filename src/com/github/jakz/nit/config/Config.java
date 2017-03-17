@@ -17,7 +17,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
-import com.pixbits.lib.io.json.PathAdapter;
+import com.pixbits.lib.json.PathAdapter;
 
 public class Config
 {

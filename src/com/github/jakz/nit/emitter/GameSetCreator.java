@@ -17,7 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.github.jakz.nit.Settings;
 import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.GameSetInfo;
@@ -35,9 +34,6 @@ import com.pixbits.lib.io.digest.Digester;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.ProgressLogger;
 import com.pixbits.lib.functional.StreamException;
-
-import net.sf.sevenzipjbinding.SevenZip;
-import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 
 public class GameSetCreator
 {
@@ -58,7 +54,7 @@ public class GameSetCreator
   public GameSetCreator(CreatorOptions options)
   {
     this.options = options;
-    digester = new Digester(new DigestOptions(Settings.DIGEST_BUFFER_SIZE, options.shouldCalculateCRC(), options.shouldCalculateMD5(), options.shouldCalculateSHA1(), options.multiThreaded));
+    digester = new Digester(new DigestOptions(options.shouldCalculateCRC(), options.shouldCalculateMD5(), options.shouldCalculateSHA1(), options.multiThreaded));
     
     entries = new HashSet<>();
     

@@ -10,6 +10,7 @@ import com.github.jakz.nit.config.GameSetConfig;
 import com.github.jakz.nit.data.header.Header;
 import com.github.jakz.nit.data.xmdb.CloneSet;
 import com.github.jakz.nit.data.xmdb.GameClone;
+import com.pixbits.lib.io.digest.HashCache;
 
 public class GameSet implements Iterable<Game>
 {
@@ -19,7 +20,7 @@ public class GameSet implements Iterable<Game>
   private final Game[] games;
   private final Map<String, Game> gameMap;
   
-  final private HashCache cache;
+  final private HashCache<Rom> cache;
   
   private CloneSet clones;
   
@@ -31,7 +32,7 @@ public class GameSet implements Iterable<Game>
     this.info = info;
     this.header = header;
     this.games = games;
-    this.cache = new HashCache(this);
+    this.cache = new HashCache<Rom>(Arrays.stream(games).flatMap(g -> g.stream()));
     this.gameMap = new HashMap<>();
     this.config = new GameSetConfig();
     
@@ -51,7 +52,7 @@ public class GameSet implements Iterable<Game>
     info.computeStats(this);
   }
   
-  public HashCache cache() { return cache; }
+  public HashCache<Rom> cache() { return cache; }
 
   public Game get(String name) { return gameMap.get(name); }
   public Game get(int index) { return games[index]; }

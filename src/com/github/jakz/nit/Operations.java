@@ -1,11 +1,14 @@
 package com.github.jakz.nit;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -32,12 +35,18 @@ import com.github.jakz.nit.parser.ClrMameProParserDat;
 import com.github.jakz.nit.parser.DatFormat;
 import com.github.jakz.nit.parser.XMDBParser;
 import com.github.jakz.nit.scripts.ConsolePanel;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.pixbits.lib.io.FolderScanner;
 import com.pixbits.lib.io.archive.HandleSet;
 import com.pixbits.lib.io.archive.Scanner;
 import com.pixbits.lib.io.archive.ScannerOptions;
+import com.pixbits.lib.io.archive.handles.Handle;
+import com.pixbits.lib.io.archive.handles.JsonHandleAdapter;
 import com.pixbits.lib.io.xml.XMLEmbeddedDTD;
 import com.pixbits.lib.io.xml.XMLParser;
+import com.pixbits.lib.json.PathAdapter;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
 import com.pixbits.lib.functional.StreamException;
@@ -108,6 +117,19 @@ public class Operations
       logger.i1("Skipped %d entries:", handles.skipped.size());
     
     handles.skipped.forEach(s -> logger.i3("> %s", s));
+    
+    /*GsonBuilder builder = new GsonBuilder();
+    builder.setPrettyPrinting();
+    builder.registerTypeHierarchyAdapter(Handle.class, new JsonHandleAdapter());
+    builder.registerTypeHierarchyAdapter(Path.class, new PathAdapter());
+    
+    Gson gson = builder.create();
+    
+    try (FileWriter wrt = new FileWriter("test.json"))
+    {
+      gson.toJson(handles.stream().collect(Collectors.toList()), new TypeToken<List<Handle>>(){}.getType(), wrt);
+    }*/
+    
     
     return handles;
   }
