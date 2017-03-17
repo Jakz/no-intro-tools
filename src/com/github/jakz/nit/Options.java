@@ -55,7 +55,8 @@ public class Options
     multiThreaded = !args.getBoolean(Args.NO_MULTI_THREAD);
     
     merge = new MergeOptions(args);
-    verifier = new VerifierOptions(args);
+    
+    verifier = new VerifierOptions(!args.getBoolean(Args.NO_SIZE_CHECK), !args.getBoolean(Args.NO_MD5_CHECK), !args.getBoolean(Args.NO_SHA1_CHECK), !args.getBoolean(Args.NO_NESTED_ARCHIVES));
 
     forceMergeInPlace = args.getBoolean(Args.IN_PLACE_MERGE);
 

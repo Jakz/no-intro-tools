@@ -36,7 +36,7 @@ public class Rom implements Verifiable
     this(name, size, info.crc, info.md5, info.sha1);
   }
   
-  @Override public void setHandle(Handle handle) { this.handle = handle; }
+  public void setHandle(Handle handle) { this.handle = handle; }
   public Handle handle() { return handle; }
   
   void setGame(Game game) { this.game = game; }
@@ -71,13 +71,8 @@ public class Rom implements Verifiable
     return size == rom.size && crc32 == rom.crc32 && (md5 == null || rom.md5 == null || Arrays.equals(md5,rom.md5)) && (sha1 == null || rom.sha1 == null || Arrays.equals(sha1,rom.sha1));
   }
   
-  @Override public String name() { return name; }
-
   @Override public long size() { return size; }
   @Override public long crc() { return crc32; }
   @Override public byte[] sha1() { return sha1; }
-  @Override public byte[] md5() { return md5; }
-  
-  @Override public boolean alreadyHasHandle() { return handle != null; }
-  
+  @Override public byte[] md5() { return md5; }  
 }

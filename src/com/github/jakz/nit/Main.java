@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -28,11 +29,13 @@ import com.pixbits.lib.io.archive.Scanner;
 import com.pixbits.lib.io.archive.ScannerOptions;
 import com.pixbits.lib.io.archive.Verifier;
 import com.pixbits.lib.io.archive.VerifierHelper;
+import com.pixbits.lib.io.archive.handles.Handle;
 import com.pixbits.lib.io.digest.DigestOptions;
 import com.pixbits.lib.io.digest.Digester;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
 import com.pixbits.lib.log.ProgressLogger;
+import com.pixbits.lib.log.StdoutProgressLogger;
 import com.pixbits.lib.ui.UIUtils;
 
 import net.sf.sevenzipjbinding.SevenZip;
@@ -143,7 +146,7 @@ public class Main
       }
       
       Options options = new Options();
-      Log.setProgressLogger(ProgressLogger.STDOUT_PROGRESS);
+      Log.setFactory(StdoutProgressLogger.PLAIN_BUILDER);
       
       GameSet set = Operations.loadGameSet(options);
       CloneSet clones = Operations.loadCloneSetFromXMDB(set, options.cloneDatPath);
@@ -156,14 +159,8 @@ public class Main
       
       HandleSet handles = Operations.scanEntriesForGameSet(set, Arrays.asList(options.dataPath), soptions);
 
-      options.verifier.matchMD5 = true;
-      options.verifier.matchSHA1 = true;
-            
-      VerifierHelper<Rom> verifier = new VerifierHelper<Rom>(options.verifier, options.multiThreaded, set.cache());
-      int foundCount = verifier.verify(handles);
+      Operations.verifyGameSet(set, handles, options);
       
-      logger.i1("Found %d verified roms", foundCount);
-      //found.forEach(r -> Logger.log(Log.INFO3, "> %s", r.rom.game.name));
       
       if (!options.skipRename)
       {

@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import javax.swing.JFrame;
@@ -22,6 +24,7 @@ import org.xml.sax.SAXException;
 import com.github.jakz.nit.config.Config;
 import com.github.jakz.nit.config.MergeOptions;
 import com.github.jakz.nit.data.GameSet;
+import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.xmdb.CloneSet;
 import com.github.jakz.nit.emitter.ClrMameProEmitter;
 import com.github.jakz.nit.emitter.CreatorOptions;
@@ -42,13 +45,19 @@ import com.pixbits.lib.io.FolderScanner;
 import com.pixbits.lib.io.archive.HandleSet;
 import com.pixbits.lib.io.archive.Scanner;
 import com.pixbits.lib.io.archive.ScannerOptions;
+import com.pixbits.lib.io.archive.Verifier;
+import com.pixbits.lib.io.archive.VerifierHelper;
+import com.pixbits.lib.io.archive.handles.ArchiveHandle;
+import com.pixbits.lib.io.archive.handles.BinaryHandle;
 import com.pixbits.lib.io.archive.handles.Handle;
 import com.pixbits.lib.io.archive.handles.JsonHandleAdapter;
+import com.pixbits.lib.io.archive.handles.NestedArchiveHandle;
 import com.pixbits.lib.io.xml.XMLEmbeddedDTD;
 import com.pixbits.lib.io.xml.XMLParser;
 import com.pixbits.lib.json.PathAdapter;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
+import com.pixbits.lib.log.ProgressLogger;
 import com.pixbits.lib.functional.StreamException;
 
 public class Operations
@@ -132,6 +141,58 @@ public class Operations
     
     
     return handles;
+  }
+  
+  public static void verifyGameSet(GameSet set, HandleSet handles, Options options) throws IOException
+  {
+    final ProgressLogger verifierProgress = Log.getProgressLogger(Verifier.class);
+    final Logger logger = Log.getLogger(Verifier.class);
+
+    AtomicInteger binaryCount = new AtomicInteger();
+    AtomicInteger archiveCount = new AtomicInteger();
+    AtomicInteger nestedCount = new AtomicInteger();
+    AtomicInteger totalVerified = new AtomicInteger();
+    
+    final int totalCount = (int)handles.total();
+
+    final BiConsumer<Rom, Handle> callback = (rom, handle) -> {
+      if (handle instanceof BinaryHandle)
+        binaryCount.getAndIncrement();
+      else if (handle instanceof ArchiveHandle)
+        archiveCount.getAndIncrement();
+      else if (handle instanceof NestedArchiveHandle)
+        nestedCount.getAndIncrement();
+      
+      int current = totalVerified.incrementAndGet();
+      
+      if (handle != null)
+        verifierProgress.updateProgress(current / (float)totalCount, handle.toString());
+  
+      if (handle != null)
+      {
+          if (rom.handle() != null)
+            logger.w("Duplicate entry found for %s", rom.name);
+          else
+            rom.setHandle(handle);
+      }    
+    };
+    
+    options.verifier.matchMD5 = true;
+    options.verifier.matchSHA1 = true;
+      
+    final VerifierHelper<Rom> verifier = new VerifierHelper<Rom>(options.verifier, options.multiThreaded, set.cache(), callback);
+    
+    verifier.setReporter(r -> {
+      if (r.type == VerifierHelper.Report.Type.START)
+        verifierProgress.startProgress(Log.INFO1, "Verifying " + totalCount + " roms...");
+      else if (r.type == VerifierHelper.Report.Type.END)
+        verifierProgress.endProgress();
+    });
+
+    
+    verifier.verify(handles);
+    
+    logger.i1("Found %d verified roms", binaryCount.get() + archiveCount.get() + nestedCount.get());
   }
   
   public static void cleanMergePath(GameSet set, Options options) throws IOException
