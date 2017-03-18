@@ -42,14 +42,14 @@ public class HandleSerializer
       if (handle instanceof BinaryHandle)
       {
         array.add(new JsonPrimitive(BINARY));
-        array.add(context.serialize(handle.file()));
+        array.add(context.serialize(handle.path()));
       }
       else if (handle instanceof ArchiveHandle)
       {
         ArchiveHandle ahandle = (ArchiveHandle)handle;
         
         array.add(new JsonPrimitive(ARCHIVE));
-        array.add(context.serialize(ahandle.file()));
+        array.add(context.serialize(ahandle.path()));
         array.add(context.serialize(ahandle.format));
         array.add(new JsonPrimitive(ahandle.internalName));
         array.add(new JsonPrimitive(ahandle.indexInArchive));

@@ -153,11 +153,10 @@ public class Main
       set.setClones(clones);
       
       ScannerOptions soptions = new ScannerOptions();
-      soptions.discardUnknownSizes = true;
       soptions.scanSubfolders = true;
       soptions.multithreaded = false;
       
-      HandleSet handles = Operations.scanEntriesForGameSet(set, Arrays.asList(options.dataPath), soptions);
+      HandleSet handles = Operations.scanEntriesForGameSet(set, Arrays.asList(options.dataPath), soptions, true);
 
       Operations.verifyGameSet(set, handles, options);
       

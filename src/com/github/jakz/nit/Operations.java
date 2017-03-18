@@ -103,7 +103,7 @@ public class Operations
     }
   }
   
-  public static HandleSet scanEntriesForGameSet(GameSet set, List<Path> paths, ScannerOptions options) throws IOException
+  public static HandleSet scanEntriesForGameSet(GameSet set, List<Path> paths, ScannerOptions options, boolean discardUnknownSizes) throws IOException
   {
     Logger logger = Log.getLogger(Scanner.class);
     
@@ -112,7 +112,7 @@ public class Operations
     scanner.setOnEntryFound(h -> logger.i("Found entry: %s", h.toString()));
        
     options.assumeCRCisCorrect = set.header == null;
-    options.shouldSkip = s -> !set.cache().isValidSize(s.size) && options.discardUnknownSizes;
+    options.shouldSkip = s -> !set.cache().isValidSize(s.size) && discardUnknownSizes;
     // set.cache().isValidSize(s.size) || !options.discardUnknownSizes; //
     
     HandleSet handles = scanner.computeHandles(paths);
@@ -201,7 +201,7 @@ public class Operations
     
     FolderScanner scanner = new FolderScanner(true);
     
-    Set<Path> romFiles = set.foundRoms().map(r -> r.handle().file()).collect(Collectors.toSet());
+    Set<Path> romFiles = set.foundRoms().map(r -> r.handle().path()).collect(Collectors.toSet());
     
     Set<Path> files = scanner.scan(options.mergePath());
     

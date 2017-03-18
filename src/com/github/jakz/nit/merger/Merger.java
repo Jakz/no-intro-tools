@@ -180,8 +180,8 @@ public class Merger
       // just copy the file
       if (!handle.isArchive())
       {
-        Path path = dest.resolve(handle.file().getFileName());
-        Files.copy(handle.file(), path);
+        Path path = dest.resolve(handle.path().getFileName());
+        Files.copy(handle.path(), path);
         handle.relocate(path);
       }
       else
@@ -231,7 +231,7 @@ public class Merger
         Path tempArchive = Files.createTempFile(dest.getParent(), "", options.merge.archiveFormat.dottedExtension());
         
         /* then we update all references to old archive to new name */
-        info.handles.stream().filter(rh -> rh.file().equals(dest)).forEach(rh -> rh.relocate(tempArchive));
+        info.handles.stream().filter(rh -> rh.path().equals(dest)).forEach(rh -> rh.relocate(tempArchive));
         
         /* now we can create the new archive by merging items from old archive and the new files */
         progressLogger.startProgress(Log.INFO2, "Updating archive "+dest.toString());
@@ -325,7 +325,7 @@ public class Merger
     found.forEach(rom -> {
       if (rom.handle().isArchive())
       {
-        archives.compute(rom.handle().file(), (path,archive) -> {
+        archives.compute(rom.handle().path(), (path,archive) -> {
           if (archive == null)
             archive = new ExistingArchive(path);
           else
