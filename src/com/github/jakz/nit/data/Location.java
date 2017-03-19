@@ -2,7 +2,7 @@ package com.github.jakz.nit.data;
 
 import java.util.Arrays;
 
-import com.github.jakz.nit.gui.Icon;
+import com.github.jakz.romlib.ui.Icon;
 
 public enum Location
 {

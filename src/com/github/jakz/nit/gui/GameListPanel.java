@@ -28,6 +28,7 @@ import com.github.jakz.nit.data.xmdb.BiasSet;
 import com.github.jakz.nit.data.xmdb.GameClone;
 import com.github.jakz.nit.data.xmdb.Zone;
 import com.github.jakz.nit.merger.TitleNormalizer;
+import com.github.jakz.romlib.ui.Icon;
 import com.pixbits.lib.lang.StringUtils;
 
 public class GameListPanel extends JPanel

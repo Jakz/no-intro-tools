@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import javax.swing.ImageIcon;
 
-import com.github.jakz.nit.gui.Icon;
+import com.github.jakz.romlib.ui.Icon;
 
 public enum System
 {

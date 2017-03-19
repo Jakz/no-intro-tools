@@ -15,6 +15,7 @@ import javax.swing.ListCellRenderer;
 import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.Location;
 import com.github.jakz.nit.data.Searcher;
+import com.github.jakz.romlib.ui.Icon;
 import com.pixbits.lib.ui.elements.JPlaceHolderTextField;
 
 public class SearchPanel extends JPanel
@@ -87,7 +88,8 @@ public class SearchPanel extends JPanel
       {
         label.setText(language.language);
         Icon icon = Location.iconForLocation(language);
-        label.setIcon(icon != null ? icon.getIcon() : null);      }
+        label.setIcon(icon != null ? icon.getIcon() : null);
+      }
     }
   }
 
