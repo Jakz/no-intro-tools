@@ -9,12 +9,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.swing.JFrame;
@@ -46,7 +48,9 @@ import com.pixbits.lib.io.archive.HandleSet;
 import com.pixbits.lib.io.archive.Scanner;
 import com.pixbits.lib.io.archive.ScannerOptions;
 import com.pixbits.lib.io.archive.Verifier;
+import com.pixbits.lib.io.archive.VerifierEntry;
 import com.pixbits.lib.io.archive.VerifierHelper;
+import com.pixbits.lib.io.archive.VerifierResult;
 import com.pixbits.lib.io.archive.handles.ArchiveHandle;
 import com.pixbits.lib.io.archive.handles.BinaryHandle;
 import com.pixbits.lib.io.archive.handles.Handle;
@@ -143,7 +147,7 @@ public class Operations
     return handles;
   }
   
-  public static void verifyGameSet(GameSet set, HandleSet handles, Options options) throws IOException
+  public static void verifyGameSet(GameSet set, HandleSet handles, Options options) throws IOException, NoSuchAlgorithmException
   {
     final ProgressLogger verifierProgress = Log.getProgressLogger(Verifier.class);
     final Logger logger = Log.getLogger(Verifier.class);
@@ -155,26 +159,32 @@ public class Operations
     
     final int totalCount = (int)handles.total();
 
-    final BiConsumer<Rom, Handle> callback = (rom, handle) -> {
-      if (handle instanceof BinaryHandle)
-        binaryCount.getAndIncrement();
-      else if (handle instanceof ArchiveHandle)
-        archiveCount.getAndIncrement();
-      else if (handle instanceof NestedArchiveHandle)
-        nestedCount.getAndIncrement();
-      
-      int current = totalVerified.incrementAndGet();
-      
-      if (handle != null)
-        verifierProgress.updateProgress(current / (float)totalCount, handle.toString());
-  
-      if (handle != null)
+    final Consumer<List<VerifierResult<Rom>>> callback = results -> {
+      for (VerifierResult<Rom> result : results)
       {
-          if (rom.handle() != null)
-            logger.w("Duplicate entry found for %s", rom.name);
-          else
-            rom.setHandle(handle);
-      }    
+        Handle handle = result.handle;
+        Rom rom = result.element;
+        
+        if (handle instanceof BinaryHandle)
+          binaryCount.getAndIncrement();
+        else if (handle instanceof ArchiveHandle)
+          archiveCount.getAndIncrement();
+        else if (handle instanceof NestedArchiveHandle)
+          nestedCount.getAndIncrement();
+        
+        int current = totalVerified.incrementAndGet();
+        
+        if (handle != null)
+          verifierProgress.updateProgress(current / (float)totalCount, handle.toString());
+    
+        if (handle != null)
+        {
+            if (rom.handle() != null)
+              logger.w("Duplicate entry found for %s", rom.name);
+            else
+              rom.setHandle(handle);
+        } 
+      }
     };
     
     options.verifier.matchMD5 = true;
