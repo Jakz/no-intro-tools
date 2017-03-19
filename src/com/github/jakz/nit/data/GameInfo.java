@@ -1,5 +1,7 @@
 package com.github.jakz.nit.data;
 
+import com.github.jakz.romlib.data.game.LocationSet;
+
 public class GameInfo
 {
   public final LocationSet location;

@@ -21,13 +21,13 @@ import javax.swing.tree.DefaultTreeModel;
 
 import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.GameSet;
-import com.github.jakz.nit.data.Location;
-import com.github.jakz.nit.data.LocationSet;
 import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.xmdb.BiasSet;
 import com.github.jakz.nit.data.xmdb.GameClone;
 import com.github.jakz.nit.data.xmdb.Zone;
 import com.github.jakz.nit.merger.TitleNormalizer;
+import com.github.jakz.romlib.data.game.Location;
+import com.github.jakz.romlib.data.game.LocationSet;
 import com.github.jakz.romlib.ui.Icon;
 import com.pixbits.lib.lang.StringUtils;
 
@@ -87,7 +87,7 @@ public class GameListPanel extends JPanel
         LocationSet location = game.info().location;
         if (location.isLocalized())
         {            
-          Icon icon = Location.iconForLocation(location);
+          Icon icon = location.getIcon();
           label.setIcon(icon != null ? icon.getIcon() : null);
         }
       }
@@ -104,15 +104,11 @@ public class GameListPanel extends JPanel
         label.setForeground(Color.DARK_GRAY);
         
         long mask = clone.stream().map(g -> g.info().location).filter(LocationSet::isLocalized).reduce(0L, (m,l) -> m | l.getMask(), (u,v) -> u | v);
-        Location location = Location.locationForMask(mask);
-        
-        if (location != null)
-        {
-          Icon icon = Location.iconForLocation(new LocationSet(location));
-          label.setIcon(icon != null ? icon.getIcon() : null);
-        }
-        
-        
+        LocationSet set = new LocationSet(mask);
+        Location location = set.getExactLocation();
+
+        Icon icon = location.icon;
+        label.setIcon(icon != null ? icon.getIcon() : null);
       }
       
       return label;

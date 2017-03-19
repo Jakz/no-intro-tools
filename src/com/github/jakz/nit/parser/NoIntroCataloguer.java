@@ -6,8 +6,8 @@ import java.util.Map;
 
 import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.GameCataloguer;
-import com.github.jakz.nit.data.Location;
 import com.github.jakz.nit.data.Version;
+import com.github.jakz.romlib.data.game.Location;
 
 public class NoIntroCataloguer implements GameCataloguer
 {

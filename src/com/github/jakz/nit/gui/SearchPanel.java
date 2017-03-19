@@ -13,8 +13,8 @@ import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 
 import com.github.jakz.nit.data.Game;
-import com.github.jakz.nit.data.Location;
 import com.github.jakz.nit.data.Searcher;
+import com.github.jakz.romlib.data.game.Location;
 import com.github.jakz.romlib.ui.Icon;
 import com.pixbits.lib.ui.elements.JPlaceHolderTextField;
 
@@ -67,8 +67,8 @@ public class SearchPanel extends JPanel
       }
       else
       {
-        label.setText(location.name);
-        Icon icon = Location.iconForLocation(location);
+        label.setText(location.fullName);
+        Icon icon = location.icon;
         label.setIcon(icon != null ? icon.getIcon() : null);
       }
     }
@@ -86,8 +86,8 @@ public class SearchPanel extends JPanel
       }
       else
       {
-        label.setText(language.language);
-        Icon icon = Location.iconForLocation(language);
+        label.setText(language.language.fullName);
+        Icon icon = language.icon;
         label.setIcon(icon != null ? icon.getIcon() : null);
       }
     }
@@ -132,7 +132,7 @@ public class SearchPanel extends JPanel
     locations.addItem(null);
     Arrays.stream(Location.values())
       .filter(l -> !l.isComposite())
-      .sorted((l1,l2) -> l1.name.compareToIgnoreCase(l2.name))
+      .sorted((l1,l2) -> l1.fullName.compareToIgnoreCase(l2.fullName))
       .forEach(locations::addItem);
     
     locations.setRenderer(new LocationCellRenderer());
