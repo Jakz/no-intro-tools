@@ -8,8 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import com.github.jakz.nit.data.System;
 import com.github.jakz.nit.exceptions.FatalErrorException;
+import com.github.jakz.romlib.data.platforms.Platform;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -23,7 +23,7 @@ public class Config
 {
   public static class DatEntry
   {
-    public System system;
+    public Platform platform;
     public Path datFile;
     public Path xmdbFile;
     public List<Path> romsetPaths;
@@ -57,13 +57,13 @@ public class Config
   
   
   
-  static class SystemDeserializer implements JsonDeserializer<com.github.jakz.nit.data.System>
+  static class PlatformDeserializer implements JsonDeserializer<Platform>
   {
     @Override
-    public System deserialize(JsonElement element, Type type, JsonDeserializationContext context) throws JsonParseException
+    public Platform deserialize(JsonElement element, Type type, JsonDeserializationContext context) throws JsonParseException
     {
       String string = context.deserialize(element, String.class);
-      return com.github.jakz.nit.data.System.forIdent(string);
+      return Platform.forIdent(string);
     }    
   }
   
@@ -71,7 +71,7 @@ public class Config
   {
     GsonBuilder builder = new GsonBuilder();
     builder.registerTypeAdapter(Path.class, new PathAdapter());
-    builder.registerTypeAdapter(com.github.jakz.nit.data.System.class, new SystemDeserializer());
+    builder.registerTypeAdapter(Platform.class, new PlatformDeserializer());
     Gson gson = builder.create();
     
     try (BufferedReader rdr = Files.newBufferedReader(fileName))

@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 
 import com.github.jakz.nit.data.xmdb.GameClone;
 import com.github.jakz.romlib.data.game.Location;
+import com.github.jakz.romlib.data.game.Version;
 import com.pixbits.lib.searcher.BasicPredicate;
 import com.pixbits.lib.searcher.SearchPredicate;
 import com.pixbits.lib.searcher.BasicSearchParser;

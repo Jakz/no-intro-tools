@@ -10,6 +10,7 @@ import com.github.jakz.nit.config.GameSetConfig;
 import com.github.jakz.nit.data.header.Header;
 import com.github.jakz.nit.data.xmdb.CloneSet;
 import com.github.jakz.nit.data.xmdb.GameClone;
+import com.github.jakz.romlib.data.platforms.Platform;
 import com.pixbits.lib.io.digest.HashCache;
 
 public class GameSet implements Iterable<Game>
@@ -25,7 +26,7 @@ public class GameSet implements Iterable<Game>
   private CloneSet clones;
   
   private final GameSetConfig config;
-  private System system;
+  private Platform platform;
 
   public GameSet(GameSetInfo info, Header header, Game[] games)
   {
@@ -73,8 +74,8 @@ public class GameSet implements Iterable<Game>
         .get(); 
   }
   
- public void setSystem(System system) { this.system = system; }
-  public System system() { return system; }
+  public void setPlatform(Platform platform) { this.platform = platform; }
+  public Platform platform() { return platform; }
   
   public GameSetConfig getConfig() { return config; }
 }

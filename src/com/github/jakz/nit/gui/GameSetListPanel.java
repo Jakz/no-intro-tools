@@ -64,8 +64,8 @@ public class GameSetListPanel extends JPanel
         {
           GameSet set = sets.get(r);
           
-          if (set.system() != null)
-            label.setIcon(set.system().getIcon());
+          if (set.platform() != null)
+            label.setIcon(set.platform().getIcon());
           else
             label.setIcon(null);
         }

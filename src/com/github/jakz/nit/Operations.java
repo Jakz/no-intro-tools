@@ -295,7 +295,7 @@ public class Operations
         set.setClones(clones);
       }
       
-      set.setSystem(d.system);
+      set.setPlatform(d.platform);
       set.getConfig().romsetPath = d.romsetPaths.get(0);
       
       return set;
