@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 
 import com.github.jakz.nit.data.Game;
+import com.github.jakz.romlib.data.game.Location;
 
 public class GameClone implements Iterable<Game>
 {
@@ -20,24 +21,24 @@ public class GameClone implements Iterable<Game>
   public GameClone(Game[] games)
   {
     this.games = games;
-    this.zones = new Game[Zone.values().length];
+    this.zones = new Game[Location.values().length];
   }
   
-  
-  public String getTitleForBias(BiasSet bias)
-  {    
-    //TODO: skip name if game is not found
+  public Game getBestMatchForBias(BiasSet bias, boolean acceptFallback)
+  {
+    for (Location location : bias.getLocations())
+    {
+      if (zones[location.ordinal()] != null)
+        return zones[location.ordinal()];
+    }
     
-    // find first occurring game for the zone list requested
-    for (Zone zone : bias.getZones())
-      if (zones[zone.ordinal()] != null)
-        return zones[zone.ordinal()].name;
-    
-    // otherwise just return any title
-    return games[0].name;
+    if (acceptFallback)
+      return games[0];
+    else
+      return null;
   }
-  
-  public Game get(Zone zone) { return zones[zone.ordinal()]; }
+ 
+  public Game get(Location zone) { return zones[zone.ordinal()]; }
   public Game get(int index) { return games[index]; }
   public int size() { return games.length; }
   

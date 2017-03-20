@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 
 import com.github.jakz.nit.data.xmdb.GameClone;
+import com.github.jakz.romlib.data.game.attributes.GameInfo;
 
 public class Game implements Iterable<Rom>
 {

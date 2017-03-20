@@ -79,14 +79,8 @@ public class Operations
   
   public static CloneSet loadCloneSetFromXMDB(GameSet set, Path path) throws IOException, SAXException
   {
-    XMLEmbeddedDTD resolver = new XMLEmbeddedDTD("GoodMerge.dtd", "com/github/jakz/nit/parser/GoodMerge.dtd");    
-    XMDBParser xparser = new XMDBParser(set);
-    XMLParser<CloneSet> xmdbParser = new XMLParser<>(xparser, resolver);
-
-    CloneSet cloneSet = xmdbParser.load(path);
-        
+    CloneSet cloneSet = XMDBParser.loadCloneSet(set, path);
     logger.i("Loaded clone set for \'"+set.info.name+"\' ("+set.size()+" games in "+cloneSet.size()+" entries)");
-
     return cloneSet;
   }
   

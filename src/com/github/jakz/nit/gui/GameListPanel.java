@@ -24,7 +24,6 @@ import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.xmdb.BiasSet;
 import com.github.jakz.nit.data.xmdb.GameClone;
-import com.github.jakz.nit.data.xmdb.Zone;
 import com.github.jakz.nit.merger.TitleNormalizer;
 import com.github.jakz.romlib.data.game.Location;
 import com.github.jakz.romlib.data.game.LocationSet;
@@ -84,7 +83,7 @@ public class GameListPanel extends JPanel
         label.setText(node.normalized ? normalizer.normalize(game.name) : game.name);
         label.setForeground(Color.BLACK);
         
-        LocationSet location = game.info().location;
+        LocationSet location = game.info().getLocation();
         if (location.isLocalized())
         {            
           Icon icon = location.getIcon();
@@ -100,10 +99,10 @@ public class GameListPanel extends JPanel
       else if (value instanceof CloneNode)
       {
         GameClone clone = (GameClone)((CloneNode)value).getUserObject();
-        label.setText(normalizer.normalize(clone.getTitleForBias(biasSet))+" ("+clone.stream().filter(g -> filter.test(g)).count()+" clones)");
+        label.setText(normalizer.normalize(clone.getBestMatchForBias(biasSet, true).name)+" ("+clone.stream().filter(g -> filter.test(g)).count()+" clones)");
         label.setForeground(Color.DARK_GRAY);
         
-        long mask = clone.stream().map(g -> g.info().location).filter(LocationSet::isLocalized).reduce(0L, (m,l) -> m | l.getMask(), (u,v) -> u | v);
+        long mask = clone.stream().map(g -> g.info().getLocation()).filter(LocationSet::isLocalized).reduce(0L, (m,l) -> m | l.getMask(), (u,v) -> u | v);
         LocationSet set = new LocationSet(mask);
         Location location = set.getExactLocation();
 
@@ -142,7 +141,7 @@ public class GameListPanel extends JPanel
     pane.setPreferredSize(new Dimension(800,800));
     
     normalizer = new TitleNormalizer();
-    biasSet = new BiasSet(Zone.ITALY, Zone.EUROPE, Zone.USA, Zone.JAPAN);
+    biasSet = new BiasSet(Location.ITALY, Location.EUROPE, Location.USA, Location.JAPAN);
     
     model.setRoot(null);
     

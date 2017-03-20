@@ -14,6 +14,7 @@ import javax.swing.ListCellRenderer;
 
 import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.Searcher;
+import com.github.jakz.romlib.data.game.Language;
 import com.github.jakz.romlib.data.game.Location;
 import com.github.jakz.romlib.ui.Icon;
 import com.pixbits.lib.ui.elements.JPlaceHolderTextField;
@@ -30,7 +31,7 @@ public class SearchPanel extends JPanel
   
   //final JComboBox genres = new JComboBox();
   final private JComboBox<Location> locations = new JComboBox<>();
-  final private JComboBox<Location> languages = new JComboBox<>();
+  final private JComboBox<Language> languages = new JComboBox<>();
       
   boolean active = false;
 
@@ -74,10 +75,10 @@ public class SearchPanel extends JPanel
     }
   }
   
-  class LanguageCellRenderer extends CustomCellRenderer<Location>
+  class LanguageCellRenderer extends CustomCellRenderer<Language>
   {
     @Override
-    void customRendering(JLabel label, Location language)
+    void customRendering(JLabel label, Language language)
     {
       if (language == null)
       {
@@ -86,7 +87,7 @@ public class SearchPanel extends JPanel
       }
       else
       {
-        label.setText(language.language.fullName);
+        label.setText(language.fullName);
         Icon icon = language.icon;
         label.setIcon(icon != null ? icon.getIcon() : null);
       }
@@ -131,14 +132,14 @@ public class SearchPanel extends JPanel
     
     locations.addItem(null);
     Arrays.stream(Location.values())
-      .filter(l -> !l.isComposite())
+      .filter(l -> !l.isComposite() && l != Location.NONE)
       .sorted((l1,l2) -> l1.fullName.compareToIgnoreCase(l2.fullName))
       .forEach(locations::addItem);
     
     locations.setRenderer(new LocationCellRenderer());
     
     languages.addItem(null);
-    Arrays.stream(Location.values()).filter(l -> !l.isComposite()).forEach(languages::addItem);
+    Arrays.stream(Language.values()).forEach(languages::addItem);
     languages.setRenderer(new LanguageCellRenderer());
     
     freeSearchField.addCaretListener(e -> { if (active) invokeRefresh(); });
@@ -164,12 +165,12 @@ public class SearchPanel extends JPanel
     Location location = locations.getItemAt(locations.getSelectedIndex());
     
     if (location != null)
-      filter = filter.and(g -> g.info().location.isJust(location));
+      filter = filter.and(g -> g.info().getLocation().isJust(location));
       
-    Location language = languages.getItemAt(languages.getSelectedIndex());
+    Language language = languages.getItemAt(languages.getSelectedIndex());
     
     if (language != null)
-      filter = filter.and(g -> g.info().languages.is(language) || g.info().location.isJust(language));
+      filter = filter.and(g -> g.info().getLanguages().includes(language));
     
     return filter;
   }

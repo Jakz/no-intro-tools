@@ -1,13 +1,15 @@
 package com.github.jakz.nit.data.xmdb;
 
+import com.github.jakz.romlib.data.game.Location;
+
 public class BiasSet
 {
-  private final Zone[] zones;
+  private final Location[] locations;
   
-  public BiasSet(Zone... zones)
+  public BiasSet(Location... zones)
   {
-    this.zones = zones;
+    this.locations = zones;
   }
   
-  public Zone[] getZones() { return zones; }
+  public Location[] getLocations() { return locations; }
 }

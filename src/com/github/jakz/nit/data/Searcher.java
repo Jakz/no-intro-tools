@@ -26,7 +26,7 @@ public class Searcher
       @Override public Predicate<Game> buildPredicate(String token)
       {
         if (isSearchArg(splitWithDelimiter(token, ":"), "is", "proper"))
-          return g -> g.info().version == Version.PROPER;
+          return g -> g.info().getVersion() == Version.PROPER;
         else
           return null;
       }
@@ -37,7 +37,7 @@ public class Searcher
       @Override public Predicate<Game> buildPredicate(String token)
       {
         if (isSearchArg(splitWithDelimiter(token, ":"), "is", "licensed"))
-          return g -> g.info().licensed;
+          return g -> g.info().getLicensed();
         else
           return null;
       }
@@ -58,12 +58,12 @@ public class Searcher
   {
     for (Location zone : zones)
     {
-      Optional<Game> cgame = clone.stream().filter(g -> g.info().location.isJust(zone)).findFirst();
+      Optional<Game> cgame = clone.stream().filter(g -> g.info().getLocation().isJust(zone)).findFirst();
       
       if (cgame.isPresent())
         return cgame.get();
       
-      cgame = clone.stream().filter(g -> g.info().location.is(zone)).findFirst();
+      cgame = clone.stream().filter(g -> g.info().getLocation().is(zone)).findFirst();
       
       if (cgame.isPresent())
         return cgame.get();
@@ -80,7 +80,7 @@ public class Searcher
  
       /* if game doesn't have any clone then should be exported if it has correct zone */
       if (clone == null)
-        return lzones.stream().anyMatch(zone -> game.info().location.isJust(zone));
+        return lzones.stream().anyMatch(zone -> game.info().getLocation().isJust(zone));
       else
       {
         Game cgame = findFirstClone(clone, zones);

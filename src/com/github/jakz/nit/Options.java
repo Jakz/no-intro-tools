@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.github.jakz.nit.config.MergeOptions;
 import com.github.jakz.nit.data.xmdb.BiasSet;
-import com.github.jakz.nit.data.xmdb.Zone;
+import com.github.jakz.romlib.data.game.Location;
 import com.pixbits.lib.io.archive.CompressorOptions;
 import com.pixbits.lib.io.archive.VerifierOptions;
 import com.pixbits.lib.log.Log;
@@ -75,7 +75,7 @@ public class Options
     dataPath = dataPaths.stream().map(s -> Paths.get(s)).toArray(i -> new Path[i]);
     mergePath = args.get(Args.DEST_PATH) != null ? Paths.get(args.getString(Args.DEST_PATH)) : null;
     
-    zonePriority = new BiasSet(Zone.ITALY, Zone.EUROPE, Zone.USA, Zone.JAPAN);
+    zonePriority = new BiasSet(Location.ITALY, Location.EUROPE, Location.USA, Location.JAPAN);
   }
   
   public Options()
@@ -106,7 +106,7 @@ public class Options
     
     wholeArchivePath = Paths.get("/Users/jack/Desktop/gbcm");
     
-    zonePriority = new BiasSet(Zone.EUROPE, Zone.USA, Zone.JAPAN);
+    zonePriority = new BiasSet(Location.EUROPE, Location.USA, Location.JAPAN);
   }
   
   //TODO: not correct, if merge in place it should be original path of rom or force 1 data path max
