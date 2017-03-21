@@ -21,9 +21,9 @@ import java.util.stream.Stream;
 import com.github.jakz.nit.Options;
 import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.GameSet;
-import com.github.jakz.nit.data.Rom;
-import com.github.jakz.nit.data.xmdb.GameClone;
 import com.github.jakz.nit.exceptions.FatalErrorException;
+import com.github.jakz.romlib.data.game.GameClone;
+import com.github.jakz.romlib.data.game.Rom;
 import com.pixbits.lib.functional.StreamException;
 import com.pixbits.lib.io.archive.Compressor;
 import com.pixbits.lib.io.archive.handles.Handle;
@@ -108,8 +108,8 @@ public class Merger
   {
     found.forEach(StreamException.rethrowConsumer(rom -> {
       //TODO: manage games with multiple roms per game
-      final Path finalPath = dest.resolve(rom.game().name+options.merge.archiveFormat.dottedExtension());
-      final ArchiveInfo archive = new ArchiveInfo(rom.game().name, rom.handle());
+      final Path finalPath = dest.resolve(rom.game().getTitle()+options.merge.archiveFormat.dottedExtension());
+      final ArchiveInfo archive = new ArchiveInfo(rom.game().getTitle(), rom.handle());
       createArchive(finalPath, archive);
       archive.relocate(finalPath);
     }));    
@@ -120,18 +120,18 @@ public class Merger
     if (set.clones() == null || set.clones().size() == 0)
       throw new FatalErrorException(String.format("can't merge '%s' by using game clones since there is no clone info", set.info.name));
     
-    Map<GameClone, ArchiveInfo> clones = new HashMap<>();
+    Map<GameClone<Game>, ArchiveInfo> clones = new HashMap<>();
     List<ArchiveInfo> handles = new ArrayList<>();
-    Map<String, GameClone> cloneMapping = new HashMap<>();
+    Map<String, GameClone<Game>> cloneMapping = new HashMap<>();
     
     for (Rom rom : found)
     {
-      GameClone clone = set.clones().get(rom.game());
+      GameClone<Game> clone = set.clones().get(rom.game());
       
       if (clone != null)
       {
         clones.compute(clone, (k,v) -> {
-          String archiveName = normalizer.normalize(k.getBestMatchForBias(options.zonePriority, true).name);
+          String archiveName = normalizer.normalize(k.getBestMatchForBias(options.zonePriority, true).getTitle());
 
           if (v == null)
           {
@@ -149,7 +149,7 @@ public class Merger
         });
       }
       else
-        handles.add(new ArchiveInfo(normalizer.normalize(rom.game().name), rom.handle())); 
+        handles.add(new ArchiveInfo(normalizer.normalize(rom.game().getTitle()), rom.handle())); 
     }
     
     logger.i1("Merger is going to create %d archives.", clones.size()+handles.size());
@@ -186,7 +186,7 @@ public class Merger
       }
       else
       {
-        Path path = dest.resolve(normalizer.normalize(rom.game().name)+"."+handle.getInternalExtension());
+        Path path = dest.resolve(normalizer.normalize(rom.game().getTitle())+"."+handle.getInternalExtension());
         
         try (InputStream is = handle.getInputStream())
         {

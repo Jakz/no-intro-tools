@@ -21,12 +21,12 @@ import javax.swing.tree.DefaultTreeModel;
 
 import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.GameSet;
-import com.github.jakz.nit.data.Rom;
-import com.github.jakz.nit.data.xmdb.BiasSet;
-import com.github.jakz.nit.data.xmdb.GameClone;
 import com.github.jakz.nit.merger.TitleNormalizer;
+import com.github.jakz.romlib.data.game.BiasSet;
+import com.github.jakz.romlib.data.game.GameClone;
 import com.github.jakz.romlib.data.game.Location;
 import com.github.jakz.romlib.data.game.LocationSet;
+import com.github.jakz.romlib.data.game.Rom;
 import com.github.jakz.romlib.ui.Icon;
 import com.pixbits.lib.lang.StringUtils;
 
@@ -65,7 +65,7 @@ public class GameListPanel extends JPanel
   
   private class CloneNode extends DefaultMutableTreeNode
   {
-    CloneNode(GameClone clone) { super(clone); }
+    CloneNode(GameClone<Game> clone) { super(clone); }
   }
   
   private class MyTreeCellRenderer extends DefaultTreeCellRenderer
@@ -80,7 +80,7 @@ public class GameListPanel extends JPanel
       {
         GameNode node = (GameNode)value;
         Game game = (Game)((GameNode)value).getUserObject();
-        label.setText(node.normalized ? normalizer.normalize(game.name) : game.name);
+        label.setText(node.normalized ? normalizer.normalize(game.getTitle()) : game.getTitle());
         label.setForeground(Color.BLACK);
         
         LocationSet location = game.info().getLocation();
@@ -98,8 +98,8 @@ public class GameListPanel extends JPanel
       }
       else if (value instanceof CloneNode)
       {
-        GameClone clone = (GameClone)((CloneNode)value).getUserObject();
-        label.setText(normalizer.normalize(clone.getBestMatchForBias(biasSet, true).name)+" ("+clone.stream().filter(g -> filter.test(g)).count()+" clones)");
+        GameClone<Game> clone = (GameClone<Game>)((CloneNode)value).getUserObject();
+        label.setText(normalizer.normalize(clone.getBestMatchForBias(biasSet, true).getTitle())+" ("+clone.stream().filter(g -> filter.test(g)).count()+" clones)");
         label.setForeground(Color.DARK_GRAY);
         
         long mask = clone.stream().map(g -> g.info().getLocation()).filter(LocationSet::isLocalized).reduce(0L, (m,l) -> m | l.getMask(), (u,v) -> u | v);
@@ -200,7 +200,7 @@ public class GameListPanel extends JPanel
     return gameNode;
   }
   
-  private DefaultMutableTreeNode createNodeForClone(GameClone clone)
+  private DefaultMutableTreeNode createNodeForClone(GameClone<Game> clone)
   {
     if (clone.size() > 1)
     {

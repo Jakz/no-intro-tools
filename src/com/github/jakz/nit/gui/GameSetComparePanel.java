@@ -67,7 +67,7 @@ public class GameSetComparePanel extends JPanel
       Game game = data[c][r];
       
       if (game != null)
-        return game.name;
+        return game.getTitle();
       else
         return "";
     }

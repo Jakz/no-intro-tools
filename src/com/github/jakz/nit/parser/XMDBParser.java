@@ -15,7 +15,7 @@ import org.xml.sax.SAXException;
 import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.xmdb.CloneSet;
-import com.github.jakz.nit.data.xmdb.GameClone;
+import com.github.jakz.romlib.data.game.GameClone;
 import com.github.jakz.romlib.data.game.Location;
 import com.pixbits.lib.io.xml.XMLEmbeddedDTD;
 import com.pixbits.lib.io.xml.XMLHandler;
@@ -56,7 +56,7 @@ public class XMDBParser extends XMLHandler<CloneSet>
   
   
   
-  List<GameClone> clones;
+  List<GameClone<Game>> clones;
   GameSet set;
   Game[] zones;
   List<Game> clone;
@@ -75,7 +75,7 @@ public class XMDBParser extends XMLHandler<CloneSet>
   {
     if (name.equals("zoned"))
     {
-      GameClone clone = new GameClone(this.clone.toArray(new Game[this.clone.size()]), zones);
+      GameClone<Game> clone = new GameClone(this.clone.toArray(new Game[this.clone.size()]), zones);
       clones.add(clone);
     }
   }

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import com.github.jakz.nit.data.xmdb.GameClone;
+import com.github.jakz.romlib.data.game.GameClone;
 import com.github.jakz.romlib.data.game.Location;
 import com.github.jakz.romlib.data.game.Version;
 import com.pixbits.lib.searcher.BasicPredicate;
@@ -19,7 +19,7 @@ public class Searcher
   
   public Searcher()
   {
-    final LambdaPredicate<Game> freeSearch = new LambdaPredicate<Game>(token -> (g -> g.name.toLowerCase().contains(token.toLowerCase())));
+    final LambdaPredicate<Game> freeSearch = new LambdaPredicate<Game>(token -> (g -> g.getTitle().toLowerCase().contains(token.toLowerCase())));
     
     final SearchPredicate<Game> isProper = new BasicPredicate<Game>()
     {
@@ -54,7 +54,7 @@ public class Searcher
     return searcher.search(text);
   }
   
-  private Game findFirstClone(GameClone clone, Location... zones)
+  private Game findFirstClone(GameClone<Game> clone, Location... zones)
   {
     for (Location zone : zones)
     {
@@ -75,7 +75,7 @@ public class Searcher
   public Predicate<Game> buildExportByRegionPredicate(Location... zones)
   {
     return game -> {
-      GameClone clone = game.getClone();
+      GameClone<Game> clone = game.getClone();
       List<Location> lzones = Arrays.asList(zones);
  
       /* if game doesn't have any clone then should be exported if it has correct zone */

@@ -45,7 +45,7 @@ public class NoIntroCataloguer implements GameCataloguer
   
   public void catalogue(Game game)
   {
-    String name = game.name;
+    String name = game.getTitle();
     
     locations.entrySet().forEach(e -> {
       if (name.contains(e.getKey()))

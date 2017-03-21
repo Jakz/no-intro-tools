@@ -25,9 +25,9 @@ import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.GameCataloguer;
 import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.GameSetInfo;
-import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.header.Header;
 import com.github.jakz.nit.merger.TitleNormalizer;
+import com.github.jakz.romlib.data.game.Rom;
 import com.pixbits.lib.io.xml.XMLParser;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
@@ -220,7 +220,8 @@ public class ClrMameProParserDat
           fi = si;
         }
         
-        Game game = new Game(value("name"), value("description"), roms.toArray(new Rom[roms.size()]));
+        Game game = new Game(value("name"), roms.toArray(new Rom[roms.size()]));
+        game.setDescription(value("description"));
         cataloguer.catalogue(game);
         games.add(game);
         popState();

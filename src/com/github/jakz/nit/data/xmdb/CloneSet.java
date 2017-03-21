@@ -8,30 +8,28 @@ import java.util.stream.Stream;
 
 import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.GameSet;
+import com.github.jakz.romlib.data.game.GameClone;
 
-public class CloneSet implements Iterable<GameClone>
+public class CloneSet implements Iterable<GameClone<Game>>
 {
-  private final GameSet set;
-  private final GameClone[] clones;
+  private final GameClone<Game>[] clones;
   
-  private final Map<Game, GameClone> cloneMap;
+  private final Map<Game, GameClone<Game>> cloneMap;
   
-  public CloneSet(GameSet set, GameClone[] clones)
+  public CloneSet(GameSet set, GameClone<Game>[] clones)
   {
     this.clones = clones;
-    this.set = set;
-    
-    cloneMap = new HashMap<>(this.set.size());
+    this.cloneMap = new HashMap<>(clones.length);
     
     Arrays.stream(clones).forEach(gc -> {
       gc.stream().forEach(g -> cloneMap.put(g, gc));
     });  
   }
   
-  public GameClone get(Game game) { return cloneMap.get(game); }
-  public GameClone get(int index) { return clones[index]; }
+  public GameClone<Game> get(Game game) { return cloneMap.get(game); }
+  public GameClone<Game> get(int index) { return clones[index]; }
   public int size() { return clones.length; }
   
-  public Iterator<GameClone> iterator() { return Arrays.asList(clones).iterator(); }
-  public Stream<GameClone> stream() { return Arrays.stream(clones); }
+  public Iterator<GameClone<Game>> iterator() { return Arrays.asList(clones).iterator(); }
+  public Stream<GameClone<Game>> stream() { return Arrays.stream(clones); }
 }

@@ -25,8 +25,8 @@ import org.xml.sax.SAXException;
 
 import com.github.jakz.nit.config.Config;
 import com.github.jakz.nit.config.MergeOptions;
+import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.GameSet;
-import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.xmdb.CloneSet;
 import com.github.jakz.nit.emitter.ClrMameProEmitter;
 import com.github.jakz.nit.emitter.CreatorOptions;
@@ -40,6 +40,7 @@ import com.github.jakz.nit.parser.ClrMameProParserDat;
 import com.github.jakz.nit.parser.DatFormat;
 import com.github.jakz.nit.parser.XMDBParser;
 import com.github.jakz.nit.scripts.ConsolePanel;
+import com.github.jakz.romlib.data.game.Rom;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -240,7 +241,7 @@ public class Operations
     List<String> miss = new ArrayList<>();
     
     set.stream().forEach(game -> {
-      (game.isFound() ? have : miss).add(game.name);
+      (game.isComplete() ? have : miss).add(game.getTitle());
     });
     
     logger.i("Saving found status on files.");

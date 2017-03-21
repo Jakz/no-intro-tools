@@ -20,9 +20,9 @@ import java.util.stream.Stream;
 import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.GameSetInfo;
-import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.xmdb.CloneSet;
-import com.github.jakz.nit.data.xmdb.GameClone;
+import com.github.jakz.romlib.data.game.GameClone;
+import com.github.jakz.romlib.data.game.Rom;
 import com.pixbits.lib.io.FileUtils;
 import com.pixbits.lib.io.archive.FormatUnrecognizedException;
 import com.pixbits.lib.io.archive.handles.ArchiveHandle;
@@ -46,7 +46,7 @@ public class GameSetCreator
   private Set<CreatorEntry> entries;
   
   private final List<Game> games;
-  private final List<GameClone> clones;
+  private final List<GameClone<Game>> clones;
   
   private final AtomicInteger count;
   private float total;
@@ -155,7 +155,7 @@ public class GameSetCreator
         parent.roms.add(rom);
       else
       {
-        games.add(new Game(name, name, new Rom[] { rom }));
+        games.add(new Game(name, new Rom[] { rom }));
       }
     }
     else if (e instanceof ArchiveEntry)
@@ -186,7 +186,7 @@ public class GameSetCreator
           if (options.mode == CreatorOptions.Mode.merged)
           {
             String gameName = FileUtils.trimExtension(item.path);
-            Game game = new Game(gameName, gameName, new Rom[] { rom } );
+            Game game = new Game(gameName, new Rom[] { rom } );
             
             /* if parent is null then we're in root, this is a single game or part of game set according to mode */
             if (parent == null)
@@ -205,13 +205,13 @@ public class GameSetCreator
           /* currentClone should contain all the games identifier by the archive */
           if (options.mode == CreatorOptions.Mode.merged && ae.clones.size() > 0)
           {
-            clones.add(new GameClone(ae.clones.toArray(new Game[ae.clones.size()])));
+            clones.add(new GameClone<Game>(ae.clones.toArray(new Game[ae.clones.size()])));
           }
           /* if we're in multi mode then all roms have been added to currentRoms for a single game with the name of the archive */
           else if (options.mode == CreatorOptions.Mode.multi && ae.roms.size() > 0)
           {
             String folderName = FileUtils.fileNameWithoutExtension(e.path.getFileName());
-            Game game = new Game(folderName, folderName, ae.roms.toArray(new Rom[ae.roms.size()]));
+            Game game = new Game(folderName, ae.roms.toArray(new Rom[ae.roms.size()]));
             games.add(game);
           }
         }
@@ -232,9 +232,9 @@ public class GameSetCreator
       }));
       
       if (options.mode == CreatorOptions.Mode.multi && ce.roms.size() > 0)
-        games.add(new Game(name, name, ce.roms.toArray(new Rom[ce.roms.size()])));
+        games.add(new Game(name, ce.roms.toArray(new Rom[ce.roms.size()])));
       else if (ce.clones.size() > 0)
-        clones.add(new GameClone(ce.clones.toArray(new Game[ce.clones.size()])));
+        clones.add(new GameClone<Game>(ce.clones.toArray(new Game[ce.clones.size()])));
     }
   }
   

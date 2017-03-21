@@ -9,7 +9,8 @@ import java.util.stream.Stream;
 import com.github.jakz.nit.config.GameSetConfig;
 import com.github.jakz.nit.data.header.Header;
 import com.github.jakz.nit.data.xmdb.CloneSet;
-import com.github.jakz.nit.data.xmdb.GameClone;
+import com.github.jakz.romlib.data.game.GameClone;
+import com.github.jakz.romlib.data.game.Rom;
 import com.github.jakz.romlib.data.platforms.Platform;
 import com.pixbits.lib.io.digest.HashCache;
 
@@ -37,7 +38,7 @@ public class GameSet implements Iterable<Game>
     this.gameMap = new HashMap<>();
     this.config = new GameSetConfig();
     
-    Arrays.stream(games).forEach(g -> gameMap.put(g.name, g));
+    Arrays.stream(games).forEach(g -> gameMap.put(g.getTitle(), g));
     
     info.computeStats(this);
   }
@@ -46,7 +47,7 @@ public class GameSet implements Iterable<Game>
   public void setClones(CloneSet clones) {  
     this.clones = clones;
     
-    for (GameClone clone : clones)
+    for (GameClone<Game> clone : clones)
       for (Game game : clone)
         game.setClone(clone);
     
