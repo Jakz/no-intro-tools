@@ -21,7 +21,7 @@ public class CloneSet implements Iterable<GameClone>
     this.clones = clones;
     this.set = set;
     
-    cloneMap = new HashMap<>(this.set.size());
+    cloneMap = new HashMap<>(this.set.gameCount());
     
     Arrays.stream(clones).forEach(gc -> {
       gc.stream().forEach(g -> cloneMap.put(g, gc));

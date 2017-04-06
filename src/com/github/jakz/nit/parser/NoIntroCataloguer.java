@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.github.jakz.nit.data.Game;
-import com.github.jakz.nit.data.GameCataloguer;
 import com.github.jakz.romlib.data.game.Language;
 import com.github.jakz.romlib.data.game.Location;
 import com.github.jakz.romlib.data.game.Version;

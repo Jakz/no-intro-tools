@@ -22,12 +22,14 @@ import org.xml.sax.SAXException;
 
 import com.github.jakz.nit.Options;
 import com.github.jakz.nit.data.Game;
-import com.github.jakz.nit.data.GameCataloguer;
 import com.github.jakz.nit.data.GameSet;
-import com.github.jakz.nit.data.GameSetInfo;
-import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.header.Header;
 import com.github.jakz.nit.merger.TitleNormalizer;
+import com.github.jakz.romlib.data.game.Rom;
+import com.github.jakz.romlib.data.set.DatFormat;
+import com.github.jakz.romlib.data.set.DatLoader;
+import com.github.jakz.romlib.data.set.GameSetInfo;
+import com.github.jakz.romlib.data.set.Provider;
 import com.pixbits.lib.io.xml.XMLParser;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
@@ -140,8 +142,11 @@ public class ClrMameProParserDat
       }
       
       set = new GameSet(
-          new GameSetInfo(value("name"), value("description"), value("version"), value("comment"), value("author")),
-          header,
+          new GameSetInfo(
+              new Provider(value("name"), value("description"), value("version"), value("comment"), value("author")),
+              DatLoader.build(new DatFormat("clr-mame-pro", "dat"))
+          ),
+          /*TODO: header, */
           games.toArray(new Game[games.size()])
       );
       popState();

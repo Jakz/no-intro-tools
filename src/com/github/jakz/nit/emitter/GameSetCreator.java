@@ -19,10 +19,13 @@ import java.util.stream.Stream;
 
 import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.GameSet;
-import com.github.jakz.nit.data.GameSetInfo;
-import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.xmdb.CloneSet;
 import com.github.jakz.nit.data.xmdb.GameClone;
+import com.github.jakz.romlib.data.game.Rom;
+import com.github.jakz.romlib.data.game.RomSize;
+import com.github.jakz.romlib.data.set.DatLoader;
+import com.github.jakz.romlib.data.set.GameSetInfo;
+import com.github.jakz.romlib.data.set.Provider;
 import com.pixbits.lib.io.FileUtils;
 import com.pixbits.lib.io.archive.FormatUnrecognizedException;
 import com.pixbits.lib.io.archive.handles.ArchiveHandle;
@@ -40,11 +43,13 @@ public class GameSetCreator
   private final static ProgressLogger progressLogger = Log.getProgressLogger(GameSetCreator.class);
 
   
+  
   private final CreatorOptions options;
   private final Digester digester;
   
   private Set<CreatorEntry> entries;
   
+  private RomSize.Set sizeSet;
   private final List<Game> games;
   private final List<GameClone> clones;
   
@@ -147,7 +152,7 @@ public class GameSetCreator
       BinaryHandle handle = new BinaryHandle(e.path);
       DigestInfo info = digester.digest(handle, handle.getInputStream());
       
-      Rom rom = new Rom(e.path.getFileName().toString(), size, info);
+      Rom rom = new Rom(e.path.getFileName().toString(), sizeSet.forBytes(size), info);
       rom.setHandle(handle);
       
       /* if rom has a parent then add it to the parent, otherwise generate a new game */
@@ -180,7 +185,7 @@ public class GameSetCreator
         .forEach(StreamException.rethrowConsumer(item -> {
           ArchiveHandle handle = item.handle();
           DigestInfo info = digester.digest(handle, handle.getInputStream());
-          Rom rom = new Rom(item.path, item.size, info);
+          Rom rom = new Rom(item.path, sizeSet.forBytes(item.size), info);
 
           /* merged mode: each entry in the archive is a clone of the game identifier by the archive itself */
           if (options.mode == CreatorOptions.Mode.merged)
@@ -245,13 +250,21 @@ public class GameSetCreator
     clones.clear();
     count.set(0);
     
+    sizeSet = new RomSize.Set();
+    
     prescanFiles();
     progressLogger.startProgress(Log.INFO2, String.format("Found %s files to analyze for DAT creation", entries.size()));
     total = entries.size();
     analyze();
     progressLogger.endProgress();
     
-    GameSet set = new GameSet(new GameSetInfo(options.name, options.description, options.version, options.comment, options.author), null, games.toArray(new Game[games.size()]));
+    GameSet set = new GameSet(
+        new GameSetInfo(
+            new Provider(options.name, options.description, options.version, options.comment, options.author),
+            DatLoader.build(options.format)
+        ), 
+        games.toArray(new Game[games.size()])
+    );
     set.setClones(new CloneSet(set, clones.toArray(new GameClone[clones.size()])));
     return set;
   }

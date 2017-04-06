@@ -5,7 +5,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import com.github.jakz.nit.config.MergeOptions;
-import com.github.jakz.nit.data.xmdb.BiasSet;
+import com.github.jakz.romlib.data.game.BiasSet;
 import com.github.jakz.romlib.data.game.Location;
 import com.pixbits.lib.io.archive.CompressorOptions;
 import com.pixbits.lib.io.archive.VerifierOptions;

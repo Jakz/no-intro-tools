@@ -1,7 +1,6 @@
 package com.github.jakz.nit;
 
 import com.github.jakz.nit.emitter.CreatorOptions;
-import com.github.jakz.nit.parser.DatFormat;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
@@ -153,12 +152,14 @@ public class Args
   {
     parser.setDefault("command", Command.CREATE_DAT);
         
-    parser.addArgument("--format", "-f")
+    // TODO: removed after refactor of DatFormat */
+    /*parser.addArgument("--format", "-f")
       .dest("format")
       .type(DatFormat.class)
       .choices(DatFormat.values())
       .setDefault(DatFormat.clrmamepro)
       .help("output format for generated DAT file");
+      */
     
     parser.addArgument("--mode", "-m")
       .dest("mode")

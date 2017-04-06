@@ -5,8 +5,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -21,7 +22,9 @@ import javax.swing.border.Border;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import com.github.jakz.nit.config.Config.DatEntry;
 import com.github.jakz.nit.data.GameSet;
+import com.pixbits.lib.io.archive.ArchiveFormat;
 import com.pixbits.lib.io.archive.Scanner;
 import com.pixbits.lib.lang.StringUtils;
 import com.pixbits.lib.ui.elements.BrowseButton;
@@ -64,8 +67,8 @@ public class GameSetListPanel extends JPanel
         {
           GameSet set = sets.get(r);
           
-          if (set.platform() != null)
-            label.setIcon(set.platform().getIcon());
+          if (setData.get(set).platform != null)
+            label.setIcon(setData.get(set).platform.getIcon());
           else
             label.setIcon(null);
         }
@@ -93,14 +96,14 @@ public class GameSetListPanel extends JPanel
         
         switch (c)
         {
-        case 0: return set.info.name;
+        case 0: return set.info.getName();
         case 1: return set.info.gameCount();
         case 2: return set.info.uniqueGameCount();
         case 3: return set.info.romCount();
         case 4: return StringUtils.humanReadableByteCount(set.info.sizeInBytes());
         }
         
-        return sets.get(r).info.name;
+        return sets.get(r).info.getName();
       }
       else
       {
@@ -134,7 +137,7 @@ public class GameSetListPanel extends JPanel
       setPreferredSize(new Dimension(300,200));
       
       romsetPath = new BrowseButton(30, BrowseButton.Type.FILES_AND_DIRECTORIES);
-      romsetPath.setFilter(Scanner.archiveMatcher, "Romsets");
+      romsetPath.setFilter(ArchiveFormat.getReadableMatcher(), "Romsets");
       
       verify = new JButton("Verify");
       
@@ -154,21 +157,23 @@ public class GameSetListPanel extends JPanel
     {
       verify.setEnabled(set != null);
       romsetPath.setEnabled(set != null);
-      romsetPath.setPath(set != null ? set.getConfig().romsetPath : null);
+      romsetPath.setPath(set != null ? setData.get(set).romsetPaths.get(0) : null);
     }
   }
   
   private GameSet set;
   private final List<GameSet> sets;
+  private final Map<GameSet, DatEntry> setData;
   private final JTable table;
   private final SetTableModel model;
   
   private final SetOptions setOptions;
   private final GameListPanel setPanel;
   
-  public GameSetListPanel(List<GameSet> sets)
+  public GameSetListPanel(List<GameSet> sets, Map<GameSet, DatEntry> data)
   {
     this.sets = sets;
+    this.setData = data;
     this.model = new SetTableModel();
     this.table = new JTable(model);
     this.setPanel = new GameListPanel();

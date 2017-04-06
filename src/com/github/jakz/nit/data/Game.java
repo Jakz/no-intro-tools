@@ -48,9 +48,4 @@ public class Game implements Iterable<Rom>
   {
     return Arrays.stream(roms).allMatch(rom -> game.hasEquivalentRom(rom));
   }
-  
-  public boolean isFound()
-  {
-    return Arrays.stream(roms).allMatch(rom -> rom.handle() != null);
-  }
 }

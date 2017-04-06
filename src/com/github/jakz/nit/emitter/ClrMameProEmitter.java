@@ -6,7 +6,7 @@ import java.nio.file.Files;
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
 import com.github.jakz.nit.data.GameSet;
-import com.github.jakz.nit.data.xmdb.CloneSet;
+import static com.pixbits.lib.lang.StringUtils.isEmpty;
 
 public class ClrMameProEmitter implements Emitter
 {
@@ -18,16 +18,16 @@ public class ClrMameProEmitter implements Emitter
     try (PrintWriter wrt = new PrintWriter(Files.newBufferedWriter(options.destPath)))
     {
       wrt.print("clrmamepro (\n");
-      if (set.info.name != null && !set.info.name.isEmpty())
-        wrt.printf("\tname \"%s\"\n", set.info.name);
-      if (set.info.description != null && !set.info.description.isEmpty())
-        wrt.printf("\tdescription \"%s\"\n", set.info.description);
-      if (set.info.version != null && !set.info.version.isEmpty())
-        wrt.printf("\tversion \"%s\"\n", set.info.version);
-      if (set.info.comment != null && !set.info.comment.isEmpty())
-        wrt.printf("\tcomment \"%s\"\n", set.info.comment);
-      if (set.info.author != null && !set.info.author.isEmpty())
-        wrt.printf("\tauthor \"%s\"\n", set.info.author);
+      if (!isEmpty(set.info.getName()))
+        wrt.printf("\tname \"%s\"\n", set.info.getName());
+      if (!isEmpty(set.info.getDescription()))
+        wrt.printf("\tdescription \"%s\"\n", set.info.getDescription());
+      if (!isEmpty(set.info.getVersion()))
+        wrt.printf("\tversion \"%s\"\n", set.info.getVersion());
+      if (!isEmpty(set.info.getComment()))
+        wrt.printf("\tcomment \"%s\"\n", set.info.getComment());
+      if (!isEmpty(set.info.getAuthor()))
+        wrt.printf("\tauthor \"%s\"\n", set.info.getAuthor());
       wrt.print(")\n\n");
       
       set.stream().sorted((g1,g2) -> g1.name.compareToIgnoreCase(g2.name)).forEach(game -> {

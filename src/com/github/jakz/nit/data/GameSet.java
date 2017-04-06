@@ -6,17 +6,17 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import com.github.jakz.nit.config.GameSetConfig;
 import com.github.jakz.nit.data.header.Header;
 import com.github.jakz.nit.data.xmdb.CloneSet;
 import com.github.jakz.nit.data.xmdb.GameClone;
+import com.github.jakz.romlib.data.game.Rom;
 import com.github.jakz.romlib.data.platforms.Platform;
+import com.github.jakz.romlib.data.set.GameSetInfo;
 import com.pixbits.lib.io.digest.HashCache;
 
 public class GameSet implements Iterable<Game>
 {
   public final GameSetInfo info;
-  public final Header header;
 
   private final Game[] games;
   private final Map<String, Game> gameMap;
@@ -25,17 +25,12 @@ public class GameSet implements Iterable<Game>
   
   private CloneSet clones;
   
-  private final GameSetConfig config;
-  private Platform platform;
-
-  public GameSet(GameSetInfo info, Header header, Game[] games)
+  public GameSet(GameSetInfo info, Game[] games)
   {
     this.info = info;
-    this.header = header;
     this.games = games;
     this.cache = new HashCache<Rom>(Arrays.stream(games).flatMap(g -> g.stream()));
     this.gameMap = new HashMap<>();
-    this.config = new GameSetConfig();
     
     Arrays.stream(games).forEach(g -> gameMap.put(g.name, g));
     
@@ -57,8 +52,8 @@ public class GameSet implements Iterable<Game>
 
   public Game get(String name) { return gameMap.get(name); }
   public Game get(int index) { return games[index]; }
-  public int size() { return games.length; }
   
+  public int gameCount() { return games.length; }
   public int filesCount() { return stream().mapToInt(Game::size).sum(); }
   
   
@@ -73,9 +68,4 @@ public class GameSet implements Iterable<Game>
         .reduce((s1,s2) -> Stream.concat(s1, s2))
         .get(); 
   }
-  
-  public void setPlatform(Platform platform) { this.platform = platform; }
-  public Platform platform() { return platform; }
-  
-  public GameSetConfig getConfig() { return config; }
 }

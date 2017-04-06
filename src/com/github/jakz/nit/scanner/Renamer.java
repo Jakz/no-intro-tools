@@ -14,7 +14,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.github.jakz.nit.Options;
-import com.github.jakz.nit.data.Rom;
+import com.github.jakz.romlib.data.game.Rom;
 import com.pixbits.lib.functional.StreamException;
 import com.pixbits.lib.io.archive.handles.Handle;
 import com.pixbits.lib.log.Log;
@@ -65,7 +65,7 @@ public class Renamer
       /* if rom is stored inside an archive together with other files */
       if (handle.isArchive() && mappedFiles.get(handle.path()).size() > 1)
       {
-        logger.w("Skipping rename of "+rom.game().name+" because it's archived together with other verified files");
+        logger.w("Skipping rename of "+rom.game().getTitle()+" because it's archived together with other verified files");
         return;
       }
         

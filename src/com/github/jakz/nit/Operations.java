@@ -1,32 +1,26 @@
 package com.github.jakz.nit;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
-import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import javax.swing.JFrame;
 
 import org.xml.sax.SAXException;
 
 import com.github.jakz.nit.config.Config;
 import com.github.jakz.nit.config.MergeOptions;
 import com.github.jakz.nit.data.GameSet;
-import com.github.jakz.nit.data.Rom;
 import com.github.jakz.nit.data.xmdb.CloneSet;
 import com.github.jakz.nit.emitter.ClrMameProEmitter;
 import com.github.jakz.nit.emitter.CreatorOptions;
@@ -37,12 +31,9 @@ import com.github.jakz.nit.gui.GameSetMenu;
 import com.github.jakz.nit.gui.LogPanel;
 import com.github.jakz.nit.gui.SimpleFrame;
 import com.github.jakz.nit.parser.ClrMameProParserDat;
-import com.github.jakz.nit.parser.DatFormat;
 import com.github.jakz.nit.parser.XMDBParser;
 import com.github.jakz.nit.scripts.ConsolePanel;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
+import com.github.jakz.romlib.data.game.Rom;
 import com.pixbits.lib.io.FolderScanner;
 import com.pixbits.lib.io.archive.HandleSet;
 import com.pixbits.lib.io.archive.Scanner;
@@ -54,11 +45,7 @@ import com.pixbits.lib.io.archive.VerifierResult;
 import com.pixbits.lib.io.archive.handles.ArchiveHandle;
 import com.pixbits.lib.io.archive.handles.BinaryHandle;
 import com.pixbits.lib.io.archive.handles.Handle;
-import com.pixbits.lib.io.archive.handles.JsonHandleAdapter;
 import com.pixbits.lib.io.archive.handles.NestedArchiveHandle;
-import com.pixbits.lib.io.xml.XMLEmbeddedDTD;
-import com.pixbits.lib.io.xml.XMLParser;
-import com.pixbits.lib.json.PathAdapter;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
 import com.pixbits.lib.log.ProgressLogger;
@@ -72,7 +59,7 @@ public class Operations
   {
     ClrMameProParserDat parser = new ClrMameProParserDat(options);
     GameSet set = parser.load(options.datPath);
-    logger.i("Loaded set \'"+set.info.name+"\' ("+set.size()+" games, "+set.filesCount()+" roms)");
+    logger.i("Loaded set \'"+set.info.getName()+"\' ("+set.gameCount()+" games, "+set.filesCount()+" roms)");
 
     return set;
   }
@@ -80,7 +67,7 @@ public class Operations
   public static CloneSet loadCloneSetFromXMDB(GameSet set, Path path) throws IOException, SAXException
   {
     CloneSet cloneSet = XMDBParser.loadCloneSet(set, path);
-    logger.i("Loaded clone set for \'"+set.info.name+"\' ("+set.size()+" games in "+cloneSet.size()+" entries)");
+    logger.i("Loaded clone set for \'"+set.info.getName()+"\' ("+set.gameCount()+" games in "+cloneSet.size()+" entries)");
     return cloneSet;
   }
   
@@ -88,16 +75,16 @@ public class Operations
   {
     long found = set.foundRoms().count();
     
-    logger.i("Statistics for %s:", set.info.name);
-    logger.i("  %d total roms", set.size());
+    logger.i("Statistics for %s:", set.info.getName());
+    logger.i("  %d total roms", set.gameCount());
     
     if (set.clones() != null && set.clones().size() > 0)
       logger.i("  %d total games", set.clones().size());
     
     if (found > 0)
     {
-      logger.i("  %d found roms (%d%%)", found, (found*100)/set.size());
-      logger.i("  %d missing roms", set.size() - found);
+      logger.i("  %d found roms (%d%%)", found, (found*100)/set.gameCount());
+      logger.i("  %d missing roms", set.gameCount() - found);
     }
   }
   
@@ -107,23 +94,28 @@ public class Operations
     
     Scanner scanner = new Scanner(options);
     
-    scanner.setOnEntryFound(h -> logger.i("Found entry: %s", h.toString()));
+    
+    List<VerifierEntry> skipped = new ArrayList<>();
        
-    options.assumeCRCisCorrect = set.header == null;
-    options.shouldSkip = s -> !set.cache().isValidSize(s.size) && discardUnknownSizes;
+    options.assumeCRCisCorrect = true; /*TODO: set.header == null;*/
+    options.shouldSkip = s -> !set.cache().isValidSize(s.getVerifierHandle().size()) && discardUnknownSizes;
+    
+    options.onEntryFound = h -> logger.i("Found entry: %s", h.toString());
+    options.onSkip = h -> skipped.add(h);
+    options.onFaultyArchive = p -> logger.w("File "+p.toString()+" is not a valid archive.");
+    
     // set.cache().isValidSize(s.size) || !options.discardUnknownSizes; //
     
-    HandleSet handles = scanner.computeHandles(paths);
+    HandleSet handles = scanner.scanPathsAndComputeHandles(paths);
     
-    handles.faultyArchives.forEach(p -> logger.w("File "+p.getFileName()+" is not a valid archive."));
 
     logger.i1("Found %d potential matches (%d binary, %d inside archives, %d nested inside %d archives).", 
-        handles.total(), handles.binaryCount(), handles.archivedCount(), handles.nestedCount(), handles.nestedArchives.size());
+        handles.totalHandles, handles.binaryCount, handles.archiveCount, handles.nestedArchiveInnerCount, handles.nestedArchiveCount);
     
-    if (!handles.skipped.isEmpty())
-      logger.i1("Skipped %d entries:", handles.skipped.size());
+    if (!skipped.isEmpty())
+      logger.i1("Skipped %d entries:", skipped.size());
     
-    handles.skipped.forEach(s -> logger.i3("> %s", s));
+    skipped.forEach(s -> logger.i3("> %s", s));
     
     /*GsonBuilder builder = new GsonBuilder();
     builder.setPrettyPrinting();
@@ -151,7 +143,7 @@ public class Operations
     AtomicInteger nestedCount = new AtomicInteger();
     AtomicInteger totalVerified = new AtomicInteger();
     
-    final int totalCount = (int)handles.total();
+    final int totalCount = (int)handles.totalEntries;
 
     final Consumer<List<VerifierResult<Rom>>> callback = results -> {
       for (VerifierResult<Rom> result : results)
@@ -227,11 +219,13 @@ public class Operations
     
   public static void consolidateGameSet(CreatorOptions options, GameSet set) throws IOException
   {
-    if (options.format == DatFormat.clrmamepro)
+    if (options.format.is("clr-mame-pro"))
     {
       ClrMameProEmitter generator = new ClrMameProEmitter();
       generator.generate(options, set);
     }
+    else
+      throw new UnsupportedOperationException("Unknown dat format: "+options.format.getIdent());
   }
   
   public static void saveStatusOnTextFiles(GameSet set, Options options) throws IOException
@@ -240,7 +234,7 @@ public class Operations
     List<String> miss = new ArrayList<>();
     
     set.stream().forEach(game -> {
-      (game.isFound() ? have : miss).add(game.name);
+      (game.isComplete() ? have : miss).add(game.name);
     });
     
     logger.i("Saving found status on files.");
@@ -252,13 +246,13 @@ public class Operations
 
     try (PrintWriter wrt = new PrintWriter(Files.newBufferedWriter(basePath.resolve("SetHave.txt"))))
     {
-      wrt.printf(" You have %d of %d known %s games\n\n", have.size(), have.size()+miss.size(), set.info.name);      
+      wrt.printf(" You have %d of %d known %s games\n\n", have.size(), have.size()+miss.size(), set.info.getName());      
       for (String h : have) wrt.println(h);
     }
     
     try (PrintWriter wrt = new PrintWriter(Files.newBufferedWriter(basePath.resolve("SetMiss.txt"))))
     {
-      wrt.printf(" You are missing %d of %d known %s games\n\n", miss.size(), have.size()+miss.size(), set.info.name);      
+      wrt.printf(" You are missing %d of %d known %s games\n\n", miss.size(), have.size()+miss.size(), set.info.getName());      
       for (String h : miss) wrt.println(h);
     }
   }
@@ -277,6 +271,8 @@ public class Operations
     Main.frames.add("log", logFrame);
     Log.setFactory(logFrame.panel(), true);
         
+    Map<GameSet, Config.DatEntry> setData = new HashMap<>();
+    
     List<GameSet> sets = config.dats.stream().map(StreamException.rethrowFunction(d -> {
       Path p = d.datFile;
       GameSet set = Operations.loadGameSet(Options.simpleDatLoad(p));
@@ -288,14 +284,12 @@ public class Operations
         CloneSet clones = Operations.loadCloneSetFromXMDB(set, optionalXMDB);
         set.setClones(clones);
       }
-      
-      set.setPlatform(d.platform);
-      set.getConfig().romsetPath = d.romsetPaths.get(0);
-      
+
+      setData.put(set, d);      
       return set;
     })).collect(Collectors.toList());
     
-    SimpleFrame<GameSetListPanel> frame = new SimpleFrame<>("DAT Manager", new GameSetListPanel(sets), true);
+    SimpleFrame<GameSetListPanel> frame = new SimpleFrame<>("DAT Manager", new GameSetListPanel(sets, setData), true);
     frame.setJMenuBar(new GameSetMenu());
     frame.setLocationRelativeTo(null);
     frame.setVisible(true);

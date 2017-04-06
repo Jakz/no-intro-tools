@@ -21,12 +21,12 @@ import javax.swing.tree.DefaultTreeModel;
 
 import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.GameSet;
-import com.github.jakz.nit.data.Rom;
-import com.github.jakz.nit.data.xmdb.BiasSet;
 import com.github.jakz.nit.data.xmdb.GameClone;
 import com.github.jakz.nit.merger.TitleNormalizer;
+import com.github.jakz.romlib.data.game.BiasSet;
 import com.github.jakz.romlib.data.game.Location;
 import com.github.jakz.romlib.data.game.LocationSet;
+import com.github.jakz.romlib.data.game.Rom;
 import com.github.jakz.romlib.ui.Icon;
 import com.pixbits.lib.lang.StringUtils;
 
@@ -93,7 +93,7 @@ public class GameListPanel extends JPanel
       else if (value instanceof RomNode)
       {
         Rom rom = (Rom)((RomNode)value).getUserObject();
-        label.setText(rom.name+" ["+StringUtils.humanReadableByteCount(rom.size)+"]");
+        label.setText(rom.name+" ["+StringUtils.humanReadableByteCount(rom.size.bytes())+"]");
         label.setIcon(Icon.ROM.getIcon());
       }
       else if (value instanceof CloneNode)

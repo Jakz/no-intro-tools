@@ -27,7 +27,7 @@ public class GameSetComparePanel extends JPanel
     
     private OptionalInt findEquivalentGame(GameSet set, Game game)
     {
-      return IntStream.range(0, set.size()).parallel().filter(i -> set.get(i).isEquivalent(game)).findFirst();
+      return IntStream.range(0, set.gameCount()).parallel().filter(i -> set.get(i).isEquivalent(game)).findFirst();
     }
     
     TableModel(List<GameSet> sets)
@@ -37,15 +37,15 @@ public class GameSetComparePanel extends JPanel
       GameSet mainSet = sets.get(0);
       
       columnCount = sets.size();  
-      rowCount = sets.get(0).size();
+      rowCount = sets.get(0).gameCount();
       
-      data = new Game[sets.size()][mainSet.size()];
+      data = new Game[sets.size()][mainSet.gameCount()];
       data[0] = sets.get(0).stream().toArray(i -> new Game[i]);
             
       for (int i = 1; i < sets.size(); ++i)
       {
         GameSet set = sets.get(i);
-        for (int j = 0; j < mainSet.size(); ++j)
+        for (int j = 0; j < mainSet.gameCount(); ++j)
         {
           OptionalInt index = findEquivalentGame(set, mainSet.get(j));
           if (index.isPresent())
@@ -57,7 +57,7 @@ public class GameSetComparePanel extends JPanel
       
     }
 
-    @Override public String getColumnName(int i) { return sets.get(i).info.name; }
+    @Override public String getColumnName(int i) { return sets.get(i).info.getName(); }
     @Override public int getRowCount() { return rowCount; }
     @Override public int getColumnCount() { return columnCount; }
 
@@ -80,7 +80,7 @@ public class GameSetComparePanel extends JPanel
     private InfoPanel(List<GameSet> sets)
     {
       labels = sets.stream().map(set -> {
-        return new JLabel(set.info.name);
+        return new JLabel(set.info.getName());
       }).toArray(i -> new JLabel[i]);
       
       setLayout(new GridLayout(labels.length, 1));
