@@ -21,15 +21,16 @@ import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import org.xml.sax.SAXException;
 
 import com.github.jakz.nit.Options;
-import com.github.jakz.nit.data.Game;
-import com.github.jakz.nit.data.GameSet;
 import com.github.jakz.nit.data.header.Header;
 import com.github.jakz.nit.merger.TitleNormalizer;
+import com.github.jakz.romlib.data.game.Game;
 import com.github.jakz.romlib.data.game.Rom;
 import com.github.jakz.romlib.data.set.DatFormat;
 import com.github.jakz.romlib.data.set.DatLoader;
+import com.github.jakz.romlib.data.set.GameSet;
 import com.github.jakz.romlib.data.set.GameSetInfo;
 import com.github.jakz.romlib.data.set.Provider;
+import com.github.jakz.romlib.parsers.GameCataloguer;
 import com.pixbits.lib.io.xml.XMLParser;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
@@ -225,7 +226,9 @@ public class ClrMameProParserDat
           fi = si;
         }
         
-        Game game = new Game(value("name"), value("description"), roms.toArray(new Rom[roms.size()]));
+        Game game = new Game(roms.toArray(new Rom[roms.size()]));
+        game.setTitle(value("name"));
+        game.setDescription(value("description"));
         cataloguer.catalogue(game);
         games.add(game);
         popState();
@@ -239,9 +242,16 @@ public class ClrMameProParserDat
       }
       else
       {
-        checkPresenceOfValues("name");
+        checkPresenceOfValues("name");   
         
-        roms.add(new Rom(value("name"), valueOrDefault("size", -1L), valueOrDefault("crc", -1L), valueOrDefault("md5", null), valueOrDefault("sha1", null)));
+        roms.add(new Rom(
+          value("name"), 
+          set.sizeSet.forBytes(valueOrDefault("size", -1L)), 
+          valueOrDefault("crc", -1L), 
+          valueOrDefault("md5", null), 
+          valueOrDefault("sha1", null))
+        );
+        
         popState();
       }
     }

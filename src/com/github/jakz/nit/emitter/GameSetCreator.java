@@ -17,13 +17,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.github.jakz.nit.data.Game;
-import com.github.jakz.nit.data.GameSet;
-import com.github.jakz.nit.data.xmdb.CloneSet;
-import com.github.jakz.nit.data.xmdb.GameClone;
+import com.github.jakz.romlib.data.game.Game;
+import com.github.jakz.romlib.data.game.GameClone;
 import com.github.jakz.romlib.data.game.Rom;
 import com.github.jakz.romlib.data.game.RomSize;
+import com.github.jakz.romlib.data.set.CloneSet;
 import com.github.jakz.romlib.data.set.DatLoader;
+import com.github.jakz.romlib.data.set.GameSet;
 import com.github.jakz.romlib.data.set.GameSetInfo;
 import com.github.jakz.romlib.data.set.Provider;
 import com.pixbits.lib.io.FileUtils;
@@ -160,7 +160,10 @@ public class GameSetCreator
         parent.roms.add(rom);
       else
       {
-        games.add(new Game(name, name, new Rom[] { rom }));
+        Game game = new Game(rom);
+        game.setTitle(name);
+        game.setDescription(name);
+        games.add(game);
       }
     }
     else if (e instanceof ArchiveEntry)
@@ -191,7 +194,9 @@ public class GameSetCreator
           if (options.mode == CreatorOptions.Mode.merged)
           {
             String gameName = FileUtils.trimExtension(item.path);
-            Game game = new Game(gameName, gameName, new Rom[] { rom } );
+            Game game = new Game(rom);
+            game.setTitle(gameName);
+            game.setDescription(gameName);
             
             /* if parent is null then we're in root, this is a single game or part of game set according to mode */
             if (parent == null)
@@ -216,7 +221,9 @@ public class GameSetCreator
           else if (options.mode == CreatorOptions.Mode.multi && ae.roms.size() > 0)
           {
             String folderName = FileUtils.fileNameWithoutExtension(e.path.getFileName());
-            Game game = new Game(folderName, folderName, ae.roms.toArray(new Rom[ae.roms.size()]));
+            Game game = new Game(ae.roms.toArray(new Rom[ae.roms.size()]));
+            game.setTitle(folderName);
+            game.setDescription(folderName);
             games.add(game);
           }
         }
@@ -237,7 +244,12 @@ public class GameSetCreator
       }));
       
       if (options.mode == CreatorOptions.Mode.multi && ce.roms.size() > 0)
-        games.add(new Game(name, name, ce.roms.toArray(new Rom[ce.roms.size()])));
+      {
+        Game game = new Game(ce.roms.toArray(new Rom[ce.roms.size()]));
+        game.setTitle(name);
+        game.setDescription(name);
+        games.add(game);
+      }
       else if (ce.clones.size() > 0)
         clones.add(new GameClone(ce.clones.toArray(new Game[ce.clones.size()])));
     }
@@ -265,7 +277,7 @@ public class GameSetCreator
         ), 
         games.toArray(new Game[games.size()])
     );
-    set.setClones(new CloneSet(set, clones.toArray(new GameClone[clones.size()])));
+    set.setClones(new CloneSet(clones.toArray(new GameClone[clones.size()])));
     return set;
   }
 

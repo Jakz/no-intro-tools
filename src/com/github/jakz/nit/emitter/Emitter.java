@@ -2,7 +2,7 @@ package com.github.jakz.nit.emitter;
 
 import java.io.IOException;
 
-import com.github.jakz.nit.data.GameSet;
+import com.github.jakz.romlib.data.set.GameSet;
 
 public interface Emitter
 {

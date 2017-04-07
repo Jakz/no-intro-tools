@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import com.github.jakz.nit.data.xmdb.GameClone;
+import com.github.jakz.romlib.data.game.Game;
+import com.github.jakz.romlib.data.game.GameClone;
 import com.github.jakz.romlib.data.game.Location;
 import com.github.jakz.romlib.data.game.Version;
 import com.pixbits.lib.searcher.BasicPredicate;
@@ -19,14 +20,14 @@ public class Searcher
   
   public Searcher()
   {
-    final LambdaPredicate<Game> freeSearch = new LambdaPredicate<Game>(token -> (g -> g.name.toLowerCase().contains(token.toLowerCase())));
+    final LambdaPredicate<Game> freeSearch = new LambdaPredicate<Game>(token -> (g -> g.getTitle().toLowerCase().contains(token.toLowerCase())));
     
     final SearchPredicate<Game> isProper = new BasicPredicate<Game>()
     {
       @Override public Predicate<Game> buildPredicate(String token)
       {
         if (isSearchArg(splitWithDelimiter(token, ":"), "is", "proper"))
-          return g -> g.info().getVersion() == Version.PROPER;
+          return g -> g.getVersion() == Version.PROPER;
         else
           return null;
       }
@@ -37,7 +38,7 @@ public class Searcher
       @Override public Predicate<Game> buildPredicate(String token)
       {
         if (isSearchArg(splitWithDelimiter(token, ":"), "is", "licensed"))
-          return g -> g.info().getLicensed();
+          return g -> g.getLicensed();
         else
           return null;
       }
@@ -58,12 +59,12 @@ public class Searcher
   {
     for (Location zone : zones)
     {
-      Optional<Game> cgame = clone.stream().filter(g -> g.info().getLocation().isJust(zone)).findFirst();
+      Optional<Game> cgame = clone.stream().filter(g -> g.getLocation().isJust(zone)).findFirst();
       
       if (cgame.isPresent())
         return cgame.get();
       
-      cgame = clone.stream().filter(g -> g.info().getLocation().is(zone)).findFirst();
+      cgame = clone.stream().filter(g -> g.getLocation().is(zone)).findFirst();
       
       if (cgame.isPresent())
         return cgame.get();
@@ -80,7 +81,7 @@ public class Searcher
  
       /* if game doesn't have any clone then should be exported if it has correct zone */
       if (clone == null)
-        return lzones.stream().anyMatch(zone -> game.info().getLocation().isJust(zone));
+        return lzones.stream().anyMatch(zone -> game.getLocation().isJust(zone));
       else
       {
         Game cgame = findFirstClone(clone, zones);

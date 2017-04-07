@@ -23,7 +23,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 
 import com.github.jakz.nit.config.Config.DatEntry;
-import com.github.jakz.nit.data.GameSet;
+import com.github.jakz.romlib.data.set.GameSet;
 import com.pixbits.lib.io.archive.ArchiveFormat;
 import com.pixbits.lib.io.archive.Scanner;
 import com.pixbits.lib.lang.StringUtils;
@@ -96,24 +96,24 @@ public class GameSetListPanel extends JPanel
         
         switch (c)
         {
-        case 0: return set.info.getName();
-        case 1: return set.info.gameCount();
-        case 2: return set.info.uniqueGameCount();
-        case 3: return set.info.romCount();
-        case 4: return StringUtils.humanReadableByteCount(set.info.sizeInBytes());
+        case 0: return set.info().getName();
+        case 1: return set.info().gameCount();
+        case 2: return set.info().uniqueGameCount();
+        case 3: return set.info().romCount();
+        case 4: return StringUtils.humanReadableByteCount(set.info().sizeInBytes());
         }
         
-        return sets.get(r).info.getName();
+        return sets.get(r).info().getName();
       }
       else
       {
         switch (c)
         {
         case 0: return "Total";
-        case 1: return sets.stream().mapToInt(s -> s.info.gameCount()).sum();
-        case 2: return sets.stream().mapToInt(s -> s.info.uniqueGameCount()).sum();
-        case 3: return sets.stream().mapToInt(s -> s.info.romCount()).sum();
-        case 4: return StringUtils.humanReadableByteCount(sets.stream().mapToLong(s -> s.info.sizeInBytes()).sum());
+        case 1: return sets.stream().mapToInt(s -> s.info().gameCount()).sum();
+        case 2: return sets.stream().mapToInt(s -> s.info().uniqueGameCount()).sum();
+        case 3: return sets.stream().mapToInt(s -> s.info().romCount()).sum();
+        case 4: return StringUtils.humanReadableByteCount(sets.stream().mapToLong(s -> s.info().sizeInBytes()).sum());
         }
       }
       

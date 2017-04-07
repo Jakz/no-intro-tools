@@ -1,6 +1,6 @@
 package com.github.jakz.nit.scripts;
 
-import com.github.jakz.nit.data.GameSet;
+import com.github.jakz.romlib.data.set.GameSet;
 
 public class ScriptEnvironment
 {

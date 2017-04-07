@@ -13,8 +13,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
-import com.github.jakz.nit.data.Game;
-import com.github.jakz.nit.data.GameSet;
+import com.github.jakz.romlib.data.game.Game;
+import com.github.jakz.romlib.data.set.GameSet;
 
 public class GameSetComparePanel extends JPanel
 {
@@ -57,7 +57,7 @@ public class GameSetComparePanel extends JPanel
       
     }
 
-    @Override public String getColumnName(int i) { return sets.get(i).info.getName(); }
+    @Override public String getColumnName(int i) { return sets.get(i).info().getName(); }
     @Override public int getRowCount() { return rowCount; }
     @Override public int getColumnCount() { return columnCount; }
 
@@ -67,7 +67,7 @@ public class GameSetComparePanel extends JPanel
       Game game = data[c][r];
       
       if (game != null)
-        return game.name;
+        return game.getTitle();
       else
         return "";
     }
@@ -80,7 +80,7 @@ public class GameSetComparePanel extends JPanel
     private InfoPanel(List<GameSet> sets)
     {
       labels = sets.stream().map(set -> {
-        return new JLabel(set.info.getName());
+        return new JLabel(set.info().getName());
       }).toArray(i -> new JLabel[i]);
       
       setLayout(new GridLayout(labels.length, 1));

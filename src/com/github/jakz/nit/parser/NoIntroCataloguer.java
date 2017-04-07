@@ -4,10 +4,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.github.jakz.nit.data.Game;
+import com.github.jakz.romlib.data.game.Game;
 import com.github.jakz.romlib.data.game.Language;
 import com.github.jakz.romlib.data.game.Location;
 import com.github.jakz.romlib.data.game.Version;
+import com.github.jakz.romlib.parsers.GameCataloguer;
 
 public class NoIntroCataloguer implements GameCataloguer
 {
@@ -44,11 +45,11 @@ public class NoIntroCataloguer implements GameCataloguer
   
   public void catalogue(Game game)
   {
-    String name = game.name;
+    String name = game.getTitle();
     
     locations.entrySet().forEach(e -> {
       if (name.contains(e.getKey()))
-        game.info().getLocation().add(e.getValue());
+        game.getLocation().add(e.getValue());
     });
       
     languages.entrySet().forEach(e -> {
@@ -61,28 +62,28 @@ public class NoIntroCataloguer implements GameCataloguer
       };
       
       if (Arrays.stream(patterns).anyMatch(s -> name.contains(s)))
-        game.info().getLanguages().add(e.getValue());
+        game.getLanguages().add(e.getValue());
     });
     
     if (name.contains("(Rev A)"))
-      game.info().setVersion(new Version.Revision("Rev A"));
+      game.setVersion(new Version.Revision("Rev A"));
     else if (name.contains("(Rev B)"))
-      game.info().setVersion(new Version.Revision("Rev B"));
+      game.setVersion(new Version.Revision("Rev B"));
     else if (name.contains("(Rev 1)"))
-      game.info().setVersion(new Version.Revision("Rev 1"));
+      game.setVersion(new Version.Revision("Rev 1"));
     else if (name.contains("(Rev 2)"))
-      game.info().setVersion(new Version.Revision("Rev 2"));
+      game.setVersion(new Version.Revision("Rev 2"));
     else if (name.contains("(Demo)"))
-      game.info().setVersion(Version.DEMO);
+      game.setVersion(Version.DEMO);
     else if (name.contains("(Sample)"))
-      game.info().setVersion(Version.SAMPLE);
+      game.setVersion(Version.SAMPLE);
     else if (name.contains("(Beta)"))
-      game.info().setVersion(Version.BETA);
+      game.setVersion(Version.BETA);
     else if (name.contains("(Proto)"))
-      game.info().setVersion(Version.PROTO);
+      game.setVersion(Version.PROTO);
 
     if (name.contains("(Unl)"))
-      game.info().setLicensed(false);
+      game.setLicensed(false);
        
         
   }

@@ -12,11 +12,11 @@ import java.util.NoSuchElementException;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-import com.github.jakz.nit.data.Game;
-import com.github.jakz.nit.data.GameSet;
-import com.github.jakz.nit.data.xmdb.CloneSet;
-import com.github.jakz.nit.data.xmdb.GameClone;
+import com.github.jakz.romlib.data.game.Game;
+import com.github.jakz.romlib.data.game.GameClone;
 import com.github.jakz.romlib.data.game.Location;
+import com.github.jakz.romlib.data.set.CloneSet;
+import com.github.jakz.romlib.data.set.GameSet;
 import com.pixbits.lib.io.xml.XMLEmbeddedDTD;
 import com.pixbits.lib.io.xml.XMLHandler;
 import com.pixbits.lib.io.xml.XMLParser;
@@ -122,7 +122,7 @@ public class XMDBParser extends XMLHandler<CloneSet>
 
   @Override public CloneSet get()
   {
-    return new CloneSet(set, clones.toArray(new GameClone[clones.size()]));
+    return new CloneSet(clones.toArray(new GameClone[clones.size()]));
   }
   
   

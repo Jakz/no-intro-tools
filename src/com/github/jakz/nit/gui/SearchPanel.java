@@ -12,8 +12,8 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 
-import com.github.jakz.nit.data.Game;
 import com.github.jakz.nit.data.Searcher;
+import com.github.jakz.romlib.data.game.Game;
 import com.github.jakz.romlib.data.game.Language;
 import com.github.jakz.romlib.data.game.Location;
 import com.github.jakz.romlib.ui.Icon;
@@ -165,12 +165,12 @@ public class SearchPanel extends JPanel
     Location location = locations.getItemAt(locations.getSelectedIndex());
     
     if (location != null)
-      filter = filter.and(g -> g.info().getLocation().isJust(location));
+      filter = filter.and(g -> g.getLocation().isJust(location));
       
     Language language = languages.getItemAt(languages.getSelectedIndex());
     
     if (language != null)
-      filter = filter.and(g -> g.info().getLanguages().includes(language));
+      filter = filter.and(g -> g.getLanguages().includes(language));
     
     return filter;
   }

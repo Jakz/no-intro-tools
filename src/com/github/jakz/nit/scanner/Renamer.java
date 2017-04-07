@@ -36,7 +36,7 @@ public class Renamer
   
   public Renamer(Options options)
   {
-    this(options, rr -> rr.game().name);
+    this(options, rr -> rr.game().getTitle());
   }
   
   

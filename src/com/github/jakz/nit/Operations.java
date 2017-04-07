@@ -20,8 +20,6 @@ import org.xml.sax.SAXException;
 
 import com.github.jakz.nit.config.Config;
 import com.github.jakz.nit.config.MergeOptions;
-import com.github.jakz.nit.data.GameSet;
-import com.github.jakz.nit.data.xmdb.CloneSet;
 import com.github.jakz.nit.emitter.ClrMameProEmitter;
 import com.github.jakz.nit.emitter.CreatorOptions;
 import com.github.jakz.nit.emitter.GameSetCreator;
@@ -34,6 +32,8 @@ import com.github.jakz.nit.parser.ClrMameProParserDat;
 import com.github.jakz.nit.parser.XMDBParser;
 import com.github.jakz.nit.scripts.ConsolePanel;
 import com.github.jakz.romlib.data.game.Rom;
+import com.github.jakz.romlib.data.set.CloneSet;
+import com.github.jakz.romlib.data.set.GameSet;
 import com.pixbits.lib.io.FolderScanner;
 import com.pixbits.lib.io.archive.HandleSet;
 import com.pixbits.lib.io.archive.Scanner;
@@ -59,7 +59,7 @@ public class Operations
   {
     ClrMameProParserDat parser = new ClrMameProParserDat(options);
     GameSet set = parser.load(options.datPath);
-    logger.i("Loaded set \'"+set.info.getName()+"\' ("+set.gameCount()+" games, "+set.filesCount()+" roms)");
+    logger.i("Loaded set \'"+set.info().getName()+"\' ("+set.gameCount()+" games, "+set.info().romCount()+" roms)");
 
     return set;
   }
@@ -67,7 +67,7 @@ public class Operations
   public static CloneSet loadCloneSetFromXMDB(GameSet set, Path path) throws IOException, SAXException
   {
     CloneSet cloneSet = XMDBParser.loadCloneSet(set, path);
-    logger.i("Loaded clone set for \'"+set.info.getName()+"\' ("+set.gameCount()+" games in "+cloneSet.size()+" entries)");
+    logger.i("Loaded clone set for \'"+set.info().getName()+"\' ("+set.gameCount()+" games in "+cloneSet.size()+" entries)");
     return cloneSet;
   }
   
@@ -75,7 +75,7 @@ public class Operations
   {
     long found = set.foundRoms().count();
     
-    logger.i("Statistics for %s:", set.info.getName());
+    logger.i("Statistics for %s:", set.info().getName());
     logger.i("  %d total roms", set.gameCount());
     
     if (set.clones() != null && set.clones().size() > 0)
@@ -98,7 +98,7 @@ public class Operations
     List<VerifierEntry> skipped = new ArrayList<>();
        
     options.assumeCRCisCorrect = true; /*TODO: set.header == null;*/
-    options.shouldSkip = s -> !set.cache().isValidSize(s.getVerifierHandle().size()) && discardUnknownSizes;
+    options.shouldSkip = s -> !set.hashCache().isValidSize(s.getVerifierHandle().size()) && discardUnknownSizes;
     
     options.onEntryFound = h -> logger.i("Found entry: %s", h.toString());
     options.onSkip = h -> skipped.add(h);
@@ -176,7 +176,7 @@ public class Operations
     options.verifier.matchMD5 = true;
     options.verifier.matchSHA1 = true;
       
-    final VerifierHelper<Rom> verifier = new VerifierHelper<Rom>(options.verifier, options.multiThreaded, set.cache(), callback);
+    final VerifierHelper<Rom> verifier = new VerifierHelper<Rom>(options.verifier, options.multiThreaded, set.hashCache(), callback);
     
     verifier.setReporter(r -> {
       if (r.type == VerifierHelper.Report.Type.START)
@@ -234,7 +234,7 @@ public class Operations
     List<String> miss = new ArrayList<>();
     
     set.stream().forEach(game -> {
-      (game.isComplete() ? have : miss).add(game.name);
+      (game.isComplete() ? have : miss).add(game.getTitle());
     });
     
     logger.i("Saving found status on files.");
@@ -246,13 +246,13 @@ public class Operations
 
     try (PrintWriter wrt = new PrintWriter(Files.newBufferedWriter(basePath.resolve("SetHave.txt"))))
     {
-      wrt.printf(" You have %d of %d known %s games\n\n", have.size(), have.size()+miss.size(), set.info.getName());      
+      wrt.printf(" You have %d of %d known %s games\n\n", have.size(), have.size()+miss.size(), set.info().getName());      
       for (String h : have) wrt.println(h);
     }
     
     try (PrintWriter wrt = new PrintWriter(Files.newBufferedWriter(basePath.resolve("SetMiss.txt"))))
     {
-      wrt.printf(" You are missing %d of %d known %s games\n\n", miss.size(), have.size()+miss.size(), set.info.getName());      
+      wrt.printf(" You are missing %d of %d known %s games\n\n", miss.size(), have.size()+miss.size(), set.info().getName());      
       for (String h : miss) wrt.println(h);
     }
   }
