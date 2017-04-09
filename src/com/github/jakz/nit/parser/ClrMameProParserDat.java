@@ -25,12 +25,14 @@ import com.github.jakz.nit.data.header.Header;
 import com.github.jakz.nit.merger.TitleNormalizer;
 import com.github.jakz.romlib.data.game.Game;
 import com.github.jakz.romlib.data.game.Rom;
+import com.github.jakz.romlib.data.game.RomSize;
 import com.github.jakz.romlib.data.set.DatFormat;
-import com.github.jakz.romlib.data.set.DatLoader;
+import com.github.jakz.romlib.data.set.DataSupplier;
 import com.github.jakz.romlib.data.set.GameSet;
 import com.github.jakz.romlib.data.set.GameSetInfo;
 import com.github.jakz.romlib.data.set.Provider;
-import com.github.jakz.romlib.parsers.GameCataloguer;
+import com.github.jakz.romlib.parsers.cataloguers.GameCataloguer;
+import com.github.jakz.romlib.parsers.cataloguers.NoIntroCataloguer2;
 import com.pixbits.lib.io.xml.XMLParser;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
@@ -56,9 +58,9 @@ public class ClrMameProParserDat
     ROM
   };
   
-  GameCataloguer cataloguer = new NoIntroCataloguer();
+  GameCataloguer cataloguer = new NoIntroCataloguer2();
   
-  GameSet set;
+  RomSize.Set sizeSet;
   Game game;
   Rom rom;
   
@@ -117,9 +119,9 @@ public class ClrMameProParserDat
     try (InputStream fis = new BufferedInputStream(Files.newInputStream(file)))
     {
       status = Status.NOWHERE;
-      set = null;
       game = null;
       rom = null;
+      sizeSet = new RomSize.Set();
       values = new Stack<>();
       
       parser = new SimpleParser(fis);
@@ -142,13 +144,13 @@ public class ClrMameProParserDat
         header = headerParser.load(headerPath);
       }
       
-      set = new GameSet(
-          new GameSetInfo(
-              new Provider(value("name"), value("description"), value("version"), value("comment"), value("author")),
-              DatLoader.build(new DatFormat("clr-mame-pro", "dat"))
-          ),
+      GameSet set = new GameSet(
+          null,
+          new Provider(value("name"), value("description"), value("version"), value("comment"), value("author")),
           /*TODO: header, */
-          games.toArray(new Game[games.size()])
+          games.toArray(new Game[games.size()]),
+          sizeSet,
+          null
       );
       popState();
       
@@ -246,7 +248,7 @@ public class ClrMameProParserDat
         
         roms.add(new Rom(
           value("name"), 
-          set.sizeSet.forBytes(valueOrDefault("size", -1L)), 
+          sizeSet.forBytes(valueOrDefault("size", -1L)), 
           valueOrDefault("crc", -1L), 
           valueOrDefault("md5", null), 
           valueOrDefault("sha1", null))

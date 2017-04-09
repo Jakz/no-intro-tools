@@ -92,6 +92,9 @@ public class Operations
   {
     Logger logger = Log.getLogger(Scanner.class);
     
+    FolderScanner folderScanner = new FolderScanner(true);
+    final Set<Path> pathsToScan = folderScanner.scan(paths);
+    
     Scanner scanner = new Scanner(options);
     
     
@@ -106,7 +109,7 @@ public class Operations
     
     // set.cache().isValidSize(s.size) || !options.discardUnknownSizes; //
     
-    HandleSet handles = scanner.scanPathsAndComputeHandles(paths);
+    HandleSet handles = new HandleSet(scanner.scanPaths(pathsToScan.stream()));
     
 
     logger.i1("Found %d potential matches (%d binary, %d inside archives, %d nested inside %d archives).", 
@@ -173,8 +176,8 @@ public class Operations
       }
     };
     
-    options.verifier.matchMD5 = true;
-    options.verifier.matchSHA1 = true;
+    options.verifier.matchMD5 = false;
+    options.verifier.matchSHA1 = false;
       
     final VerifierHelper<Rom> verifier = new VerifierHelper<Rom>(options.verifier, options.multiThreaded, set.hashCache(), callback);
     

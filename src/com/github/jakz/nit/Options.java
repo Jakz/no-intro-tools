@@ -95,11 +95,11 @@ public class Options
     verifyMerge = false;
     skipRename = true;
     
-    datPath = Paths.get("dats/gb.dat");
+    datPath = Paths.get("dats/snes.dat");
     headerPath = Paths.get("dats/headers");
-    cloneDatPath = Paths.get("dats/gb.xmdb");
+    cloneDatPath = Paths.get("dats/snes.xmdb");
     
-    dataPath = new Path[] { Paths.get("/Users/jack/Desktop/gb") };
+    dataPath = new Path[] { Paths.get("/Users/jack/Desktop/snes") };
     //dataPath = new Path[] { Paths.get("/Users/jack/Desktop/romset/gb") };
 
     mergePath = Paths.get("/Users/jack/Desktop/gbcm");

@@ -22,7 +22,8 @@ import com.github.jakz.romlib.data.game.GameClone;
 import com.github.jakz.romlib.data.game.Rom;
 import com.github.jakz.romlib.data.game.RomSize;
 import com.github.jakz.romlib.data.set.CloneSet;
-import com.github.jakz.romlib.data.set.DatLoader;
+import com.github.jakz.romlib.data.set.DataSupplier;
+import com.github.jakz.romlib.data.set.GameList;
 import com.github.jakz.romlib.data.set.GameSet;
 import com.github.jakz.romlib.data.set.GameSetInfo;
 import com.github.jakz.romlib.data.set.Provider;
@@ -271,13 +272,16 @@ public class GameSetCreator
     progressLogger.endProgress();
     
     GameSet set = new GameSet(
-        new GameSetInfo(
-            new Provider(options.name, options.description, options.version, options.comment, options.author),
-            DatLoader.build(options.format)
-        ), 
-        games.toArray(new Game[games.size()])
+        null,
+        new Provider(options.name, options.description, options.version, options.comment, options.author),
+        DataSupplier.build(
+            new GameList(games.toArray(new Game[games.size()]), sizeSet),
+            new CloneSet(clones.toArray(new GameClone[clones.size()]))
+        )
     );
-    set.setClones(new CloneSet(clones.toArray(new GameClone[clones.size()])));
+    
+    set.load();
+
     return set;
   }
 
