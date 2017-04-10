@@ -16,13 +16,17 @@ import com.github.jakz.nit.gui.FrameSet;
 import com.github.jakz.nit.gui.GameSetComparePanel;
 import com.github.jakz.nit.gui.SimpleFrame;
 import com.github.jakz.nit.merger.Merger;
+import com.github.jakz.nit.parser.XMDBParser;
 import com.github.jakz.nit.scanner.Renamer;
 import com.github.jakz.romlib.data.game.Game;
 import com.github.jakz.romlib.data.set.CloneSet;
 import com.github.jakz.romlib.data.set.DataSupplier;
 import com.github.jakz.romlib.data.set.GameList;
 import com.github.jakz.romlib.data.set.GameSet;
-import com.github.jakz.romlib.parsers.ClrMameXMLParser;
+import com.github.jakz.romlib.parsers.LogiqxXMLParser;
+import com.github.jakz.romlib.parsers.cataloguers.GameCataloguer;
+import com.github.jakz.romlib.parsers.cataloguers.NoIntroCataloguer1;
+import com.github.jakz.romlib.parsers.cataloguers.NoIntroCataloguer2;
 import com.pixbits.lib.exceptions.FileNotFoundException;
 import com.pixbits.lib.functional.StreamException;
 import com.pixbits.lib.io.archive.HandleSet;
@@ -60,16 +64,6 @@ public class Main
     try
     {
       Config.load(Paths.get("./config.json"));
-
-      DataSupplier supplier = ClrMameXMLParser.load(Paths.get("./dats/snes.xml"));
-      
-      GameList list = supplier.load(null).games.get();
-      list.stream().forEach(g -> {
-        System.out.printf("%s: %s %d %8X\n", g.getTitle(), g.rom().name, g.rom().size.bytes(), g.rom().crc32);      
-      });
-      
-      if (true)
-        return;
       
       UIUtils.setNimbusLNF();
       //Operations.prepareGUIMode(config);
@@ -151,6 +145,15 @@ public class Main
       
       Options options = new Options();
       Log.setFactory(StdoutProgressLogger.PLAIN_BUILDER);
+      
+      {
+        DataSupplier supplier = LogiqxXMLParser.load(Paths.get("./dats/snes.xml"));
+        
+        GameCataloguer cataloguer = new NoIntroCataloguer2();
+        GameList list = supplier.load(null).games.get();
+        list.stream().forEach(cataloguer::catalogue);         
+        CloneSet clonez = XMDBParser.loadCloneSet(list, Paths.get("./dats/snes.xmdb"));
+      }
       
       GameSet set = Operations.loadGameSet(options);
       CloneSet clones = Operations.loadCloneSetFromXMDB(set, options.cloneDatPath);

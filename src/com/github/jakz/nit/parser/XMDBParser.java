@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -16,10 +17,11 @@ import com.github.jakz.romlib.data.game.Game;
 import com.github.jakz.romlib.data.game.GameClone;
 import com.github.jakz.romlib.data.game.Location;
 import com.github.jakz.romlib.data.set.CloneSet;
-import com.github.jakz.romlib.data.set.GameSet;
+import com.github.jakz.romlib.data.set.GameMap;
 import com.pixbits.lib.io.xml.XMLEmbeddedDTD;
 import com.pixbits.lib.io.xml.XMLHandler;
 import com.pixbits.lib.io.xml.XMLParser;
+import com.pixbits.lib.lang.Pair;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
 
@@ -57,13 +59,13 @@ public class XMDBParser extends XMLHandler<CloneSet>
   
   
   List<GameClone> clones;
-  GameSet set;
-  Game[] zones;
+  GameMap list;
   List<Game> clone;
+  List<Pair<Location,String>> biases;
   
-  public XMDBParser(GameSet set)
+  public XMDBParser(GameMap list)
   {
-    this.set = set;
+    this.list = list;
   }
   
   @Override protected void init()
@@ -75,8 +77,48 @@ public class XMDBParser extends XMLHandler<CloneSet>
   {
     if (name.equals("zoned"))
     {
-      GameClone clone = new GameClone(this.clone.toArray(new Game[this.clone.size()]), zones);
-      clones.add(clone);
+      /* if there is only a bias zone then we expect the name to be the same for the only clone */
+      if (biases.size() == 1)
+      {
+        Pair<Location, String> entry = biases.get(0);
+        
+        if (clone.size() != 1)
+        {
+          logger.w("Clone %s with a single bias zone which doesn't have a single game specified", entry.second);
+          return;
+        }
+        else if (!clone.get(0).getTitle().equals(entry.second))
+        {
+          logger.w("Single bias zone requires that the clone has exactly the same name (%s != %s)", entry.second, clone.get(0).getTitle());
+          return;
+        }
+        
+        clones.add(new GameClone(clone.get(0), entry.first));
+      }
+      else
+      {
+        Game[] zones = new Game[Location.values().length];
+        
+        for (Pair<Location, String> entry : biases)
+        {
+          //TODO: log warning if there are multiple results
+          
+          Optional<Game> game = clone.stream()
+            .filter(g -> g.getTitle().startsWith(entry.second))
+            .filter(g -> g.getLocation().is(entry.first))
+            .findFirst();
+          
+          if (!game.isPresent())
+          {
+            logger.w("Unable to find matching game for bias zone %s (%s)", entry.second, entry.first.fullName);
+            return;
+          }
+          
+          zones[entry.first.ordinal()] = game.get();
+        }
+        
+        clones.add(new GameClone(clone.toArray(new Game[clone.size()]), zones));
+      }
     }
   }
   
@@ -88,27 +130,22 @@ public class XMDBParser extends XMLHandler<CloneSet>
     }
     else if (name.equals("zoned"))
     {
-      zones = new Game[Location.values().length];
       clone = new ArrayList<>();
+      biases = new ArrayList<>();
     }
     else if (name.equals("bias"))
     {
-      Game game = set.get(attrString("name"));
+      Game game = list.get(attrString("name"));
       Location zone = zoneMap.get(attrString("zone"));
-                
-      if (game == null)
-      {
-        logger.w("Zoned clone '"+attrString("name")+"' is not present in corresponding game set");
-        return;
-      }
+      
       if (zone == null)
         throw new NoSuchElementException("zone found in zoned rom is not valid: "+attrString("zone"));
       
-      zones[zone.ordinal()] = game;
+      biases.add(new Pair<>(zone, attrString("name")));
     }
     else if (name.equals("clone"))
     {
-      Game game = set.get(attrString("name"));
+      Game game = list.get(attrString("name"));
 
       if (game == null)
       {
@@ -126,13 +163,13 @@ public class XMDBParser extends XMLHandler<CloneSet>
   }
   
   
-  public static CloneSet loadCloneSet(GameSet set, Path path) throws IOException, SAXException
+  public static CloneSet loadCloneSet(GameMap list, Path path) throws IOException, SAXException
   {
     final String dtdName = "GoodMerge.dtd";
     final String packageName = MethodHandles.lookup().lookupClass().getPackage().getName().replaceAll("\\.", "/");
     
     XMLEmbeddedDTD resolver = new XMLEmbeddedDTD(dtdName, packageName + "/" + dtdName);    
-    XMDBParser xparser = new XMDBParser(set);
+    XMDBParser xparser = new XMDBParser(list);
     XMLParser<CloneSet> xmdbParser = new XMLParser<>(xparser, resolver);
 
     CloneSet cloneSet = xmdbParser.load(path);
