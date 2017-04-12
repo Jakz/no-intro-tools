@@ -166,7 +166,7 @@ public class Operations
         if (handle != null)
           verifierProgress.updateProgress(current / (float)totalCount, handle.toString());
     
-        if (handle != null)
+        if (handle != null && rom != null)
         {
             if (rom.handle() != null)
               logger.w("Duplicate entry found for %s", rom.name);

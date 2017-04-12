@@ -19,10 +19,13 @@ import com.github.jakz.nit.merger.Merger;
 import com.github.jakz.nit.parser.XMDBParser;
 import com.github.jakz.nit.scanner.Renamer;
 import com.github.jakz.romlib.data.game.Game;
+import com.github.jakz.romlib.data.game.RomSize;
+import com.github.jakz.romlib.data.platforms.Platform;
 import com.github.jakz.romlib.data.set.CloneSet;
 import com.github.jakz.romlib.data.set.DataSupplier;
 import com.github.jakz.romlib.data.set.GameList;
 import com.github.jakz.romlib.data.set.GameSet;
+import com.github.jakz.romlib.data.set.Provider;
 import com.github.jakz.romlib.parsers.LogiqxXMLParser;
 import com.github.jakz.romlib.parsers.cataloguers.GameCataloguer;
 import com.github.jakz.romlib.parsers.cataloguers.NoIntroCataloguer1;
@@ -146,6 +149,8 @@ public class Main
       Options options = new Options();
       Log.setFactory(StdoutProgressLogger.PLAIN_BUILDER);
       
+      GameSet set;
+      
       {
         DataSupplier supplier = LogiqxXMLParser.load(Paths.get("./dats/snes.xml"));
         
@@ -153,11 +158,16 @@ public class Main
         GameList list = supplier.load(null).games.get();
         list.stream().forEach(cataloguer::catalogue);         
         CloneSet clonez = XMDBParser.loadCloneSet(list, Paths.get("./dats/snes.xmdb"));
+        
+        set = new GameSet(null, null, list, clonez);
+
+        //if (true)
+        //  return;
       }
       
-      GameSet set = Operations.loadGameSet(options);
-      CloneSet clones = Operations.loadCloneSetFromXMDB(set, options.cloneDatPath);
-      set.setClones(clones);
+      //GameSet set = Operations.loadGameSet(options);
+      //CloneSet clones = Operations.loadCloneSetFromXMDB(set, options.cloneDatPath);
+      //set.setClones(clones);
       
       ScannerOptions soptions = new ScannerOptions();
       soptions.scanSubfolders = true;

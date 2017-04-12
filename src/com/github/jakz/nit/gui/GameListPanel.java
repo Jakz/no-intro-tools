@@ -99,7 +99,7 @@ public class GameListPanel extends JPanel
       else if (value instanceof CloneNode)
       {
         GameClone clone = (GameClone)((CloneNode)value).getUserObject();
-        label.setText(normalizer.normalize(clone.getBestMatchForBias(biasSet, true).getTitle())+" ("+clone.stream().filter(g -> filter.test(g)).count()+" clones)");
+        label.setText(normalizer.normalize(clone.getTitleForBias(biasSet, true))+" ("+clone.stream().filter(g -> filter.test(g)).count()+" clones)");
         label.setForeground(Color.DARK_GRAY);
         
         long mask = clone.stream().map(g -> g.getLocation()).filter(LocationSet::isLocalized).reduce(0L, (m,l) -> m | l.getMask(), (u,v) -> u | v);

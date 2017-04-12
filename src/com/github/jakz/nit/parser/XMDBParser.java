@@ -93,31 +93,16 @@ public class XMDBParser extends XMLHandler<CloneSet>
           return;
         }
         
-        clones.add(new GameClone(clone.get(0), entry.first));
+        clones.add(new GameClone(clone.get(0), entry.first, entry.second));
       }
       else
       {
-        Game[] zones = new Game[Location.values().length];
+        String[] zones = new String[Location.values().length];
         
         for (Pair<Location, String> entry : biases)
-        {
-          //TODO: log warning if there are multiple results
-          
-          Optional<Game> game = clone.stream()
-            .filter(g -> g.getTitle().startsWith(entry.second))
-            .filter(g -> g.getLocation().is(entry.first))
-            .findFirst();
-          
-          if (!game.isPresent())
-          {
-            logger.w("Unable to find matching game for bias zone %s (%s)", entry.second, entry.first.fullName);
-            return;
-          }
-          
-          zones[entry.first.ordinal()] = game.get();
-        }
-        
-        clones.add(new GameClone(clone.toArray(new Game[clone.size()]), zones));
+          zones[entry.first.ordinal()] = entry.second;
+
+        clones.add(new GameClone(clone, zones));
       }
     }
   }

@@ -216,7 +216,7 @@ public class GameSetCreator
           /* currentClone should contain all the games identifier by the archive */
           if (options.mode == CreatorOptions.Mode.merged && ae.clones.size() > 0)
           {
-            clones.add(new GameClone(ae.clones.toArray(new Game[ae.clones.size()])));
+            clones.add(new GameClone(ae.clones));
           }
           /* if we're in multi mode then all roms have been added to currentRoms for a single game with the name of the archive */
           else if (options.mode == CreatorOptions.Mode.multi && ae.roms.size() > 0)
@@ -252,7 +252,7 @@ public class GameSetCreator
         games.add(game);
       }
       else if (ce.clones.size() > 0)
-        clones.add(new GameClone(ce.clones.toArray(new Game[ce.clones.size()])));
+        clones.add(new GameClone(ce.clones));
     }
   }
   
@@ -273,12 +273,18 @@ public class GameSetCreator
     
     GameSet set = new GameSet(
         null,
-        new Provider(options.name, options.description, options.version, options.comment, options.author),
+        Provider.DUMMY,
         DataSupplier.build(
             new GameList(games.toArray(new Game[games.size()]), sizeSet),
             new CloneSet(clones.toArray(new GameClone[clones.size()]))
         )
     );
+    
+    set.info().setName(options.name);
+    set.info().setDescription(options.description);
+    set.info().setVersion(options.version);
+    set.info().setComment(options.comment);
+    set.info().setAuthor(options.author);
     
     set.load();
 

@@ -28,6 +28,7 @@ import com.github.jakz.romlib.data.game.Rom;
 import com.github.jakz.romlib.data.game.RomSize;
 import com.github.jakz.romlib.data.set.DatFormat;
 import com.github.jakz.romlib.data.set.DataSupplier;
+import com.github.jakz.romlib.data.set.GameList;
 import com.github.jakz.romlib.data.set.GameSet;
 import com.github.jakz.romlib.data.set.GameSetInfo;
 import com.github.jakz.romlib.data.set.Provider;
@@ -146,12 +147,18 @@ public class ClrMameProParserDat
       
       GameSet set = new GameSet(
           null,
-          new Provider(value("name"), value("description"), value("version"), value("comment"), value("author")),
+          Provider.DUMMY,
           /*TODO: header, */
-          games.toArray(new Game[games.size()]),
-          sizeSet,
+          new GameList(games, sizeSet),
           null
       );
+      
+      set.info().setName(value("name"));
+      set.info().setDescription(value("description"));
+      set.info().setVersion(value("version"));
+      set.info().setComment(value("comment"));
+      set.info().setAuthor(value("author"));
+      
       popState();
       
       

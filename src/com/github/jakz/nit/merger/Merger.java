@@ -131,7 +131,7 @@ public class Merger
       if (clone != null)
       {
         clones.compute(clone, (k,v) -> {
-          String archiveName = normalizer.normalize(k.getBestMatchForBias(options.zonePriority, true).getTitle());
+          String archiveName = normalizer.normalize(k.getTitleForBias(options.zonePriority, true));
 
           if (v == null)
           {
