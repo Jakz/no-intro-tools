@@ -105,6 +105,10 @@ public class XMDBParser extends XMLHandler<CloneSet>
         clones.add(new GameClone(clone, zones));
       }
     }
+    else if (name.equals("header"))
+    {
+      clones = new ArrayList<>();
+    }
   }
   
   @Override protected void start(String ns, String name, Attributes attr) throws SAXException

@@ -151,18 +151,29 @@ public class Main
       
       GameSet set;
       
+      
+      final NoIntroCataloguer2 cataloguer = new NoIntroCataloguer2();
+
       {
-        DataSupplier supplier = LogiqxXMLParser.load(Paths.get("./dats/snes.xml"));
-        
-        GameCataloguer cataloguer = new NoIntroCataloguer2();
+        DataSupplier supplier = LogiqxXMLParser.load(Paths.get("./dats/nes.xml"));
         GameList list = supplier.load(null).games.get();
         list.stream().forEach(cataloguer::catalogue);         
-        CloneSet clonez = XMDBParser.loadCloneSet(list, Paths.get("./dats/snes.xmdb"));
         
+        supplier = LogiqxXMLParser.load(Paths.get("./dats/gbc.xml"));
+        list = supplier.load(null).games.get();
+        list.stream().forEach(cataloguer::catalogue);    
+        
+        supplier = LogiqxXMLParser.load(Paths.get("./dats/snes.xml"));
+        list = supplier.load(null).games.get();
+        list.stream().forEach(cataloguer::catalogue);    
+        
+        cataloguer.printAddendums();
+        
+        if (true)
+          return;
+        
+        CloneSet clonez = XMDBParser.loadCloneSet(list, Paths.get("./dats/nes.xmdb"));
         set = new GameSet(null, null, list, clonez);
-
-        //if (true)
-        //  return;
       }
       
       //GameSet set = Operations.loadGameSet(options);
