@@ -33,7 +33,7 @@ import com.github.jakz.romlib.data.set.GameSet;
 import com.github.jakz.romlib.data.set.GameSetInfo;
 import com.github.jakz.romlib.data.set.Provider;
 import com.github.jakz.romlib.parsers.cataloguers.GameCataloguer;
-import com.github.jakz.romlib.parsers.cataloguers.NoIntroCataloguer2;
+import com.github.jakz.romlib.parsers.cataloguers.NoIntroCataloguer;
 import com.pixbits.lib.io.xml.XMLParser;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
@@ -59,7 +59,7 @@ public class ClrMameProParserDat
     ROM
   };
   
-  GameCataloguer cataloguer = new NoIntroCataloguer2();
+  GameCataloguer cataloguer = new NoIntroCataloguer();
   
   RomSize.Set sizeSet;
   Game game;

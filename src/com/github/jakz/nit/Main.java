@@ -20,6 +20,7 @@ import com.github.jakz.nit.parser.XMDBParser;
 import com.github.jakz.nit.scanner.Renamer;
 import com.github.jakz.romlib.data.game.Game;
 import com.github.jakz.romlib.data.game.RomSize;
+import com.github.jakz.romlib.data.platforms.GBC;
 import com.github.jakz.romlib.data.platforms.Platform;
 import com.github.jakz.romlib.data.set.CloneSet;
 import com.github.jakz.romlib.data.set.DataSupplier;
@@ -28,8 +29,7 @@ import com.github.jakz.romlib.data.set.GameSet;
 import com.github.jakz.romlib.data.set.Provider;
 import com.github.jakz.romlib.parsers.LogiqxXMLParser;
 import com.github.jakz.romlib.parsers.cataloguers.GameCataloguer;
-import com.github.jakz.romlib.parsers.cataloguers.NoIntroCataloguer1;
-import com.github.jakz.romlib.parsers.cataloguers.NoIntroCataloguer2;
+import com.github.jakz.romlib.parsers.cataloguers.NoIntroCataloguer;
 import com.pixbits.lib.exceptions.FileNotFoundException;
 import com.pixbits.lib.functional.StreamException;
 import com.pixbits.lib.io.archive.HandleSet;
@@ -152,20 +152,24 @@ public class Main
       GameSet set;
       
       
-      final NoIntroCataloguer2 cataloguer = new NoIntroCataloguer2();
+      final NoIntroCataloguer cataloguer = new NoIntroCataloguer();
 
       {
-        DataSupplier supplier = LogiqxXMLParser.load(Paths.get("./dats/nes.xml"));
+        DataSupplier supplier;
+        GameList list;
+        
+        /*DataSupplier supplier = LogiqxXMLParser.load(Paths.get("./dats/nes.xml"));
         GameList list = supplier.load(null).games.get();
-        list.stream().forEach(cataloguer::catalogue);         
+        list.stream().forEach(cataloguer::catalogue);*/         
         
         supplier = LogiqxXMLParser.load(Paths.get("./dats/gbc.xml"));
         list = supplier.load(null).games.get();
         list.stream().forEach(cataloguer::catalogue);    
+        long c = list.stream().filter(g -> g.getBoolAttribute(GBC.Attribute.GB_COMPATIBLE)).count();
         
-        supplier = LogiqxXMLParser.load(Paths.get("./dats/snes.xml"));
+        /*supplier = LogiqxXMLParser.load(Paths.get("./dats/snes.xml"));
         list = supplier.load(null).games.get();
-        list.stream().forEach(cataloguer::catalogue);    
+        list.stream().forEach(cataloguer::catalogue);*/    
         
         cataloguer.printAddendums();
         
