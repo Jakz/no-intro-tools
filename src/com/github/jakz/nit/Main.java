@@ -155,7 +155,7 @@ public class Main
       final NoIntroCataloguer cataloguer = new NoIntroCataloguer();
 
       {
-        DataSupplier supplier;
+        LogiqxXMLParser.Data supplier;
         GameList list;
         
         /*DataSupplier supplier = LogiqxXMLParser.load(Paths.get("./dats/nes.xml"));
@@ -163,7 +163,7 @@ public class Main
         list.stream().forEach(cataloguer::catalogue);*/         
         
         supplier = LogiqxXMLParser.load(Paths.get("./dats/gbc.xml"));
-        list = supplier.load(null).games.get();
+        list = supplier.list;
         list.stream().forEach(cataloguer::catalogue);    
         long c = list.stream().filter(g -> g.getBoolAttribute(GBC.Attribute.GB_COMPATIBLE)).count();
         
