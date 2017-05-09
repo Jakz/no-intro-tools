@@ -1,10 +1,15 @@
 package com.github.jakz.nit;
 
+import java.io.BufferedOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -18,7 +23,10 @@ import com.github.jakz.nit.gui.SimpleFrame;
 import com.github.jakz.nit.merger.Merger;
 import com.github.jakz.nit.parser.XMDBParser;
 import com.github.jakz.nit.scanner.Renamer;
+import com.github.jakz.romlib.data.game.BiasSet;
 import com.github.jakz.romlib.data.game.Game;
+import com.github.jakz.romlib.data.game.GameClone;
+import com.github.jakz.romlib.data.game.Location;
 import com.github.jakz.romlib.data.game.RomSize;
 import com.github.jakz.romlib.data.platforms.GBC;
 import com.github.jakz.romlib.data.platforms.Platform;
@@ -149,7 +157,7 @@ public class Main
       Options options = new Options();
       Log.setFactory(StdoutProgressLogger.PLAIN_BUILDER);
       
-      GameSet set;
+      GameSet set = null;
       
       
       final NoIntroCataloguer cataloguer = new NoIntroCataloguer();
@@ -165,20 +173,25 @@ public class Main
         supplier = LogiqxXMLParser.load(Paths.get("./dats/gbc.xml"));
         list = supplier.list;
         list.stream().forEach(cataloguer::catalogue);    
-        long c = list.stream().filter(g -> g.getBoolAttribute(GBC.Attribute.GB_COMPATIBLE)).count();
         
         /*supplier = LogiqxXMLParser.load(Paths.get("./dats/snes.xml"));
         list = supplier.load(null).games.get();
         list.stream().forEach(cataloguer::catalogue);*/    
         
         cataloguer.printAddendums();
+
         
-        if (true)
-          return;
-        
-        CloneSet clonez = XMDBParser.loadCloneSet(list, Paths.get("./dats/nes.xmdb"));
-        set = new GameSet(null, null, list, clonez);
+        try
+        {
+          CloneSet clonez = XMDBParser.loadCloneSet(list, Paths.get("./dats/gbc.xmdb"));
+          set = new GameSet(null, null, list, clonez);
+        }
+        catch (Exception e)
+        {
+          e.printStackTrace(System.err);
+        }
       }
+      
       
       //GameSet set = Operations.loadGameSet(options);
       //CloneSet clones = Operations.loadCloneSetFromXMDB(set, options.cloneDatPath);
@@ -191,6 +204,43 @@ public class Main
       HandleSet handles = Operations.scanEntriesForGameSet(set, Arrays.asList(options.dataPath), soptions, true);
 
       Operations.verifyGameSet(set, handles, options);
+      
+      /* EXPORT ONE GAME PER CLONE WITH BIAS */
+      {
+        BiasSet bias = new BiasSet(Location.ITALY, Location.EUROPE, Location.USA, Location.JAPAN);
+        Map<String, Game> exportGames = new TreeMap<>();
+        for (GameClone clone : set.clones())
+        {
+          Game game = null;
+          
+          if (clone.size() == 1)
+            game = clone.get(0);
+          else
+            game = clone.getBestMatchForBias(bias, false);
+          
+          if (game != null && game.isComplete())
+          {
+            String title = game.getTitle().substring(0, game.getTitle().indexOf("(")-1);
+            exportGames.put(title, game);
+          }
+        }
+        
+        Path base = Paths.get("/Users/jack/Desktop/everdrive/gbc");
+        int i = 0;
+        for (Map.Entry<String, Game> entry : exportGames.entrySet())
+        {
+          Game game = entry.getValue();
+          int size = game.getClone().size();
+          
+          System.out.println(i+"("+size+")"+" "+entry.getKey()+": "+game.rom().handle().fileName()+"/"+game.rom().handle().plainInternalName());
+          ++i;
+          
+          if (game.getLocation().isJust(Location.JAPAN))
+            Files.copy(game.rom().handle().getInputStream(), base.resolve("japan/"+entry.getKey()+".gb"));
+          else
+            Files.copy(game.rom().handle().getInputStream(), base.resolve(entry.getKey()+".gb"));
+        }       
+      }
       
       
       if (!options.skipRename)

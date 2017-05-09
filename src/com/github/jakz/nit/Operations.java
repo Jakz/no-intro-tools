@@ -31,6 +31,7 @@ import com.github.jakz.nit.gui.SimpleFrame;
 import com.github.jakz.nit.parser.ClrMameProParserDat;
 import com.github.jakz.nit.parser.XMDBParser;
 import com.github.jakz.nit.scripts.ConsolePanel;
+import com.github.jakz.romlib.data.game.Game;
 import com.github.jakz.romlib.data.game.Rom;
 import com.github.jakz.romlib.data.set.CloneSet;
 import com.github.jakz.romlib.data.set.GameSet;
@@ -79,7 +80,12 @@ public class Operations
     logger.i("  %d total roms", set.gameCount());
     
     if (set.clones() != null && set.clones().size() > 0)
-      logger.i("  %d total games", set.clones().size());
+    {
+      long orphaned = set.stream().filter(g -> !g.hasClone()).count();
+      
+      logger.i("  %d total games", set.clones().size() + orphaned);
+      logger.i("  %d orphan games", orphaned);
+    }
     
     if (found > 0)
     {
