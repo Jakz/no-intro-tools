@@ -6,11 +6,13 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -29,12 +31,18 @@ import com.github.jakz.nit.gui.GameSetMenu;
 import com.github.jakz.nit.gui.LogPanel;
 import com.github.jakz.nit.gui.SimpleFrame;
 import com.github.jakz.nit.parser.ClrMameProParserDat;
-import com.github.jakz.nit.parser.XMDBParser;
 import com.github.jakz.nit.scripts.ConsolePanel;
 import com.github.jakz.romlib.data.game.Game;
 import com.github.jakz.romlib.data.game.Rom;
+import com.github.jakz.romlib.data.platforms.Platform;
 import com.github.jakz.romlib.data.set.CloneSet;
+import com.github.jakz.romlib.data.set.DataSupplier;
+import com.github.jakz.romlib.data.set.GameList;
 import com.github.jakz.romlib.data.set.GameSet;
+import com.github.jakz.romlib.data.set.GameSetAttribute;
+import com.github.jakz.romlib.data.set.Provider;
+import com.github.jakz.romlib.parsers.LogiqxXMLHandler;
+import com.github.jakz.romlib.parsers.XMDBHandler;
 import com.pixbits.lib.io.FolderScanner;
 import com.pixbits.lib.io.archive.HandleSet;
 import com.pixbits.lib.io.archive.Scanner;
@@ -47,16 +55,68 @@ import com.pixbits.lib.io.archive.handles.ArchiveHandle;
 import com.pixbits.lib.io.archive.handles.BinaryHandle;
 import com.pixbits.lib.io.archive.handles.Handle;
 import com.pixbits.lib.io.archive.handles.NestedArchiveHandle;
+import com.pixbits.lib.lang.Pair;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
 import com.pixbits.lib.log.ProgressLogger;
+import com.pixbits.lib.exceptions.FatalErrorException;
 import com.pixbits.lib.functional.StreamException;
 
 public class Operations
 {
   private final static Logger logger = Log.getLogger(Operations.class);
   
+  public static DatType guessFormat(Options options)
+  {
+    if (options.datFormat != DatType.UNSPECIFIED)
+      return options.datFormat;
+    else if (options.datPath.toString().endsWith(".dat"))
+      return DatType.CLR_MAME_PRO;
+    else if (options.datPath.toString().endsWith(".xml"))
+      return DatType.LOGIQX;
+    else
+      return DatType.UNSPECIFIED;
+  }
+  
+  
   public static GameSet loadGameSet(Options options) throws IOException, SAXException
+  {
+    DatType format = guessFormat(options);
+    
+    if (format == DatType.UNSPECIFIED)
+      throw new FatalErrorException("Unable to guess dat format, please specify it explicitly.");
+    else
+    {
+      switch (format)
+      {
+        case CLR_MAME_PRO:
+        {
+          return loadClrMameGameSet(options);
+        }
+        
+        case LOGIQX:
+        {
+          return loadLogiqxDat(options);
+        }
+      }
+    }
+    
+    return null;
+  }
+  
+  public static GameSet loadLogiqxDat(Options options) throws IOException, SAXException
+  {
+    LogiqxXMLHandler.Data supplier = LogiqxXMLHandler.load(options.datPath);
+    
+    String name = supplier.setAttributes.get("name");
+    
+    GameSet set = new GameSet(Platform.of(name), new Provider(name, "", null), supplier.list, null);
+    set.info().setAttribute(GameSetAttribute.NAME, supplier.setAttributes.get("name"));
+    //TODO: add others
+    return set;
+  }
+  
+  public static GameSet loadClrMameGameSet(Options options) throws IOException, SAXException
   {
     ClrMameProParserDat parser = new ClrMameProParserDat(options);
     GameSet set = parser.load(options.datPath);
@@ -67,7 +127,7 @@ public class Operations
   
   public static CloneSet loadCloneSetFromXMDB(GameSet set, Path path) throws IOException, SAXException
   {
-    CloneSet cloneSet = XMDBParser.loadCloneSet(set, path);
+    CloneSet cloneSet = XMDBHandler.loadCloneSet(set, path);
     logger.i("Loaded clone set for \'"+set.info().getName()+"\' ("+set.gameCount()+" games in "+cloneSet.size()+" entries)");
     return cloneSet;
   }
@@ -116,10 +176,10 @@ public class Operations
     // set.cache().isValidSize(s.size) || !options.discardUnknownSizes; //
     
     HandleSet handles = new HandleSet(scanner.scanPaths(pathsToScan.stream()));
-    
+    HandleSet.Stats stats = handles.stats();
 
     logger.i1("Found %d potential matches (%d binary, %d inside archives, %d nested inside %d archives).", 
-        handles.totalHandles, handles.binaryCount, handles.archiveCount, handles.nestedArchiveInnerCount, handles.nestedArchiveCount);
+        stats.totalHandles, stats.binaryCount, stats.archiveCount, stats.nestedArchiveInnerCount, stats.nestedArchiveCount);
     
     if (!skipped.isEmpty())
       logger.i1("Skipped %d entries:", skipped.size());
@@ -152,7 +212,7 @@ public class Operations
     AtomicInteger nestedCount = new AtomicInteger();
     AtomicInteger totalVerified = new AtomicInteger();
     
-    final int totalCount = (int)handles.totalEntries;
+    final int totalCount = handles.size();
 
     final Consumer<List<VerifierResult<Rom>>> callback = results -> {
       for (VerifierResult<Rom> result : results)
@@ -171,11 +231,23 @@ public class Operations
         
         if (handle != null)
           verifierProgress.updateProgress(current / (float)totalCount, handle.toString());
-    
+        
+        if (set.hasSharedRomsBetweenGames() && rom.handle() != null)
+        {
+          Set<Pair<Rom,Game>> games = set.sharedRomMap().gamesForRom(rom);
+          Optional<Rom> anyRom = games.stream().filter(p -> p.first.handle() != null).map(p -> p.first).findAny();
+          
+          rom = anyRom.isPresent() ? anyRom.get() : rom;
+        }
+
         if (handle != null && rom != null)
         {
             if (rom.handle() != null)
+            {
               logger.w("Duplicate entry found for %s", rom.name);
+              logger.d("  Already present file: %s", rom.handle().toString());
+              logger.d("  Duplicate found: %s", handle.toString());
+            }
             else
               rom.setHandle(handle);
         } 

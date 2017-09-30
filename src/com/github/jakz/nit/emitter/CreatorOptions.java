@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.github.jakz.nit.Args;
-import com.github.jakz.nit.exceptions.FatalErrorException;
 import com.github.jakz.romlib.data.set.DatFormat;
+import com.pixbits.lib.exceptions.FatalErrorException;
 import com.pixbits.lib.io.archive.ArchiveFormat;
 
 public class CreatorOptions
@@ -57,7 +57,7 @@ public class CreatorOptions
     if (sourcePaths.stream().anyMatch(p -> !Files.exists(p)))
       throw new FatalErrorException("some of source paths for DAT creation does not exists");
     
-    format = new DatFormat("clrmame-pro", "dat"); //(DatFormat)properties.get("format");
+    format = DatFormat.of("clr-mame-pro","clr-mame-pro", "dat"); //(DatFormat)properties.get("format");
     mode = (Mode)properties.get("mode");
     
     archiveMatcher = ArchiveFormat.getReadableMatcher();

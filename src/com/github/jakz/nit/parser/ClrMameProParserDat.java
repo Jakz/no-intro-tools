@@ -1,9 +1,11 @@
 package com.github.jakz.nit.parser;
 
 import java.io.BufferedInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +25,8 @@ import org.xml.sax.SAXException;
 import com.github.jakz.nit.Options;
 import com.github.jakz.nit.data.header.Header;
 import com.github.jakz.nit.merger.TitleNormalizer;
+import com.github.jakz.romlib.data.cataloguers.GameCataloguer;
+import com.github.jakz.romlib.data.cataloguers.NoIntroCataloguer;
 import com.github.jakz.romlib.data.game.Game;
 import com.github.jakz.romlib.data.game.Rom;
 import com.github.jakz.romlib.data.game.RomSize;
@@ -32,8 +36,7 @@ import com.github.jakz.romlib.data.set.GameList;
 import com.github.jakz.romlib.data.set.GameSet;
 import com.github.jakz.romlib.data.set.GameSetInfo;
 import com.github.jakz.romlib.data.set.Provider;
-import com.github.jakz.romlib.parsers.cataloguers.GameCataloguer;
-import com.github.jakz.romlib.parsers.cataloguers.NoIntroCataloguer;
+import com.pixbits.lib.exceptions.FatalErrorException;
 import com.pixbits.lib.io.xml.XMLParser;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
@@ -122,7 +125,7 @@ public class ClrMameProParserDat
       status = Status.NOWHERE;
       game = null;
       rom = null;
-      sizeSet = new RomSize.Set();
+      sizeSet = new RomSize.RealSet();
       values = new Stack<>();
       
       parser = new SimpleParser(fis);
@@ -172,6 +175,10 @@ public class ClrMameProParserDat
       
       return set;
       
+    }
+    catch (NoSuchFileException e)
+    {
+      throw new FatalErrorException(e, "Dat file not found");
     }
   }
 

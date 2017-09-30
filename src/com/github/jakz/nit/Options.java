@@ -33,6 +33,7 @@ public class Options
   public boolean verifyMerge;
   public boolean skipRename;
   
+  public DatType datFormat;
   public Path datPath;
   public Path headerPath;
   public Path cloneDatPath;
@@ -56,7 +57,11 @@ public class Options
     
     merge = new MergeOptions(args);
     
-    verifier = new VerifierOptions(!args.getBoolean(Args.NO_SIZE_CHECK), !args.getBoolean(Args.NO_MD5_CHECK), !args.getBoolean(Args.NO_SHA1_CHECK), !args.getBoolean(Args.NO_NESTED_ARCHIVES));
+    boolean verifyNestedArchives = !args.getBoolean(Args.NO_NESTED_ARCHIVES);
+    if (args.getBoolean(Args.FAST))
+      verifier = new VerifierOptions(true, false, false, verifyNestedArchives);
+    else
+      verifier = new VerifierOptions(!args.getBoolean(Args.NO_SIZE_CHECK), !args.getBoolean(Args.NO_MD5_CHECK), !args.getBoolean(Args.NO_SHA1_CHECK), verifyNestedArchives);
 
     forceMergeInPlace = args.getBoolean(Args.IN_PLACE_MERGE);
 
@@ -66,6 +71,7 @@ public class Options
     verifyMerge = args.getBoolean("verify-merge");
     skipRename = args.getBoolean(Args.SKIP_RENAME);
     
+    datFormat = DatType.forName(args.getString(Args.DAT_FORMAT));
     datPath =  Paths.get(args.getString(Args.DAT_PATH));
     headerPath = args.get(Args.HEADER_PATH) != null ? Paths.get(args.getString(Args.HEADER_PATH)) : null;
     cloneDatPath = args.get(Args.CLONE_PATH) != null ? Paths.get(args.getString(Args.CLONE_PATH)) : null;

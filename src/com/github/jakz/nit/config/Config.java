@@ -8,8 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import com.github.jakz.nit.exceptions.FatalErrorException;
 import com.github.jakz.romlib.data.platforms.Platform;
+import com.github.jakz.romlib.data.platforms.Platforms;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -17,6 +17,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
+import com.pixbits.lib.exceptions.FatalErrorException;
 import com.pixbits.lib.json.PathAdapter;
 
 public class Config
@@ -63,7 +64,7 @@ public class Config
     public Platform deserialize(JsonElement element, Type type, JsonDeserializationContext context) throws JsonParseException
     {
       String string = context.deserialize(element, String.class);
-      return Platform.forIdent(string);
+      return Platforms.forIdent(string);
     }    
   }
   

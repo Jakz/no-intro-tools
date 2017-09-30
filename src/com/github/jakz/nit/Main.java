@@ -16,13 +16,12 @@ import java.util.stream.Collectors;
 import com.github.jakz.nit.config.Config;
 import com.github.jakz.nit.config.MergeOptions;
 import com.github.jakz.nit.emitter.CreatorOptions;
-import com.github.jakz.nit.exceptions.FatalErrorException;
 import com.github.jakz.nit.gui.FrameSet;
 import com.github.jakz.nit.gui.GameSetComparePanel;
 import com.github.jakz.nit.gui.SimpleFrame;
 import com.github.jakz.nit.merger.Merger;
-import com.github.jakz.nit.parser.XMDBParser;
 import com.github.jakz.nit.scanner.Renamer;
+import com.github.jakz.romlib.data.cataloguers.NoIntroCataloguer;
 import com.github.jakz.romlib.data.game.BiasSet;
 import com.github.jakz.romlib.data.game.Game;
 import com.github.jakz.romlib.data.game.GameClone;
@@ -35,9 +34,9 @@ import com.github.jakz.romlib.data.set.DataSupplier;
 import com.github.jakz.romlib.data.set.GameList;
 import com.github.jakz.romlib.data.set.GameSet;
 import com.github.jakz.romlib.data.set.Provider;
-import com.github.jakz.romlib.parsers.LogiqxXMLParser;
-import com.github.jakz.romlib.parsers.cataloguers.GameCataloguer;
-import com.github.jakz.romlib.parsers.cataloguers.NoIntroCataloguer;
+import com.github.jakz.romlib.parsers.LogiqxXMLHandler;
+import com.github.jakz.romlib.parsers.XMDBHandler;
+import com.pixbits.lib.exceptions.FatalErrorException;
 import com.pixbits.lib.exceptions.FileNotFoundException;
 import com.pixbits.lib.functional.StreamException;
 import com.pixbits.lib.io.archive.HandleSet;
@@ -71,10 +70,15 @@ public class Main
   {
     ArgumentParser arguments = Args.generateParser();
     
+    
+
+    
         
     try
     {
-      Config.load(Paths.get("./config.json"));
+      args = new String[] {"organize", "--dat-file", "dats/vic20.dat", "--dat-format", "logiqx", "--roms-path", "/Volumes/Vicky/Roms/sets/usenet/vic20 - set - 20130331-065627 - 0 missing/Commodore - VIC-20", "--fast", "--no-merge", "--skip-rename" };
+
+      //Config.load(Paths.get("./config.json"));
       
       UIUtils.setNimbusLNF();
       //Operations.prepareGUIMode(config);
@@ -84,7 +88,7 @@ public class Main
 
       initializeSevenZip();
       
-      if (false && args.length > 0)
+      if (args.length > 0)
       {
         Namespace rargs = arguments.parseArgs(args);
         System.out.println(rargs);
@@ -111,7 +115,7 @@ public class Main
             
             List<GameSet> sets = paths.stream()
                 .map(StreamException.rethrowFunction(
-                    path -> Operations.loadGameSet(Options.simpleDatLoad(path))
+                    path -> Operations.loadClrMameGameSet(Options.simpleDatLoad(path))
                 ))
                 .collect(Collectors.toList());
             
@@ -123,7 +127,39 @@ public class Main
          
           case ORGANIZE:
           {
+            Options options = new Options(rargs);
+            GameSet set = Operations.loadGameSet(options);
             
+            ScannerOptions soptions = new ScannerOptions();          
+            HandleSet handles = Operations.scanEntriesForGameSet(set, Arrays.asList(options.dataPath), soptions, true);
+            Operations.verifyGameSet(set, handles, options);
+            
+            if (!options.skipRename)
+            {
+              Renamer renamer = new Renamer(options);
+              renamer.rename(set.foundRoms().collect(Collectors.toList()));
+            }
+            
+            if (options.merge.mode != MergeOptions.Mode.NO_MERGE)
+            {              
+              Predicate<Game> predicate = g -> true;
+              
+              /*Searcher searcher = new Searcher();
+              Predicate<Game> predicate = searcher.buildExportByRegionPredicate(Location.ITALY, Location.EUROPE, Location.USA);
+              predicate.and(searcher.buildPredicate("is:proper is:licensed"));*/
+                 
+              Merger merger = new Merger(set, predicate, options);
+              merger.merge(options.mergePath());
+              
+              if (options.cleanMergePathAfterMerge)
+                Operations.cleanMergePath(set, options);
+            }
+            else
+              logger.i("Skipping merge phase");
+
+            Operations.printStatistics(set);
+            Operations.saveStatusOnTextFiles(set, options);
+       
             break;
           }
           
@@ -160,17 +196,18 @@ public class Main
       GameSet set = null;
       
       
-      final NoIntroCataloguer cataloguer = new NoIntroCataloguer();
 
       {
-        LogiqxXMLParser.Data supplier;
+        final NoIntroCataloguer cataloguer = new NoIntroCataloguer();
+
+        LogiqxXMLHandler.Data supplier;
         GameList list;
         
         /*DataSupplier supplier = LogiqxXMLParser.load(Paths.get("./dats/nes.xml"));
         GameList list = supplier.load(null).games.get();
         list.stream().forEach(cataloguer::catalogue);*/         
         
-        supplier = LogiqxXMLParser.load(Paths.get("./dats/gbc.xml"));
+        supplier = LogiqxXMLHandler.load(Paths.get("./dats/gbc.xml"));
         list = supplier.list;
         list.stream().forEach(cataloguer::catalogue);    
         
@@ -183,7 +220,7 @@ public class Main
         
         try
         {
-          CloneSet clonez = XMDBParser.loadCloneSet(list, Paths.get("./dats/gbc.xmdb"));
+          CloneSet clonez = XMDBHandler.loadCloneSet(list, Paths.get("./dats/gbc.xmdb"));
           set = new GameSet(null, null, list, clonez);
         }
         catch (Exception e)
@@ -206,7 +243,7 @@ public class Main
       Operations.verifyGameSet(set, handles, options);
       
       /* EXPORT ONE GAME PER CLONE WITH BIAS */
-      {
+      /*{
         BiasSet bias = new BiasSet(Location.ITALY, Location.EUROPE, Location.USA, Location.JAPAN);
         Map<String, Game> exportGames = new TreeMap<>();
         for (GameClone clone : set.clones())
@@ -240,33 +277,9 @@ public class Main
           else
             Files.copy(game.rom().handle().getInputStream(), base.resolve(entry.getKey()+".gb"));
         }       
-      }
+      }*/
       
-      
-      if (!options.skipRename)
-      {
-        Renamer renamer = new Renamer(options);
-        renamer.rename(set.foundRoms().collect(Collectors.toList()));
-      }
-      
-      if (options.merge.mode != MergeOptions.Mode.NO_MERGE)
-      {
-        Predicate<Game> predicate = g -> true;
-        
-        /*Searcher searcher = new Searcher();
-        Predicate<Game> predicate = searcher.buildExportByRegionPredicate(Location.ITALY, Location.EUROPE, Location.USA);
-        predicate.and(searcher.buildPredicate("is:proper is:licensed"));*/
-           
-        Merger merger = new Merger(set, predicate, options);
-        merger.merge(options.mergePath());
-        
-        if (options.cleanMergePathAfterMerge)
-          Operations.cleanMergePath(set, options);
-      }
-
-      Operations.printStatistics(set);
-      Operations.saveStatusOnTextFiles(set, options);
-      
+            
       /*RomHandle[] compress = found.stream().limit(2).map(rh -> rh.handle).toArray(i -> new RomHandle[i]);
       
       Compressor compressor = new Compressor(options);
@@ -286,6 +299,7 @@ public class Main
           stack[0].getClassName(),
           stack[0].getMethodName(),
           stack[0].getLineNumber());
+      e.printStackTrace();
     }
     catch (FileNotFoundException e)
     {

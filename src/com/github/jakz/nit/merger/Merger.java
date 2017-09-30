@@ -19,11 +19,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.github.jakz.nit.Options;
-import com.github.jakz.nit.exceptions.FatalErrorException;
 import com.github.jakz.romlib.data.game.Game;
 import com.github.jakz.romlib.data.game.GameClone;
 import com.github.jakz.romlib.data.game.Rom;
 import com.github.jakz.romlib.data.set.GameSet;
+import com.pixbits.lib.exceptions.FatalErrorException;
 import com.pixbits.lib.functional.StreamException;
 import com.pixbits.lib.io.archive.Compressor;
 import com.pixbits.lib.io.archive.handles.Handle;

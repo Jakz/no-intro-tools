@@ -263,7 +263,7 @@ public class GameSetCreator
     clones.clear();
     count.set(0);
     
-    sizeSet = new RomSize.Set();
+    sizeSet = new RomSize.NullSet();
     
     prescanFiles();
     progressLogger.startProgress(Log.INFO2, String.format("Found %s files to analyze for DAT creation", entries.size()));

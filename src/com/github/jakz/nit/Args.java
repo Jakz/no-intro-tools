@@ -1,5 +1,8 @@
 package com.github.jakz.nit;
 
+import java.util.Arrays;
+
+import com.github.jakz.nit.config.MergeOptions;
 import com.github.jakz.nit.emitter.CreatorOptions;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
@@ -19,12 +22,14 @@ public class Args
   public final static String MERGE_MODE = "merge-mode";
   public final static String IN_PLACE_MERGE = "force-merge-in-place";
   public final static String SKIP_RENAME = "skip-rename";
+  public final static String FAST = "fast";
   public final static String NO_SHA1_CHECK = "no-sha1";
   public final static String NO_MD5_CHECK = "no-md5";
   public final static String NO_SIZE_CHECK = "no-size";
   public final static String NO_NESTED_ARCHIVES = "no-nested";
   
   public final static String DATA_PATH = "data-path";
+  public final static String DAT_FORMAT = "dat-format";
   public final static String DAT_PATH = "dat-path";
   public final static String HEADER_PATH = "header-path";
   public final static String CLONE_PATH = "clone-path";
@@ -79,15 +84,22 @@ public class Args
     parser.addArgument("--merge-mode", "-mm")
       .dest(MERGE_MODE)
       .help("specify kind of merge you want")
-      .choices("uncompressed", "single-archive", "archive-by-clone", "archive-by-game")
+      .choices(Arrays.stream(MergeOptions.Mode.values()).map(f -> f.mnemonic).toArray(i -> new String[i]))
       .setDefault("archive-by-clone");
-    
+        
     parser.addArgument("--no-nested-archives", "-nna")
       .dest(NO_NESTED_ARCHIVES)
       .help("disable scanning archives insde other archives")
       .action(Arguments.storeConst())
       .setConst(true)
       .setDefault(false);
+    
+    parser.addArgument("--fast")
+    .dest(FAST)
+    .help("fast mode verify (CRC32 and size only)")
+    .action(Arguments.storeConst())
+    .setConst(true)
+    .setDefault(false);
     
     parser.addArgument("--no-md5")
       .dest(NO_MD5_CHECK)
@@ -115,6 +127,12 @@ public class Args
       .type(String.class)
       .required(true)
       .help("path to DAT file");
+    
+    parser.addArgument("--dat-format", "-fmt")
+    .dest(DAT_FORMAT)
+    .help("specify format of dat file")
+    .choices(Arrays.stream(DatType.values()).map(f -> f.name).toArray(i -> new String[i]))
+    .setDefault(DatType.UNSPECIFIED.name);
     
     parser.addArgument("--roms-path", "-roms=")
       .dest(DATA_PATH)
@@ -144,7 +162,7 @@ public class Args
       .action(Arguments.storeConst())
       .setConst(true)
       .setDefault(false)
-      .help("verify merged roms after the operation to ensure everything worked well");
+      .help("verify merged roms after the operation to ensure everything went fine");
       
   }
   

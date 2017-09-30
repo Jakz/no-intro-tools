@@ -12,9 +12,9 @@ public class MergeOptions
   public static enum Mode
   {
     UNCOMPRESSED("uncompressed"),
+    SINGLE_ARCHIVE_PER_SET("single-archive"),
     SINGLE_ARCHIVE_PER_GAME("archive-by-game"),
     SINGLE_ARCHIVE_PER_CLONE("archive-by-clone"),
-    SINGLE_ARCHIVE_PER_SET("single-archive"),
     NO_MERGE("no-merge")
     ;
     
@@ -50,7 +50,7 @@ public class MergeOptions
   public MergeOptions(Namespace args)
   {
     if (args.getBoolean("no-merge"))
-      mode = MergeOptions.Mode.SINGLE_ARCHIVE_PER_CLONE;
+      mode = MergeOptions.Mode.NO_MERGE;
     else
       mode = MergeOptions.Mode.forName(args.getString(Args.MERGE_MODE));
     
