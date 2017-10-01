@@ -56,6 +56,7 @@ import com.pixbits.lib.io.archive.handles.BinaryHandle;
 import com.pixbits.lib.io.archive.handles.Handle;
 import com.pixbits.lib.io.archive.handles.NestedArchiveHandle;
 import com.pixbits.lib.lang.Pair;
+import com.pixbits.lib.lang.StringUtils;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
 import com.pixbits.lib.log.ProgressLogger;
@@ -137,7 +138,7 @@ public class Operations
     long found = set.foundRoms().count();
     
     logger.i("Statistics for %s:", set.info().getName());
-    logger.i("  %d total roms", set.gameCount());
+    logger.i("  %d total roms", set.info().romCount());
     
     if (set.clones() != null && set.clones().size() > 0)
     {
@@ -149,8 +150,11 @@ public class Operations
     
     if (found > 0)
     {
-      logger.i("  %d found roms (%d%%)", found, (found*100)/set.gameCount());
-      logger.i("  %d missing roms", set.gameCount() - found);
+      logger.i("  %d found roms (%d%%)", found, (found*100)/set.info().romCount());
+      logger.i("  %d missing roms", set.info().romCount() - found);
+      
+      long completedGames = set.stream().filter(Game::isComplete).count();
+      logger.i("  %d of %d completed games (%d%%)", completedGames, set.info().gameCount(), (completedGames*100)/set.info().gameCount());
     }
   }
   
@@ -232,24 +236,24 @@ public class Operations
         if (handle != null)
           verifierProgress.updateProgress(current / (float)totalCount, handle.toString());
         
-        if (set.hasSharedRomsBetweenGames() && rom.handle() != null)
-        {
-          Set<Pair<Rom,Game>> games = set.sharedRomMap().gamesForRom(rom);
-          Optional<Rom> anyRom = games.stream().filter(p -> p.first.handle() != null).map(p -> p.first).findAny();
-          
-          rom = anyRom.isPresent() ? anyRom.get() : rom;
-        }
-
         if (handle != null && rom != null)
         {
-            if (rom.handle() != null)
-            {
-              logger.w("Duplicate entry found for %s", rom.name);
-              logger.d("  Already present file: %s", rom.handle().toString());
-              logger.d("  Duplicate found: %s", handle.toString());
-            }
-            else
-              rom.setHandle(handle);
+          if (set.hasSharedRomsBetweenGames() && rom.handle() != null)
+          {
+            Set<Pair<Rom,Game>> games = set.sharedRomMap().gamesForRom(rom);
+            Optional<Rom> anyRom = games.stream().filter(p -> p.first.handle() == null).map(p -> p.first).findAny();
+            
+            rom = anyRom.isPresent() ? anyRom.get() : rom;
+          }  
+          
+          if (rom.handle() != null)
+          {
+            logger.w("Duplicate entry found for %s", rom.name);
+            logger.d("  Already present file: %s", rom.handle().toString());
+            logger.d("  Duplicate found: %s", handle.toString());
+          }
+          else
+            rom.setHandle(handle);
         } 
       }
     };
@@ -270,6 +274,21 @@ public class Operations
     verifier.verify(handles);
     
     logger.i1("Found %d verified roms", binaryCount.get() + archiveCount.get() + nestedCount.get());
+  }
+  
+  public static void duplicateSharedRomsIfNeeded(GameSet set, Options options)
+  {
+    if (set.hasSharedRomsBetweenGames())
+    {
+      set.sharedRomMap().stream().forEach(rset -> {
+        /* for each group of shared roms which has at least one missing rom */
+        if (rset.stream().anyMatch(p -> !p.first.isPresent()))
+        {
+          // TODO
+        }
+        
+      });
+    }
   }
   
   public static void cleanMergePath(GameSet set, Options options) throws IOException

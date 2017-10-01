@@ -22,6 +22,7 @@ import com.github.jakz.nit.Options;
 import com.github.jakz.romlib.data.game.Game;
 import com.github.jakz.romlib.data.game.GameClone;
 import com.github.jakz.romlib.data.game.Rom;
+import com.github.jakz.romlib.data.set.Feature;
 import com.github.jakz.romlib.data.set.GameSet;
 import com.pixbits.lib.exceptions.FatalErrorException;
 import com.pixbits.lib.functional.StreamException;
@@ -117,7 +118,7 @@ public class Merger
   
   private void mergeToCloneArchives(Path dest) throws FileNotFoundException, SevenZipException
   {
-    if (set.clones() == null || set.clones().size() == 0)
+    if (!set.hasFeature(Feature.CLONES))
       throw new FatalErrorException(String.format("can't merge '%s' by using game clones since there is no clone info", set.info().getName()));
     
     Map<GameClone, ArchiveInfo> clones = new HashMap<>();

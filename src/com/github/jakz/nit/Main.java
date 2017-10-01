@@ -31,6 +31,7 @@ import com.github.jakz.romlib.data.platforms.GBC;
 import com.github.jakz.romlib.data.platforms.Platform;
 import com.github.jakz.romlib.data.set.CloneSet;
 import com.github.jakz.romlib.data.set.DataSupplier;
+import com.github.jakz.romlib.data.set.Feature;
 import com.github.jakz.romlib.data.set.GameList;
 import com.github.jakz.romlib.data.set.GameSet;
 import com.github.jakz.romlib.data.set.Provider;
@@ -129,9 +130,15 @@ public class Main
           {
             Options options = new Options(rargs);
             GameSet set = Operations.loadGameSet(options);
+            set.load();
+            logger.i("Loaded '%s' romset, composed by %d roms in %d games", set.info().getName(), set.info().romCount(), set.info().gameCount());
             
             ScannerOptions soptions = new ScannerOptions();          
             HandleSet handles = Operations.scanEntriesForGameSet(set, Arrays.asList(options.dataPath), soptions, true);
+            
+            if (set.hasFeature(Feature.SHARED_ROM_BETWEEN_GAMES))
+              logger.w("Romset has roms which are shared between multiple games, this implies that multiple copies are expected");
+            
             Operations.verifyGameSet(set, handles, options);
             
             if (!options.skipRename)
