@@ -77,7 +77,19 @@ public class Main
         
     try
     {
-      args = new String[] {"organize", "--dat-file", "dats/vic20.dat", "--dat-format", "logiqx", "--roms-path", "/Volumes/Vicky/Roms/sets/usenet/vic20 - set - 20130331-065627 - 0 missing/Commodore - VIC-20", "--fast", "--no-merge", "--skip-rename" };
+      args = new String[] {
+          "organize", 
+          "--dat-file", "dats/satellaview.dat", 
+          "--dat-format", "logiqx", 
+          "--roms-path", "/Volumes/Vicky/Roms/sets/usenet/satview - set - 20160529-045900 - 1 missing/Nintendo - Satellaview", 
+          "--fast", 
+          "--skip-rename",
+          
+          "--no-merge"
+
+          /*"--merge-path", "/Volumes/Vicky/Roms/sets/usenet/vic20 - set - 20130331-065627 - 0 missing/bbb", 
+          "--merge-mode", "uncompressed"*/
+      };
 
       //Config.load(Paths.get("./config.json"));
       

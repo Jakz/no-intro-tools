@@ -13,7 +13,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,6 +28,7 @@ import com.github.jakz.romlib.data.set.Feature;
 import com.github.jakz.romlib.data.set.GameSet;
 import com.pixbits.lib.exceptions.FatalErrorException;
 import com.pixbits.lib.functional.StreamException;
+import com.pixbits.lib.io.FileUtils;
 import com.pixbits.lib.io.archive.Compressor;
 import com.pixbits.lib.io.archive.handles.Handle;
 import com.pixbits.lib.io.archive.support.ArchivePipedInputStream;
@@ -48,8 +51,8 @@ public class Merger
   
   GameSet set;
   Options options;
-  Compressor<Handle> compressor;
-  List<Rom> found;
+  Compressor<ArchiveEntry> compressor;
+  List<Game> found;
   
   TitleNormalizer normalizer;
   
@@ -57,10 +60,25 @@ public class Merger
   {
     this.set = set;
     this.options = options;
-    this.compressor = new Compressor<Handle>(options.getCompressorOptions());
+    this.compressor = new Compressor<>(options.getCompressorOptions());
     this.compressor.setCallbackOnAddingEntryToArchive(handle -> logger.d("Preparing item %s (%d bytes) to be archived", handle.fileName(), handle.size()));
-    this.found = set.foundRoms().filter(r -> filter.test(r.game())).collect(Collectors.toList());
+    this.found = set.stream().filter(Game::hasAnyRom).filter(g -> filter.test(g)).collect(Collectors.toList());
     this.normalizer = new TitleNormalizer();
+  }
+  
+  private Function<Rom, String> fileNameBuilder()
+  {
+    return rom -> normalizer.normalize(FileUtils.trimExtension(rom.name))+"."+rom.handle().getInternalExtension();
+  }
+  
+  private Function<Rom, String> folderBuilder()
+  {
+    return rom -> {
+      if (set.hasFeature(Feature.SINGLE_ROM_PER_GAME))
+        return "";
+      else
+        return rom.game().getTitle(); //TODO: normalizer?
+    };
   }
   
   public void merge(Path dest) throws IOException, SevenZipException
@@ -87,7 +105,10 @@ public class Merger
   
   private void mergeToSingleArchive(Path dest) throws SevenZipException, IOException
   {
-    List<Handle> handles = found.stream().map(rom -> rom.handle()).collect(Collectors.toList());
+    Function<Rom, String> fileName = fileNameBuilder();
+    Function<Rom, String> folder = folderBuilder();
+    
+    List<Handle> handles = found.stream().flatMap(Game::stream).map(rom -> rom.handle()).collect(Collectors.toList());
     
     String archiveName = options.datPath.getFileName().toString();
     archiveName = archiveName.substring(0, archiveName.lastIndexOf('.')) + options.merge.archiveFormat.dottedExtension();
@@ -100,6 +121,8 @@ public class Merger
       //TODO: if merge is in place we should probably just update existing archive
     }
     
+    // TODO: name mapping
+    
     progressLogger.startProgress(Log.INFO2, "Creating single archive "+dest.toString());
     compressor.createArchive(dest.resolve(archiveName), handles);
     handles.forEach(h -> h.relocate(destArchive));
@@ -107,13 +130,17 @@ public class Merger
   
   private void mergeToOneArchivePerGame(Path dest) throws FileNotFoundException, SevenZipException
   {
-    found.forEach(StreamException.rethrowConsumer(rom -> {
+    Function<Rom, String> fileName = fileNameBuilder();
+    Function<Rom, String> folder = folderBuilder();
+    
+    //TODO: fix
+    /*found.forEach(StreamException.rethrowConsumer(rom -> {
       //TODO: manage games with multiple roms per game
       final Path finalPath = dest.resolve(rom.game().getTitle()+options.merge.archiveFormat.dottedExtension());
       final ArchiveInfo archive = new ArchiveInfo(rom.game().getTitle(), rom.handle());
       createArchive(finalPath, archive);
       archive.relocate(finalPath);
-    }));    
+    }));*/    
   }
   
   private void mergeToCloneArchives(Path dest) throws FileNotFoundException, SevenZipException
@@ -122,35 +149,39 @@ public class Merger
       throw new FatalErrorException(String.format("can't merge '%s' by using game clones since there is no clone info", set.info().getName()));
     
     Map<GameClone, ArchiveInfo> clones = new HashMap<>();
-    List<ArchiveInfo> handles = new ArrayList<>();
+    List<ArchiveInfo> archives = new ArrayList<>();
     Map<String, GameClone> cloneMapping = new HashMap<>();
     
-    for (Rom rom : found)
-    {
-      GameClone clone = set.clones().get(rom.game());
-      
-      if (clone != null)
+    //TODO: fix for new management
+    for (Game game : found)
+    {    
+      for (Rom rom : game)
       {
-        clones.compute(clone, (k,v) -> {
-          String archiveName = normalizer.normalize(k.getTitleForBias(options.zonePriority, true));
-
-          if (v == null)
-          {
-            cloneMapping.putIfAbsent(archiveName, clone);
-            return new ArchiveInfo(archiveName, rom.handle());
-          }
-          else
-          {
-            if (!clone.equals(cloneMapping.get(archiveName)))
-              throw new FatalErrorException(String.format("can't merge '%s' correctly: clone data contains two entries that resolve to same name: %s", set.info().getName(), archiveName));
-            
-            v.handles.add(rom.handle());
-            return v;
-          }
-        });
+        GameClone clone = set.clones().get(rom.game());
+        
+        if (clone != null)
+        {
+          clones.compute(clone, (k,v) -> {
+            String archiveName = normalizer.normalize(k.getTitleForBias(options.zonePriority, true));
+  
+            if (v == null)
+            {
+              cloneMapping.putIfAbsent(archiveName, clone);
+              return new ArchiveInfo(archiveName, new ArchiveEntry(rom.handle()));
+            }
+            else
+            {
+              if (!clone.equals(cloneMapping.get(archiveName)))
+                throw new FatalErrorException(String.format("can't merge '%s' correctly: clone data contains two entries that resolve to same name: %s", set.info().getName(), archiveName));
+              
+              v.add(new ArchiveEntry(rom.handle()));
+              return v;
+            }
+          });
+        }
+        else
+          archives.add(new ArchiveInfo(normalizer.normalize(rom.game().getTitle()), new ArchiveEntry(rom.handle()))); 
       }
-      else
-        handles.add(new ArchiveInfo(normalizer.normalize(rom.game().getTitle()), rom.handle())); 
     }
     
     logger.i1("Merger is going to create %d archives.", clones.size()+handles.size());
@@ -164,12 +195,15 @@ public class Merger
     // TODO: parallel?
     
     clones.values().forEach(compress);
-    handles.forEach(compress);
+    archives.forEach(compress);
   }
     
-  private void mergeUncompressed(Path dest)
+  private void mergeUncompressed(Path base)
   {
-    Stream<Rom> found = this.found.stream();
+    Function<Rom, String> fileName = fileNameBuilder();
+    Function<Rom, String> folder = folderBuilder();
+        
+    Stream<Rom> found = this.found.stream().flatMap(Game::stream);
     
     if (options.multiThreaded)
       found = found.parallel();
@@ -177,18 +211,18 @@ public class Merger
     found.forEach(StreamException.rethrowConsumer(rom -> {
       Handle handle = rom.handle();
       
+      Path path = base.resolve(folder.apply(rom)).resolve(fileName.apply(rom));
+      Files.createDirectories(path.getParent());
+      
       // TODO: manage src dest as same path
       // just copy the file
       if (!handle.isArchive())
       {
-        Path path = dest.resolve(handle.path().getFileName());
         Files.copy(handle.path(), path);
         handle.relocate(path);
       }
       else
-      {
-        Path path = dest.resolve(normalizer.normalize(rom.game().getTitle())+"."+handle.getInternalExtension());
-        
+      {        
         try (InputStream is = handle.getInputStream())
         {
           try (OutputStream os = Files.newOutputStream(path))
@@ -220,7 +254,7 @@ public class Merger
       case CREATE:
         Files.deleteIfExists(dest); 
         progressLogger.startProgress(Log.INFO2, "Creating archive "+dest.toString());
-        compressor.createArchive(dest, info.handles);
+        compressor.createArchive(dest, info.entries());
         break;
       case UPDATE:
       {
@@ -232,11 +266,11 @@ public class Merger
         Path tempArchive = Files.createTempFile(dest.getParent(), "", options.merge.archiveFormat.dottedExtension());
         
         /* then we update all references to old archive to new name */
-        info.handles.stream().filter(rh -> rh.path().equals(dest)).forEach(rh -> rh.relocate(tempArchive));
+        info.stream().filter(e -> e.handle().path().equals(dest)).forEach(e -> e.handle().relocate(tempArchive));
         
         /* now we can create the new archive by merging items from old archive and the new files */
         progressLogger.startProgress(Log.INFO2, "Updating archive "+dest.toString());
-        compressor.createArchive(dest, info.handles);
+        compressor.createArchive(dest, info.entries());
         
         /* now it's safe to delete temporary file because otherwise checkExistingArchiveStatus would have returned ArchiveStatus.ERROR */
         Files.delete(tempArchive);       
@@ -268,13 +302,13 @@ public class Merger
       {
         try (IInArchive archive =  SevenZip.openInArchive(null, rfile))
         {         
-          if (archive.getNumberOfItems() != info.handles.size() && !options.keepUnrecognizedFilesInArchives)
+          if (archive.getNumberOfItems() != info.size() && !options.keepUnrecognizedFilesInArchives)
           {
             if (options.doesMergeInPlace())
             {
               // if merge is in place and archive exists then all files inside the archive should be present also in ArchiveInfo
               Map<Long, String> crcs = new HashMap<>();
-              info.handles.stream().forEach(handle -> crcs.put(handle.crc(), handle.fileName()));
+              info.stream().forEach(entry -> crcs.put(entry.handle().crc(), entry.fileName()));
 
               int count = archive.getNumberOfItems();
               for (int i = 0; i < count; ++i)
@@ -298,7 +332,7 @@ public class Merger
             for (int i = 0; i < count; ++i)
               crcs.put(Integer.toUnsignedLong((int)archive.getProperty(i, PropID.CRC)), (String)archive.getProperty(i, PropID.PATH));
             
-            return info.handles.stream().allMatch(h -> h.fileName().equals(crcs.get(h.crc()))) ? ArchiveStatus.UP_TO_DATE : ArchiveStatus.CREATE;
+            return info.stream().allMatch(e -> e.fileName().equals(crcs.get(e.handle().crc()))) ? ArchiveStatus.UP_TO_DATE : ArchiveStatus.CREATE;
           }  
         }
       }
@@ -319,7 +353,7 @@ public class Merger
     }
   };
   
-  public Map<Path,ExistingArchive> computeInPlaceStatus()
+  /*public Map<Path,ExistingArchive> computeInPlaceStatus()
   {
     Map<Path, ExistingArchive> archives = new HashMap<>();
     
@@ -338,5 +372,5 @@ public class Merger
     });
     
     return archives;
-  }
+  }*/
 }

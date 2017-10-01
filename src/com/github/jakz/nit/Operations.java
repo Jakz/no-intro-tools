@@ -302,8 +302,9 @@ public class Operations
     Set<Path> files = scanner.scan(options.mergePath());
     
     files.removeAll(romFiles);
-    
     files.forEach(StreamException.rethrowConsumer(f -> Files.delete(f)));
+    
+    //TODO: remove empty folders?
   }
   
   public static GameSet createGameSet(CreatorOptions options) throws IOException

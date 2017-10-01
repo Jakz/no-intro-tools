@@ -33,7 +33,7 @@ public class Args
   public final static String DAT_PATH = "dat-path";
   public final static String HEADER_PATH = "header-path";
   public final static String CLONE_PATH = "clone-path";
-  public final static String DEST_PATH = "dest-path";
+  public final static String DEST_PATH = "merge-path";
 
   private static void generateVerifierParser(ArgumentParser parser)
   {        
@@ -80,6 +80,12 @@ public class Args
       .action(Arguments.storeConst())
       .setConst(true)
       .setDefault(false);
+    
+    parser.addArgument("--merge-path", "-mp")
+      .dest(DEST_PATH)
+      .type(String.class)
+      .required(false)
+      .help("destination path for merge");
         
     parser.addArgument("--merge-mode", "-mm")
       .dest(MERGE_MODE)
