@@ -125,10 +125,10 @@
   	    <artifactId>java-pix-lib</artifactId>
   	    <version>master-SNAPSHOT</version>
   	</dependency>
-    <!--<dependency>
-    <groupId>com.googlecode.blacken</groupId>
-    <artifactId>blacken-core</artifactId>
-    <version>${blacken.version}</version>
-    </dependency>-->
+  	<dependency>
+  	    <groupId>com.github.Jakz</groupId>
+  	    <artifactId>rom-manager</artifactId>
+  	    <version>master-SNAPSHOT</version>
+  	</dependency>
   </dependencies>
 </project>
