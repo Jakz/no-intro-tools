@@ -77,9 +77,9 @@ public class Main
     {
       args = new String[] {
           "organize", 
-          "--dat-file", "dats/gb.dat", 
+          "--dat-file", "dats/gbc.dat", 
           "--dat-format", "logiqx", 
-          "--clones-file", "dats/gb.xmdb",
+          "--clones-file", "dats/gbc.xmdb",
           
           "--roms-path", "/Volumes/RAMDisk/Organized", 
           //"--roms-path", "/Volumes/RAMDisk/From", 
