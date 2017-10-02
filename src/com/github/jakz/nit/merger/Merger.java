@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -56,6 +57,9 @@ public class Merger
   
   TitleNormalizer normalizer;
   
+  Function<Rom, String> fileNameBuilder;
+  Function<Rom, String> folderNameBuilder;
+  
   public Merger(GameSet set, Predicate<Game> filter, Options options)
   {
     this.set = set;
@@ -64,23 +68,11 @@ public class Merger
     this.compressor.setCallbackOnAddingEntryToArchive(handle -> logger.d("Preparing item %s (%d bytes) to be archived", handle.fileName(), handle.size()));
     this.found = set.stream().filter(Game::hasAnyRom).filter(g -> filter.test(g)).collect(Collectors.toList());
     this.normalizer = new TitleNormalizer();
+    
+    fileNameBuilder = rom -> FileUtils.trimExtension(rom.name) + "." + rom.handle().getInternalExtension();
+    folderNameBuilder = rom -> set.hasFeature(Feature.SINGLE_ROM_PER_GAME) && !options.merge.forceFolderPerGameStructure ? "" : rom.game().getTitle(); // TODO: normalizer?
   }
-  
-  private Function<Rom, String> fileNameBuilder()
-  {
-    return rom -> normalizer.normalize(FileUtils.trimExtension(rom.name))+"."+rom.handle().getInternalExtension();
-  }
-  
-  private Function<Rom, String> folderBuilder()
-  {
-    return rom -> {
-      if (set.hasFeature(Feature.SINGLE_ROM_PER_GAME))
-        return "";
-      else
-        return rom.game().getTitle(); //TODO: normalizer?
-    };
-  }
-  
+
   public void merge(Path dest) throws IOException, SevenZipException
   {
     try
@@ -105,9 +97,6 @@ public class Merger
   
   private void mergeToSingleArchive(Path dest) throws SevenZipException, IOException
   {
-    Function<Rom, String> fileName = fileNameBuilder();
-    Function<Rom, String> folder = folderBuilder();
-    
     List<Handle> handles = found.stream().flatMap(Game::stream).map(rom -> rom.handle()).collect(Collectors.toList());
     
     String archiveName = options.datPath.getFileName().toString();
@@ -121,18 +110,22 @@ public class Merger
       //TODO: if merge is in place we should probably just update existing archive
     }
     
+    List<ArchiveEntry> entries = found.stream().flatMap(Game::stream).map(r -> {
+      String folder = folderNameBuilder.apply(r);
+      String fileName = fileNameBuilder.apply(r);
+      String archivedName = !folder.isEmpty() ? (folder + '/' + fileName) : fileName;
+      return new ArchiveEntry(r.handle(), archivedName);
+    }).collect(Collectors.toList());
+    
     // TODO: name mapping
     
     progressLogger.startProgress(Log.INFO2, "Creating single archive "+dest.toString());
-    compressor.createArchive(dest.resolve(archiveName), handles);
+    compressor.createArchive(dest.resolve(archiveName), entries);
     handles.forEach(h -> h.relocate(destArchive));
   }
   
   private void mergeToOneArchivePerGame(Path dest) throws FileNotFoundException, SevenZipException
   {
-    Function<Rom, String> fileName = fileNameBuilder();
-    Function<Rom, String> folder = folderBuilder();
-    
     //TODO: fix
     /*found.forEach(StreamException.rethrowConsumer(rom -> {
       //TODO: manage games with multiple roms per game
@@ -148,43 +141,54 @@ public class Merger
     if (!set.hasFeature(Feature.CLONES))
       throw new FatalErrorException(String.format("can't merge '%s' by using game clones since there is no clone info", set.info().getName()));
     
-    Map<GameClone, ArchiveInfo> clones = new HashMap<>();
-    List<ArchiveInfo> archives = new ArrayList<>();
+    Map<String, ArchiveInfo> archives = new HashMap<>();
     Map<String, GameClone> cloneMapping = new HashMap<>();
     
-    //TODO: fix for new management
     for (Game game : found)
     {    
-      for (Rom rom : game)
-      {
-        GameClone clone = set.clones().get(rom.game());
+      final GameClone existingClone = set.clones().get(game);
+      final GameClone clone = existingClone != null ? existingClone : new GameClone(game);
+      
+      //TODO: folder builder insider archives?
+      List<ArchiveEntry> entries = game.stream().filter(Rom::isPresent).map(r -> new ArchiveEntry(r.handle(), fileNameBuilder.apply(r))).collect(Collectors.toList());
+
+      final String archiveName = normalizer.normalize(clone.getTitleForBias(options.zonePriority, true));
+      
+      archives.compute(archiveName, (k,v) -> {        
+        /* if has clones and has multiple roms per clone we should use game name as internal folder to archive the game */
         
-        if (clone != null)
+        if (v == null)
         {
-          clones.compute(clone, (k,v) -> {
-            String archiveName = normalizer.normalize(k.getTitleForBias(options.zonePriority, true));
-  
-            if (v == null)
-            {
-              cloneMapping.putIfAbsent(archiveName, clone);
-              return new ArchiveInfo(archiveName, new ArchiveEntry(rom.handle()));
-            }
-            else
-            {
-              if (!clone.equals(cloneMapping.get(archiveName)))
-                throw new FatalErrorException(String.format("can't merge '%s' correctly: clone data contains two entries that resolve to same name: %s", set.info().getName(), archiveName));
-              
-              v.add(new ArchiveEntry(rom.handle()));
-              return v;
-            }
-          });
+          cloneMapping.putIfAbsent(archiveName, clone);
+          return new ArchiveInfo(archiveName, entries);
         }
         else
-          archives.add(new ArchiveInfo(normalizer.normalize(rom.game().getTitle()), new ArchiveEntry(rom.handle()))); 
-      }
+        {
+          GameClone alreadyGeneratedClone = cloneMapping.get(archiveName);
+          
+          if (!clone.equals(alreadyGeneratedClone) && !options.merge.automaticallyMergeClonesForSameNormalizedNames)
+          {
+            logger.d("Clone is resolved to same name %s as another existing clone", archiveName);
+            logger.d(" existing: %s", alreadyGeneratedClone.stream().map(Game::getTitle).collect(Collectors.joining(", ")));
+            logger.d(" current: %s ", clone.stream().map(Game::getTitle).collect(Collectors.joining(", ")));
+            
+            throw new FatalErrorException(String.format("can't merge '%s' correctly: clone data contains two entries that resolve to same name: %s", set.info().getName(), archiveName));
+          }
+          
+          v.add(entries);
+          return v;
+        }
+      });
     }
+ 
+    Optional<ArchiveInfo> faultyArchive = archives.values().stream()
+      .filter(archive -> new HashSet<>(archive.entries()).size() != archive.entries.size())
+      .findAny();
     
-    logger.i1("Merger is going to create %d archives.", clones.size()+handles.size());
+    if (faultyArchive.isPresent())
+      throw new FatalErrorException(String.format("can't merge '%s' correctly: clone %s contains two entries that resolve to same name: %s", set.info().getName(), faultyArchive.get().name));
+
+    logger.i1("Merger is going to create %d archives.", archives.size());
         
     Consumer<ArchiveInfo> compress = StreamException.rethrowConsumer(a -> { 
         final Path path = dest.resolve(a.name+options.merge.archiveFormat.dottedExtension());
@@ -192,17 +196,12 @@ public class Merger
         a.relocate(path);
     });
     
-    // TODO: parallel?
-    
-    clones.values().forEach(compress);
-    archives.forEach(compress);
+    // TODO: parallel?    
+    archives.values().forEach(compress);
   }
     
   private void mergeUncompressed(Path base)
   {
-    Function<Rom, String> fileName = fileNameBuilder();
-    Function<Rom, String> folder = folderBuilder();
-        
     Stream<Rom> found = this.found.stream().flatMap(Game::stream);
     
     if (options.multiThreaded)
@@ -211,7 +210,7 @@ public class Merger
     found.forEach(StreamException.rethrowConsumer(rom -> {
       Handle handle = rom.handle();
       
-      Path path = base.resolve(folder.apply(rom)).resolve(fileName.apply(rom));
+      Path path = base.resolve(folderNameBuilder.apply(rom)).resolve(fileNameBuilder.apply(rom));
       Files.createDirectories(path.getParent());
       
       // TODO: manage src dest as same path

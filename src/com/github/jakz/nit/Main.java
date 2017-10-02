@@ -44,6 +44,7 @@ import com.pixbits.lib.io.archive.HandleSet;
 import com.pixbits.lib.io.archive.ScannerOptions;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
+import com.pixbits.lib.log.ProgressLoggerFactory;
 import com.pixbits.lib.log.StdoutProgressLogger;
 import com.pixbits.lib.ui.UIUtils;
 
@@ -63,6 +64,7 @@ public class Main
   {
     SevenZip.initSevenZipFromPlatformJAR();
   }
+  
   private static final Logger logger = Log.getLogger(Main.class);
   
   public static FrameSet frames;
@@ -70,30 +72,32 @@ public class Main
   public static void main(String[] args)
   {
     ArgumentParser arguments = Args.generateParser();
-    
-    
-
-    
-        
+ 
     try
     {
       args = new String[] {
           "organize", 
-          "--dat-file", "dats/satellaview.dat", 
+          "--dat-file", "dats/gb.dat", 
           "--dat-format", "logiqx", 
-          "--roms-path", "/Volumes/Vicky/Roms/sets/usenet/satview - set - 20160529-045900 - 1 missing/Nintendo - Satellaview", 
+          "--clones-file", "dats/gb.xmdb",
+          
+          "--roms-path", "/Volumes/RAMDisk/Organized", 
+          //"--roms-path", "/Volumes/RAMDisk/From", 
           "--fast", 
           "--skip-rename",
           
-          "--no-merge"
+          "--no-merge",
 
-          /*"--merge-path", "/Volumes/Vicky/Roms/sets/usenet/vic20 - set - 20130331-065627 - 0 missing/bbb", 
-          "--merge-mode", "uncompressed"*/
+          "--merge-path", "/Volumes/RAMDisk/Organized", 
+          "--merge-mode", "archive-by-clone"
+          //, "--force-folder-per-game"
+          , "--auto-merge-clones"
       };
 
       //Config.load(Paths.get("./config.json"));
       
       UIUtils.setNimbusLNF();
+      Log.setFactory(StdoutProgressLogger.ONE_LINER_BUILDER);
       //Operations.prepareGUIMode(config);
       
       //if (true)
@@ -172,6 +176,9 @@ public class Main
               
               if (options.cleanMergePathAfterMerge)
                 Operations.cleanMergePath(set, options);
+              
+              if (options.verifyMerge)
+                Operations.verifySuccessfulMerge(set, options);
             }
             else
               logger.i("Skipping merge phase");

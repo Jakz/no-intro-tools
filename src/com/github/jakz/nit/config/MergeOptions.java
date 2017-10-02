@@ -38,6 +38,8 @@ public class MergeOptions
   public ArchiveFormat archiveFormat;
   public boolean useSolidArchives;
   public int compressionLevel;
+  public boolean forceFolderPerGameStructure;
+  public boolean automaticallyMergeClonesForSameNormalizedNames;
   
   public MergeOptions()
   {
@@ -45,6 +47,8 @@ public class MergeOptions
     archiveFormat = ArchiveFormat._7ZIP;
     useSolidArchives = true;
     compressionLevel = 9;
+    forceFolderPerGameStructure = false;
+    automaticallyMergeClonesForSameNormalizedNames = false;
   }
   
   public MergeOptions(Namespace args)
@@ -57,5 +61,7 @@ public class MergeOptions
     archiveFormat = ArchiveFormat._7ZIP;
     useSolidArchives = !args.getBoolean(Args.NO_SOLID_ARCHIVES);
     compressionLevel = args.getInt(Args.COMPRESSION_LEVEL);
+    forceFolderPerGameStructure = args.getBoolean(Args.FORCE_FOLDER_PER_GAME);
+    automaticallyMergeClonesForSameNormalizedNames = args.getBoolean(Args.AUTOMATICALLY_CREATE_CLONES);
   }
 }

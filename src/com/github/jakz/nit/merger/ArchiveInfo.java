@@ -7,9 +7,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
-import com.pixbits.lib.io.archive.handles.Handle;
-import com.pixbits.lib.lang.Pair;
-
 class ArchiveInfo
 {
   public final String name;
@@ -23,8 +20,13 @@ class ArchiveInfo
   
   ArchiveInfo(String name, ArchiveEntry... entries)
   {
+    this(name, Arrays.asList(entries));
+  }
+  
+  ArchiveInfo(String name, Collection<ArchiveEntry> entries)
+  {
     this(name);
-    this.entries.addAll(Arrays.asList(entries));
+    this.entries.addAll(entries);
   }
 
   void add(ArchiveEntry entries)

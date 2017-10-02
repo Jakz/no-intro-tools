@@ -13,7 +13,7 @@ public class ArchiveEntry implements Compressible
   
   public ArchiveEntry(Handle handle)
   {
-    this(handle, handle.fileName());
+    this(handle, handle.plainInternalName());
   }
   
   public ArchiveEntry(Handle handle, String fileName)

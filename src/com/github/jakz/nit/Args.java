@@ -15,8 +15,10 @@ public class Args
 {
   public final static String COMPRESSION_LEVEL = "compression-level";
   public final static String NO_SOLID_ARCHIVES = "no-solid-archives";
+  public final static String FORCE_FOLDER_PER_GAME = "force-folder-per-game";
   public final static String ALWAYS_REWRITE_ARCHIVES = "always-rewrite-archives";
   public final static String KEEP_UNRECOGNIZED_FILES = "keep-unrecognized-files-in-archives";
+  public final static String AUTOMATICALLY_CREATE_CLONES = "automatically-create-clones";
   
   public final static String NO_MULTI_THREAD = "no-multi-thread";
   public final static String MERGE_MODE = "merge-mode";
@@ -156,6 +158,20 @@ public class Args
       .dest(HEADER_PATH)
       .type(String.class)
       .help("path to optional header file for DAT");
+    
+    parser.addArgument("--force-folder-per-game")
+      .dest(FORCE_FOLDER_PER_GAME)
+      .action(Arguments.storeConst())
+      .setConst(true)
+      .setDefault(false)
+      .help("forces creation of folder structure for each game while merging");
+    
+    parser.addArgument("--auto-merge-clones")
+      .dest(AUTOMATICALLY_CREATE_CLONES)
+      .action(Arguments.storeConst())
+      .setConst(true)
+      .setDefault(false)
+      .help("merge clones automatically for games with same normalized names");
     
     parser.addArgument("--no-merge")
       .dest("no-merge")

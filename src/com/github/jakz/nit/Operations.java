@@ -84,6 +84,8 @@ public class Operations
   {
     DatType format = guessFormat(options);
     
+    GameSet set = null;
+    
     if (format == DatType.UNSPECIFIED)
       throw new FatalErrorException("Unable to guess dat format, please specify it explicitly.");
     else
@@ -92,17 +94,23 @@ public class Operations
       {
         case CLR_MAME_PRO:
         {
-          return loadClrMameGameSet(options);
+          set = loadClrMameGameSet(options);
         }
         
         case LOGIQX:
         {
-          return loadLogiqxDat(options);
+          set = loadLogiqxDat(options);
         }
       }
     }
     
-    return null;
+    if (options.cloneDatPath != null)
+    {
+      CloneSet clones = loadCloneSetFromXMDB(set, options.cloneDatPath);
+      set.setClones(clones);
+    }
+    
+    return set;
   }
   
   public static GameSet loadLogiqxDat(Options options) throws IOException, SAXException
@@ -182,8 +190,8 @@ public class Operations
     HandleSet handles = new HandleSet(scanner.scanPaths(pathsToScan.stream()));
     HandleSet.Stats stats = handles.stats();
 
-    logger.i1("Found %d potential matches (%d binary, %d inside archives, %d nested inside %d archives).", 
-        stats.totalHandles, stats.binaryCount, stats.archiveCount, stats.nestedArchiveInnerCount, stats.nestedArchiveCount);
+    logger.i1("Found %d potential matches (%d binary, %d inside %d archives, %d nested inside %d archives).", 
+        stats.totalHandles, stats.binaryCount, stats.archivedCount, stats.archiveCount, stats.nestedArchiveInnerCount, stats.nestedArchiveCount);
     
     if (!skipped.isEmpty())
       logger.i1("Skipped %d entries:", skipped.size());
@@ -307,6 +315,11 @@ public class Operations
     //TODO: remove empty folders?
   }
   
+  public static void verifySuccessfulMerge(GameSet set, Options options)
+  {
+    
+  }
+  
   public static GameSet createGameSet(CreatorOptions options) throws IOException
   {
     GameSetCreator creator = new GameSetCreator(options);
@@ -331,11 +344,13 @@ public class Operations
   
   public static void saveStatusOnTextFiles(GameSet set, Options options) throws IOException
   {
-    List<String> have = new ArrayList<>();
-    List<String> miss = new ArrayList<>();
+    List<Game> have = new ArrayList<>();
+    List<Game> miss = new ArrayList<>();
+    
+    //Map<Boolean, List<Game>> partitioned = set.stream().collect(Collectors.groupingBy(Game::isComplete));
     
     set.stream().forEach(game -> {
-      (game.isComplete() ? have : miss).add(game.getTitle());
+      (game.isComplete() ? have : miss).add(game);
     });
     
     logger.i("Saving found status on files.");
@@ -348,13 +363,21 @@ public class Operations
     try (PrintWriter wrt = new PrintWriter(Files.newBufferedWriter(basePath.resolve("SetHave.txt"))))
     {
       wrt.printf(" You have %d of %d known %s games\n\n", have.size(), have.size()+miss.size(), set.info().getName());      
-      for (String h : have) wrt.println(h);
+      for (Game h : have) wrt.println(h.getTitle());
     }
     
     try (PrintWriter wrt = new PrintWriter(Files.newBufferedWriter(basePath.resolve("SetMiss.txt"))))
     {
       wrt.printf(" You are missing %d of %d known %s games\n\n", miss.size(), have.size()+miss.size(), set.info().getName());      
-      for (String h : miss) wrt.println(h);
+      for (Game h : miss)
+      {
+        boolean printCRC = !h.hasMultipleRoms();
+        
+        if (printCRC)
+          wrt.println(h.getTitle()+" CRC32: "+Long.toHexString(h.rom().crc32));
+        else
+          wrt.println(h.getTitle());
+      }
     }
   }
   

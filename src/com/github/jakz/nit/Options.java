@@ -81,7 +81,7 @@ public class Options
     dataPath = dataPaths.stream().map(s -> Paths.get(s)).toArray(i -> new Path[i]);
     mergePath = args.get(Args.DEST_PATH) != null ? Paths.get(args.getString(Args.DEST_PATH)) : null;
     
-    zonePriority = new BiasSet(Location.ITALY, Location.EUROPE, Location.USA, Location.JAPAN);
+    zonePriority = new BiasSet(/*Location.ITALY,*/ Location.EUROPE, Location.USA, Location.JAPAN);
   }
   
   public Options()
