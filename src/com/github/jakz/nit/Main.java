@@ -50,7 +50,7 @@ public class Main
   
   public static void main(String[] args)
   {
-    
+    executeCLI(args, false);
   }
   
   public static void init()
@@ -59,7 +59,7 @@ public class Main
 
   }
   
-  public static void executeCLI(String[] args)
+  public static void executeCLI(String[] args, boolean devMode)
   {  
     UIUtils.setNimbusLNF();
     final Logger logger = Log.getLogger(Main.class);
@@ -74,6 +74,12 @@ public class Main
       System.out.println(rargs);
     
       Command command = rargs.get("command");
+      
+      if (command != Command.ORGANIZE && !devMode)
+      {
+        System.err.println("Only organize command is available through the release build.");
+        return;
+      }
     
       switch (command)
       {
@@ -94,10 +100,10 @@ public class Main
           List<Path> paths = dats.stream().map(Paths::get).collect(Collectors.toList());
           
           List<GameSet> sets = paths.stream()
-              .map(StreamException.rethrowFunction(
-                  path -> Operations.loadClrMameGameSet(Options.simpleDatLoad(path))
-              ))
-              .collect(Collectors.toList());
+            .map(StreamException.rethrowFunction(
+              path -> Operations.loadClrMameGameSet(Options.simpleDatLoad(path))
+                ))
+                  .collect(Collectors.toList());
           
           SimpleFrame<GameSetComparePanel> frame = new SimpleFrame<>("Game Set Compare", new GameSetComparePanel(sets), true);
           frame.setVisible(true);
@@ -175,28 +181,29 @@ public class Main
           break;
         }
       }
-      }
-      catch (ArgumentParserException e)
-      {
-        arguments.handleError(e);
-      }
-      catch (FatalErrorException e)
-      {
-        StackTraceElement[] stack = e.getStackTrace();
-        logger.e("%s at %s.%s(...) : %d",
-            e.getMessage(), 
-            stack[0].getClassName(),
-            stack[0].getMethodName(),
-            stack[0].getLineNumber());
-        e.printStackTrace();
-      }
-      catch (FileNotFoundException e)
-      {
-        logger.e("unable to find specified path: "+e.path);
-      }
-      catch (Exception e)
-      {
-        e.printStackTrace();
-      }
+    }
+    catch (ArgumentParserException e)
+    {
+      arguments.handleError(e);
+    }
+    catch (FatalErrorException e)
+    {
+      StackTraceElement[] stack = e.getStackTrace();
+      logger.e("%s at %s.%s(...) : %d",
+        e.getMessage(), 
+        stack[0].getClassName(),
+        stack[0].getMethodName(),
+        stack[0].getLineNumber()
+      );
+      e.printStackTrace();
+    }
+    catch (FileNotFoundException e)
+    {
+      logger.e("unable to find specified path: "+e.path);
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+    }
   }
 }

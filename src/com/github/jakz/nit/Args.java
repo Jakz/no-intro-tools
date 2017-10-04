@@ -177,7 +177,8 @@ public class Args
       .dest("no-merge")
       .action(Arguments.storeConst())
       .setConst(true)
-      .setDefault(false);
+      .setDefault(false)
+      .help("skip merge, only scan roms, this option overrides any other merge related option");
     
     parser.addArgument("--verify-merge")
       .dest("verify-merge")

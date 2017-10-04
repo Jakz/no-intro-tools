@@ -91,7 +91,7 @@ public class DevMain
     {
       if (args.length > 0)
       {
-        Main.executeCLI(args);
+        Main.executeCLI(args, true);
         return;
       }
       
