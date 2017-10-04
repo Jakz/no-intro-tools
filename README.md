@@ -35,7 +35,7 @@ I'm working with Eclipse and this project relies on other two Maven based projec
 
 Other solutions would have required to be able to get them as Maven dependency but this would have forced me to commit every change and whatever.
 
-To keep this brief: _you can't use the root `pom.xml` to build the project. Rather you must go inside `build` folder and execute `build.sh` which will clone the two dependencies and compile all the source together with Maven based on a different `pom.xml`._ It's ugly I know and it will be fixed one day.
+To keep this brief: __you can't use the root `pom.xml` to build the project. Rather you must go inside `build` folder and execute `build.sh` which will clone the two dependencies and compile all the source together with Maven based on a different `pom.xml`.__ It's ugly I know and it will be fixed one day.
 
 ### Running
 The only enabled subcommand at the moment is `organize`. You can try with
