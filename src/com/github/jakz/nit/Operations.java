@@ -390,9 +390,9 @@ public class Operations
   
   public static void prepareGUIMode(Config config) throws IOException
   {
-    Main.frames = new FrameSet();
+    DevMain.frames = new FrameSet();
     SimpleFrame<LogPanel> logFrame = new SimpleFrame<>("Log", new LogPanel(40,120), false);
-    Main.frames.add("log", logFrame);
+    DevMain.frames.add("log", logFrame);
     Log.setFactory(logFrame.panel(), true);
         
     Map<GameSet, Config.DatEntry> setData = new HashMap<>();
@@ -418,28 +418,28 @@ public class Operations
     frame.setLocationRelativeTo(null);
     frame.setVisible(true);
     
-    Main.frames.add("main", frame);
+    DevMain.frames.add("main", frame);
     
     
   }
   
   public static void openLogFrame() throws IOException
   {
-    Main.frames.get("main");
-    Main.frames.get("log");
+    DevMain.frames.get("main");
+    DevMain.frames.get("log");
       
   }
   
   public static void openConsole() throws IOException
   {
-    SimpleFrame<ConsolePanel> console = Main.frames.get("console");
+    SimpleFrame<ConsolePanel> console = DevMain.frames.get("console");
     
     if (console == null)
     {
       ConsolePanel panel = new ConsolePanel();
       panel.setMySize(1024,768);
       console = new SimpleFrame<>("Console", new ConsolePanel(), true);
-      Main.frames.add("console", console);
+      DevMain.frames.add("console", console);
     }
     
     console.setLocationRelativeTo(null);

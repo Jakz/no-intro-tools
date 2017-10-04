@@ -4,7 +4,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
-import com.github.jakz.nit.Main;
+import com.github.jakz.nit.DevMain;
 
 public class GameSetMenu extends JMenuBar
 {
@@ -14,8 +14,8 @@ public class GameSetMenu extends JMenuBar
     
     JMenuItem showLog = new JMenuItem("Show Log");
     showLog.addActionListener(e -> {
-      Main.frames.get("log").setLocationRelativeTo(Main.frames.get("main"));
-      Main.frames.get("log").setVisible(true);
+      DevMain.frames.get("log").setLocationRelativeTo(DevMain.frames.get("main"));
+      DevMain.frames.get("log").setVisible(true);
     });
     
     viewMenu.add(showLog);

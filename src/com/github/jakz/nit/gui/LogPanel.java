@@ -12,7 +12,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
-import com.github.jakz.nit.Main;
+import com.github.jakz.nit.DevMain;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.LogAttribute;
 import com.pixbits.lib.log.LogScope;
@@ -129,7 +129,7 @@ public class LogPanel extends JPanel implements LoggerFactory, ProgressLogger
     try
     {
       lastProgress = 0;
-      SwingUtilities.invokeAndWait(() -> manager.show(Main.frames.get("main"), message, null));
+      SwingUtilities.invokeAndWait(() -> manager.show(DevMain.frames.get("main"), message, null));
       dialogThread = new Thread(dialogUpdater);
       running = true;
       dialogThread.start();
