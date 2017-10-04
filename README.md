@@ -1,6 +1,6 @@
 ## NoIntro Tools
 
-This program is meant to scan, verify and organize romsets through DATs files released by NoIntro group (more information can be found (here)[http://datomatic.no-intro.org/]). I decided to start working on this because the alternatives are really outdated, or Windows only, or really cumbersome to use.
+This program is meant to scan, verify and organize romsets through DATs files released by NoIntro group (more information can be found [here](http://datomatic.no-intro.org/). I decided to start working on this because the alternatives are really outdated, or Windows only, or really cumbersome to use.
 
 This is really in a alpha stage!
 
@@ -11,7 +11,7 @@ It's able to scan and verify against a DAT, by checking file size, CRC32, SHA-1 
 - archives
 - archives nested inside other archives
 
-All archive types supported by (7-Zip-JBinding)[http://sevenzipjbind.sourceforge.net/] are theoretically supported but for now just ZIP, 7Z and RAR have been tested.
+All archive types supported by [7-Zip-JBinding](http://sevenzipjbind.sourceforge.net/) are theoretically supported but for now just ZIP, 7Z and RAR have been tested.
 
 ### Organizer
 
@@ -26,7 +26,7 @@ The last mode is especially useful to save a lot of space but it requires additi
 
 ### Future an what not
 
-The architecture of the whole project is really modular, most of the structure related stuff comes from another project of mine: (RomLib)[https://github.com/Jakz/romlib], which is a framework supposed to provide generic classes to work on roms and games.
+The architecture of the whole project is really modular, most of the structure related stuff comes from another project of mine: [RomLib](https://github.com/Jakz/romlib), which is a framework supposed to provide generic classes to work on roms and games.
 
 This means that it's easy to parser for a new format which could be supported, it's easy to add custom renamers to provide specific behavior to the organizer and what not. Feel free to contribute or fix/add functionality.
 
