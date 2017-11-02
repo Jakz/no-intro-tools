@@ -93,16 +93,16 @@ public class Options
     verifyMerge = false;
     skipRename = true;
     
-    datPath = Paths.get("dats/gbc.dat");
-    headerPath = Paths.get("dats/headers");
-    cloneDatPath = Paths.get("dats/gbc.xmdb");
+    datPath = null;
+    headerPath = null;
+    cloneDatPath = null;
     
-    dataPath = new Path[] { Paths.get("/Users/jack/Desktop/gbc.zip") };
+    dataPath = new Path[0];
     //dataPath = new Path[] { Paths.get("/Users/jack/Desktop/romset/gb") };
 
-    mergePath = Paths.get("/Users/jack/Desktop/gbcm");
+    mergePath = null;
     
-    wholeArchivePath = Paths.get("/Users/jack/Desktop/gbcm");
+    wholeArchivePath = null;
     
     zonePriority = new BiasSet(Location.EUROPE, Location.USA, Location.JAPAN);
   }

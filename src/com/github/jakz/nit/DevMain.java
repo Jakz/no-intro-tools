@@ -14,6 +14,8 @@ import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.github.jakz.nit.batch.BatchOperations;
+import com.github.jakz.nit.batch.BatchOptions;
 import com.github.jakz.nit.config.Config;
 import com.github.jakz.nit.config.MergeOptions;
 import com.github.jakz.nit.emitter.CreatorOptions;
@@ -71,13 +73,14 @@ public class DevMain
     {
       Options mopt = new Options();  
       BatchOptions bopt = new BatchOptions();
-      Operations.scanFolderForDats(bopt, mopt);
+      BatchOperations.batchScanAndVerify(bopt, mopt);
       if (true)
         return;
     }
-    catch (IOException e)
+    catch (Exception e)
     {
       e.printStackTrace();
+      return;
     }
     
     
