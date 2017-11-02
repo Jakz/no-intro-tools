@@ -1,6 +1,7 @@
 package com.github.jakz.nit;
 
 import java.io.BufferedOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -66,15 +67,29 @@ public class DevMain
   
   public static void main(String[] args)
   {    
+    try
+    {
+      Options mopt = new Options();  
+      BatchOptions bopt = new BatchOptions();
+      Operations.scanFolderForDats(bopt, mopt);
+      if (true)
+        return;
+    }
+    catch (IOException e)
+    {
+      e.printStackTrace();
+    }
+    
+    
     args = new String[] {
         "organize", 
-        "--dat-file", "dats/snes.dat", 
+        "--dat-file", "dats/n64-with-clones.xml", 
         "--dat-format", "logiqx", 
-        "--clones-file", "dats/snes.xmdb",
+        "--clones-file", "dats/n64-with-clones.xmdb",
         
-        //"--roms-path", "/Volumes/RAMDisk/Organized", 
+        "--roms-path", "/Volumes/RAMDisk/Organized", 
         //"--roms-path", "/Volumes/RAMDisk/Organized/Nintendo - SNES - NoIntro 2017-10-03.zip",
-        "--roms-path", "/Volumes/RAMDisk/From", 
+        //"--roms-path", "/Volumes/Vicky/Movies HD/Nintendo - Nintendo 64 [Big Endian]", 
         
         "--fast", 
         "--skip-rename",

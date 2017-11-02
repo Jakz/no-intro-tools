@@ -2,6 +2,7 @@ package com.github.jakz.nit;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 
 import com.github.jakz.nit.config.MergeOptions;
@@ -15,23 +16,18 @@ import net.sourceforge.argparse4j.inf.Namespace;
 
 public class Options
 {
+  public final Log logLevel;
 
-  
-  public Log logLevel;
-  
-
-  public boolean multiThreaded;
+  public final boolean multiThreaded;
   
   public final MergeOptions merge;
   public final VerifierOptions verifier;
   
-  private boolean forceMergeInPlace;
-
-  public boolean alwaysRewriteArchives;
-  public boolean keepUnrecognizedFilesInArchives;
-  public boolean cleanMergePathAfterMerge;
-  public boolean verifyMerge;
-  public boolean skipRename;
+  public final boolean alwaysRewriteArchives;
+  public final boolean keepUnrecognizedFilesInArchives;
+  public final boolean cleanMergePathAfterMerge;
+  public final boolean verifyMerge;
+  public final boolean skipRename;
   
   public DatType datFormat;
   public Path datPath;
@@ -63,8 +59,6 @@ public class Options
     else
       verifier = new VerifierOptions(!args.getBoolean(Args.NO_SIZE_CHECK), !args.getBoolean(Args.NO_MD5_CHECK), !args.getBoolean(Args.NO_SHA1_CHECK), verifyNestedArchives);
 
-    forceMergeInPlace = args.getBoolean(Args.IN_PLACE_MERGE);
-
     alwaysRewriteArchives = args.getBoolean(Args.ALWAYS_REWRITE_ARCHIVES);
     keepUnrecognizedFilesInArchives = args.getBoolean(Args.KEEP_UNRECOGNIZED_FILES);
     cleanMergePathAfterMerge = true;
@@ -92,9 +86,7 @@ public class Options
     verifier = new VerifierOptions();
 
     multiThreaded = false;
-    
-    forceMergeInPlace = false;
-    
+        
     alwaysRewriteArchives = false;
     keepUnrecognizedFilesInArchives = false;
     cleanMergePathAfterMerge = true;
@@ -115,9 +107,36 @@ public class Options
     zonePriority = new BiasSet(Location.EUROPE, Location.USA, Location.JAPAN);
   }
   
+  public Options(Options other)
+  {
+    logLevel = other.logLevel;
+    
+    merge = other.merge;
+    verifier = other.verifier;
+    
+    multiThreaded = other.multiThreaded;
+    
+    alwaysRewriteArchives = other.alwaysRewriteArchives;
+    keepUnrecognizedFilesInArchives = other.keepUnrecognizedFilesInArchives;
+    cleanMergePathAfterMerge = other.cleanMergePathAfterMerge;
+    verifyMerge = other.verifyMerge;
+    skipRename = other.skipRename;
+    
+    datPath = other.datPath;
+    headerPath = other.headerPath;
+    cloneDatPath = other.cloneDatPath;
+    
+    dataPath = Arrays.copyOf(other.dataPath, other.dataPath.length);
+    mergePath = other.mergePath;
+    wholeArchivePath = other.wholeArchivePath;
+    
+    zonePriority = other.zonePriority; 
+  }
+  
+  
   //TODO: not correct, if merge in place it should be original path of rom or force 1 data path max
-  public Path mergePath() { return forceMergeInPlace ? dataPath[0] : mergePath; }
-  public boolean doesMergeInPlace() { return forceMergeInPlace || dataPath.equals(mergePath); } 
+  public Path mergePath() { return merge.forceMergeInPlace ? dataPath[0] : mergePath; }
+  public boolean doesMergeInPlace() { return merge.forceMergeInPlace || dataPath.equals(mergePath); } 
   
   public static Options simpleDatLoad(Path path)
   {

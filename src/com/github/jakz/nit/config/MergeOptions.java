@@ -34,12 +34,13 @@ public class MergeOptions
     
   };
   
-  public Mode mode;
-  public ArchiveFormat archiveFormat;
-  public boolean useSolidArchives;
-  public int compressionLevel;
-  public boolean forceFolderPerGameStructure;
-  public boolean automaticallyMergeClonesForSameNormalizedNames;
+  public final Mode mode;
+  public final ArchiveFormat archiveFormat;
+  public final boolean useSolidArchives;
+  public final int compressionLevel;
+  public final boolean forceMergeInPlace;
+  public final boolean forceFolderPerGameStructure;
+  public final boolean automaticallyMergeClonesForSameNormalizedNames;
   
   public MergeOptions()
   {
@@ -47,6 +48,7 @@ public class MergeOptions
     archiveFormat = ArchiveFormat._7ZIP;
     useSolidArchives = true;
     compressionLevel = 9;
+    forceMergeInPlace = false;
     forceFolderPerGameStructure = false;
     automaticallyMergeClonesForSameNormalizedNames = false;
   }
@@ -61,7 +63,19 @@ public class MergeOptions
     archiveFormat = ArchiveFormat._7ZIP;
     useSolidArchives = !args.getBoolean(Args.NO_SOLID_ARCHIVES);
     compressionLevel = args.getInt(Args.COMPRESSION_LEVEL);
+    forceMergeInPlace = args.getBoolean(Args.IN_PLACE_MERGE);
     forceFolderPerGameStructure = args.getBoolean(Args.FORCE_FOLDER_PER_GAME);
     automaticallyMergeClonesForSameNormalizedNames = args.getBoolean(Args.AUTOMATICALLY_CREATE_CLONES);
+  }
+  
+  public MergeOptions(MergeOptions other)
+  {
+    this.mode = other.mode;
+    this.archiveFormat = other.archiveFormat;
+    this.useSolidArchives = other.useSolidArchives;
+    this.compressionLevel = other.compressionLevel;
+    this.forceMergeInPlace = other.forceMergeInPlace;
+    this.forceFolderPerGameStructure = other.forceFolderPerGameStructure;
+    this.automaticallyMergeClonesForSameNormalizedNames = other.automaticallyMergeClonesForSameNormalizedNames;
   }
 }

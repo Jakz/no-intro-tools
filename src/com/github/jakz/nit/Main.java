@@ -114,7 +114,7 @@ public class Main
         case ORGANIZE:
         {
           Options options = new Options(rargs);
-          GameSet set = Operations.loadGameSet(options);
+          GameSet set = Operations.loadGameSet(options, null);
           set.load();
           logger.i("Loaded '%s' romset, composed by %d roms in %d games", set.info().getName(), set.info().romCount(), set.info().gameCount());
           

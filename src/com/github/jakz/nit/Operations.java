@@ -9,12 +9,16 @@ import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -37,12 +41,14 @@ import com.github.jakz.romlib.data.game.Rom;
 import com.github.jakz.romlib.data.platforms.Platform;
 import com.github.jakz.romlib.data.set.CloneSet;
 import com.github.jakz.romlib.data.set.DataSupplier;
+import com.github.jakz.romlib.data.set.Feature;
 import com.github.jakz.romlib.data.set.GameList;
 import com.github.jakz.romlib.data.set.GameSet;
 import com.github.jakz.romlib.data.set.GameSetAttribute;
 import com.github.jakz.romlib.data.set.Provider;
 import com.github.jakz.romlib.parsers.LogiqxXMLHandler;
 import com.github.jakz.romlib.parsers.XMDBHandler;
+import com.pixbits.lib.io.FileUtils;
 import com.pixbits.lib.io.FolderScanner;
 import com.pixbits.lib.io.archive.HandleSet;
 import com.pixbits.lib.io.archive.Scanner;
@@ -80,9 +86,9 @@ public class Operations
   }
   
   
-  public static GameSet loadGameSet(Options options) throws IOException, SAXException
+  public static GameSet loadGameSet(Options options, DatType forcedFormat) throws IOException, SAXException
   {
-    DatType format = guessFormat(options);
+    DatType format = forcedFormat != null ? forcedFormat : guessFormat(options);
     
     GameSet set = null;
     
@@ -107,7 +113,13 @@ public class Operations
     if (options.cloneDatPath != null)
     {
       CloneSet clones = loadCloneSetFromXMDB(set, options.cloneDatPath);
-      set.setClones(clones);
+      
+      //FIXME: add option to force or skip this check
+      String cloneVersion = clones.attributes().get("version");
+      if (set.info().getVersion() != null && cloneVersion != null && !set.info().getVersion().equals(cloneVersion))
+        logger.w("Skipping assigning clones for %s because clone set version doesn't match (%s != %s)", set.info().getName(), set.info().getVersion(), cloneVersion);
+      else
+        set.setClones(clones);
     }
     
     return set;
@@ -121,6 +133,7 @@ public class Operations
     
     GameSet set = new GameSet(Platform.of(name), new Provider(name, "", null), supplier.list, null);
     set.info().setAttribute(GameSetAttribute.NAME, supplier.setAttributes.get("name"));
+    set.info().setAttribute(GameSetAttribute.VERSION, supplier.setAttributes.get("version"));
     //TODO: add others
     return set;
   }
@@ -265,10 +278,7 @@ public class Operations
         } 
       }
     };
-    
-    options.verifier.matchMD5 = false;
-    options.verifier.matchSHA1 = false;
-      
+
     final VerifierHelper<Rom> verifier = new VerifierHelper<Rom>(options.verifier, options.multiThreaded, set.hashCache(), callback);
     
     verifier.setReporter(r -> {
@@ -381,11 +391,121 @@ public class Operations
     }
   }
   
-  private Set<Path> scanFolderForDats(Path path) throws IOException
-  {
-    PathMatcher datMatcher = FileSystems.getDefault().getPathMatcher("glob:*.dat");
+  public static void scanFolderForDats(BatchOptions boptions, Options options) throws IOException
+  {    
+    Logger logger = Log.getLogger("BatchScanner");
+
+    PathMatcher datMatcher = boptions.getPathMatcher();
     FolderScanner scanner = new FolderScanner(datMatcher, false);
-    return scanner.scan(path);
+    
+    Set<Path> paths = scanner.scan(boptions.datFolder);
+    
+    Map<String, List<GameSet>> sets = new HashMap<>();
+    Map<GameSet, Path> pathMapForOptionalDeletion = new HashMap<>();
+    
+    /* load DATs */
+    for (Path cpath : paths)
+    {
+      Options coptions = new Options(options);
+      coptions.datPath = cpath;
+      
+      /* check if the same file as xmdb exists and use it as clone set in case */
+      Path xmdbPath = cpath.getParent().resolve(Paths.get(FileUtils.fileNameWithoutExtension(cpath) + ".xmdb"));
+      coptions.cloneDatPath = Files.exists(xmdbPath) ? xmdbPath : null;
+
+      final DatType format = boptions.forcedformat;
+      
+      try
+      {
+        GameSet set = loadGameSet(coptions, format);
+        sets.computeIfAbsent(set.info().getName(), n -> new ArrayList<>()).add(set);
+        pathMapForOptionalDeletion.put(set, cpath);
+      }
+      catch (Exception e)
+      {
+        logger.e("Error parsing %s as %s, probably wrong format? (%s)", cpath, format.name, e.getMessage());
+      }
+    }
+    
+    logger.i("Found %d DATs for %d systems..", sets.values().stream().mapToInt(List::size).sum(), sets.size());
+   
+    /* if multiple DATs are found with same name we need a way to keep only most updated one */
+    Set<GameSet> finalSets = new HashSet<>();
+    for (Map.Entry<String, List<GameSet>> e : sets.entrySet())
+    {
+      List<GameSet> setsForPlatform = e.getValue();
+      
+      if (setsForPlatform.size() > 1)
+      {
+        logger.w("Multiple DATs found for name %s", e.getKey());
+        
+        /* let's classify DATs */
+        BatchOptions.BatchDatClassification classification = boptions.datClassifier.apply(setsForPlatform);
+        
+        for (GameSet set : classification.revisions)
+          logger.i3("  > %s (revision)", set.info().getVersion());
+        for (GameSet set : classification.notVersionable)
+          logger.i3("  > %s (non versioned)", set.info().getVersion());
+        
+        if (classification.revisions.isEmpty())
+        {
+          logger.w("Only non versionable DATs found for %s, choosing a random one", e.getKey());
+          finalSets.add(classification.notVersionable.get(0));
+        }
+        else
+        {
+          GameSet goodSet = classification.revisions.get(0);
+          finalSets.add(goodSet);
+
+          /* delete old DATs if they are versioned and older than most updated one found */
+          if (boptions.deleteLessRecentDats)
+          {
+            Path goodPath = pathMapForOptionalDeletion.get(goodSet);
+            for (int i = 1; i < classification.revisions.size(); ++i)
+            {
+              Path toDeletePath = pathMapForOptionalDeletion.get(classification.revisions.get(i));
+              logger.i("Deleting DAT at %s (%s) because it's superseded by %s (%s)", 
+                  toDeletePath.toString(),
+                  classification.revisions.get(i).info().getVersion(),
+                  goodPath.toString(),
+                  goodSet.info().getVersion()
+              );
+              //TODO: add actual deletion
+            }
+          }
+        }
+      }
+      else
+        finalSets.add(setsForPlatform.get(0));    
+    }
+    
+    logger.i("Pruned %d sets from batch processing", sets.values().stream().mapToInt(List::size).sum() - finalSets.size());
+    logger.i("Loaded %d game sets:", finalSets.size());
+    
+    long uniqueGames = 0L, totalGames = 0L, totalRoms = 0L, totalBytes = 0L;
+    
+    for (GameSet set : finalSets)
+    {
+      set.load();
+      
+      uniqueGames += set.info().uniqueGameCount();
+      totalGames += set.info().gameCount();
+      totalRoms += set.info().romCount();
+      totalBytes += set.info().sizeInBytes();
+      
+      String countString = set.hasFeature(Feature.CLONES) ? 
+          String.format("%d/%d%d roms/games/unique", set.info().romCount(), set.info().gameCount(), set.info().uniqueGameCount())
+          : String.format("%d/%d roms/games", set.info().romCount(), set.info().gameCount());
+          
+      logger.i("  %s (%s) (%s) (%s)", 
+          set.info().getName(), 
+          set.info().getVersion(), 
+          countString,
+          StringUtils.humanReadableByteCount(set.info().sizeInBytes())
+      );
+    }
+    
+    logger.i("Total: %d/%d/%d roms/games/unique in %s", totalRoms, totalGames, uniqueGames, StringUtils.humanReadableByteCount(totalBytes));
   }
   
   public static void prepareGUIMode(Config config) throws IOException
@@ -399,7 +519,7 @@ public class Operations
     
     List<GameSet> sets = config.dats.stream().map(StreamException.rethrowFunction(d -> {
       Path p = d.datFile;
-      GameSet set = Operations.loadGameSet(Options.simpleDatLoad(p));
+      GameSet set = Operations.loadGameSet(Options.simpleDatLoad(p), null);
       
       Path optionalXMDB = d.xmdbFile;
       
@@ -419,8 +539,6 @@ public class Operations
     frame.setVisible(true);
     
     DevMain.frames.add("main", frame);
-    
-    
   }
   
   public static void openLogFrame() throws IOException
