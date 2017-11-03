@@ -19,6 +19,7 @@ import java.util.TreeSet;
 import com.github.jakz.nit.DatType;
 import com.github.jakz.nit.Operations;
 import com.github.jakz.nit.Options;
+import com.github.jakz.romlib.data.game.Rom;
 import com.github.jakz.romlib.data.set.Feature;
 import com.github.jakz.romlib.data.set.GameSet;
 import com.pixbits.lib.io.FileUtils;
@@ -58,6 +59,7 @@ public class BatchOperations
       try
       {
         GameSet set = Operations.loadGameSet(coptions, format);
+        logger.i("Loaded %s (%s)", set.info().getName(), set.info().getVersion());
         sets.computeIfAbsent(set.info().getName(), n -> new ArrayList<>()).add(set);
         pathMapForOptionalDeletion.put(set, cpath);
       }
@@ -155,12 +157,16 @@ public class BatchOperations
 
   private static void printStatisticsOnResults(Set<BatchVerifyResult> results)
   {
-    logger.i("Verified %d sets: ", results.size());
+    long verified = results.stream().filter(r -> !r.skipped).count();
+    logger.i("Verified %d sets: ", results.stream().filter(r -> !r.skipped).count());
     for (BatchVerifyResult r : results)
     {
+      if (r.skipped)
+        continue;
+      
       GameSet set = r.set;
       
-      logger.i("  %s (%s): found %d/%d (%2.2f%%) roms%s", 
+      logger.i("  %s (%s): found %d/%d roms (%2.2f%%) %s", 
           set.info().getName(),
           set.info().getVersion(),
           r.getFoundRomCount(),
@@ -169,11 +175,42 @@ public class BatchOperations
           r.getFoundRomCount() == set.info().romCount() ? " (complete)" : ""
       );
     }
+    
+    long skipped = results.size() - verified;
+    if (skipped > 0)
+    {
+      logger.i("Skipped %d sets:", skipped);
+      for (BatchVerifyResult r : results)
+      {
+        if (r.skipped)
+        {
+          logger.i(" %s (%s)", r.set.info().getName(), r.set.info().getVersion());
+        }
+      }
+    }
+  }
+  
+  private static void printMissingRoms(Set<BatchVerifyResult> results)
+  {
+    for (BatchVerifyResult r : results)
+    {
+      GameSet set = r.set;
+      if (!r.skipped && r.getFoundRomCount() != set.info().romCount())
+      {
+        logger.i("Missing %d roms for %s (%s):", set.info().romCount() - r.getFoundRomCount(), set.info().getName(), set.info().getVersion());
+        for (Rom rom : r.missingRoms)
+        {
+          logger.i("  %s (%s)", rom.name, Long.toHexString(rom.crc32));
+        }
+        
+      }
+    }
   }
   
   private static BatchVerifyResult scanAndVerifySet(GameSet set, BatchOptions boptions, Options options) throws IOException, NoSuchAlgorithmException
   {
     Path path = boptions.getRomPath(set);
+    boolean skipped = true;
     
     if (path == null)
       logger.w("Skipping set %s because no path to scan is specified", set.info().getName());
@@ -181,16 +218,16 @@ public class BatchOperations
       logger.w("Skipping set %s because path %s doesn't exist", set.info().getName(), path.toString());
     else
     {
+      skipped = false;
       logger.i("Scanning entries for set %s" , set.info().getName());
  
       ScannerOptions soptions = new ScannerOptions();          
       HandleSet handles = Operations.scanEntriesForGameSet(set, Collections.singletonList(path), soptions, true);
       
       Operations.verifyGameSet(set, handles, options);
-      return new BatchVerifyResult(set, path);
     }
     
-    return null;
+    return new BatchVerifyResult(set, path, skipped);
   }
 
   
@@ -214,5 +251,6 @@ public class BatchOperations
     }
     
     printStatisticsOnResults(results);
+    printMissingRoms(results);
   }
 }

@@ -10,6 +10,7 @@ import com.github.jakz.romlib.data.set.GameSet;
 
 public class BatchVerifyResult
 {
+  public final boolean skipped;
   public final Path scanPath;
   public final GameSet set;
   
@@ -18,8 +19,9 @@ public class BatchVerifyResult
   
   public final List<Rom> missingRoms;
   
-  public BatchVerifyResult(GameSet set, Path scanPath)
+  public BatchVerifyResult(GameSet set, Path scanPath, boolean skipped)
   {
+    this.skipped = skipped;
     this.set = set;
     this.scanPath = scanPath;
     

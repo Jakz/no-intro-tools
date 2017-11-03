@@ -75,30 +75,7 @@ public class BatchOptions
     Map<String, Path> romPaths = new HashMap<>();
     
     Path base = Paths.get("/Volumes/Vicky/Roms/sets/No Intro/new nointro/");
-    
-    String[] mapping = new String[] {      
-      "Atari - 2600",
-      "to verify/Atari - 2600.zip",
-      
-      "Atari - 5200",
-      "Atari - 5200 - NoIntro 2013-03-03.zip",
-      
-      "Atari - Jaguar",
-      "to verify/Atari - Jaguar.zip",
-      
-      "Commodore - 64 (PP)",
-      "to verify/Commodore - 64 (PP).zip",
-      
-      "Commodore - 64 (Tapes)",
-      "to verify/Commodore - 64 (Tapes).zip",
-      
-      "Nintendo - Game Boy Color",  
-      "Nintendo - GameBoy Color - NoIntro 2017-09-08.zip",
-    };
-    
-    for (int i = 0; i < mapping.length/2; ++i)
-      romPaths.put(mapping[i*2], base.resolve(mapping[i*2 + 1]));
 
-    setToPathMapper = SetToPathMapper.of(romPaths);
+    setToPathMapper = SetToPathMapper.ofDefaultNamingInFolder(base);
   }
 }

@@ -214,19 +214,6 @@ public class Operations
     
     skipped.forEach(s -> logger.i3("> %s", s));
     
-    /*GsonBuilder builder = new GsonBuilder();
-    builder.setPrettyPrinting();
-    builder.registerTypeHierarchyAdapter(Handle.class, new JsonHandleAdapter());
-    builder.registerTypeHierarchyAdapter(Path.class, new PathAdapter());
-    
-    Gson gson = builder.create();
-    
-    try (FileWriter wrt = new FileWriter("test.json"))
-    {
-      gson.toJson(handles.stream().collect(Collectors.toList()), new TypeToken<List<Handle>>(){}.getType(), wrt);
-    }*/
-    
-    
     return handles;
   }
   
