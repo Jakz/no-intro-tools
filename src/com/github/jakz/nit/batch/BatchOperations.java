@@ -14,7 +14,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+
+import org.xml.sax.SAXException;
 
 import com.github.jakz.nit.DatType;
 import com.github.jakz.nit.Operations;
@@ -22,10 +26,15 @@ import com.github.jakz.nit.Options;
 import com.github.jakz.romlib.data.game.Rom;
 import com.github.jakz.romlib.data.set.Feature;
 import com.github.jakz.romlib.data.set.GameSet;
+import com.github.jakz.romlib.data.set.GameSetInfo;
+import com.github.jakz.romlib.parsers.ClrMameProProfileParser;
+import com.github.jakz.romlib.parsers.LogiqxXMLHandler;
+import com.github.jakz.romlib.parsers.LogiqxXMLHandler.Data;
 import com.pixbits.lib.io.FileUtils;
 import com.pixbits.lib.io.FolderScanner;
 import com.pixbits.lib.io.archive.HandleSet;
 import com.pixbits.lib.io.archive.ScannerOptions;
+import com.pixbits.lib.io.xml.XMLParser;
 import com.pixbits.lib.lang.StringUtils;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
@@ -33,6 +42,19 @@ import com.pixbits.lib.log.Logger;
 public class BatchOperations
 {
   private final static Logger logger = Log.getLogger(BatchOperations.class);
+  
+  public static Set<GameSetInfo> loadExpectedGameSetList(BatchOptions boptions, Options options) throws IOException, SAXException
+  {
+    if (boptions.expectedSetsList != null)
+    {
+      ClrMameProProfileParser xparser = new ClrMameProProfileParser();
+      XMLParser<Set<GameSetInfo>> parser = new XMLParser<>(xparser);
+      parser.load(boptions.expectedSetsList);
+      return xparser.get();
+    }
+    else
+      return Collections.emptySet();
+  }
   
   public static Set<GameSet> batchLoadGameSetsFromFolder(BatchOptions boptions, Options options) throws IOException
   {    
@@ -125,11 +147,17 @@ public class BatchOperations
     return finalSets;
   }
   
-  private static void printStatisticsOnGameSets(Set<GameSet> sets)
+  private static void printStatisticsOnGameSets(Set<GameSet> sets, Set<GameSetInfo> expected)
   {
     logger.i("Loaded %d game sets:", sets.size());
     
     long uniqueGames = 0L, totalGames = 0L, totalRoms = 0L, totalBytes = 0L;
+    
+    boolean hasExpectedMap = expected != null && !expected.isEmpty();
+    Map<String, String> versionMap = new TreeMap<>();
+    
+    if (hasExpectedMap)
+      expected.forEach(g -> versionMap.put(g.getName(), g.getVersion()));
     
     for (GameSet set : sets)
     {
@@ -144,19 +172,37 @@ public class BatchOperations
           String.format("%d/%d%d roms/games/unique", set.info().romCount(), set.info().gameCount(), set.info().uniqueGameCount())
           : String.format("%d/%d roms/games", set.info().romCount(), set.info().gameCount());
           
-      logger.i("  %s (%s) (%s) (%s)", 
+      boolean isUpdated = !hasExpectedMap || 
+          (versionMap.get(set.info().getName()) != null && versionMap.get(set.info().getName()).equals(set.info().getVersion()));
+          
+      logger.i("  %s (%s) (%s) (%s)%s", 
           set.info().getName(), 
           set.info().getVersion(), 
           countString,
-          StringUtils.humanReadableByteCount(set.info().sizeInBytes())
+          StringUtils.humanReadableByteCount(set.info().sizeInBytes()),
+          isUpdated ? "" : " (outdated)"
       );
     }
     
     logger.i("Total: %d/%d/%d roms/games/unique in %s", totalRoms, totalGames, uniqueGames, StringUtils.humanReadableByteCount(totalBytes));
+    
+    if (hasExpectedMap)
+    {
+      Map<String, GameSet> byNameMap = sets.stream().collect(Collectors.toMap(s -> s.info().getName(), s -> s, (u,v) -> u, TreeMap::new));
+      long missingCount = expected.stream().filter(s -> !byNameMap.containsKey(s.getName())).count();
+      
+      logger.i("Missing %d sets from expected sets:", missingCount);
+      
+      for (GameSetInfo set : expected)
+      {
+        if (!byNameMap.containsKey(set.getName()))
+          logger.i("  %s (%s)", set.getName(), set.getVersion());
+      }
+    }
   }
 
   private static void printStatisticsOnResults(Set<BatchVerifyResult> results)
-  {
+  {    
     long verified = results.stream().filter(r -> !r.skipped).count();
     logger.i("Verified %d sets: ", results.stream().filter(r -> !r.skipped).count());
     for (BatchVerifyResult r : results)
@@ -232,12 +278,14 @@ public class BatchOperations
 
   
   
-  public static void batchScanAndVerify(BatchOptions boptions, Options options) throws IOException, NoSuchAlgorithmException
+  public static Set<GameSet> batchScanAndVerify(BatchOptions boptions, Options options) throws IOException, NoSuchAlgorithmException, SAXException
   {
     Set<GameSet> sets = batchLoadGameSetsFromFolder(boptions, options);
     Set<BatchVerifyResult> results = new TreeSet<BatchVerifyResult>((r1, r2) -> r1.set.info().getName().compareToIgnoreCase(r2.set.info().getName()));
     
-    printStatisticsOnGameSets(sets);
+    Set<GameSetInfo> expected = loadExpectedGameSetList(boptions, options);
+
+    printStatisticsOnGameSets(sets, expected);
 
     for (GameSet set : sets)
     {
@@ -252,5 +300,7 @@ public class BatchOperations
     
     printStatisticsOnResults(results);
     printMissingRoms(results);
+        
+    return sets;
   }
 }

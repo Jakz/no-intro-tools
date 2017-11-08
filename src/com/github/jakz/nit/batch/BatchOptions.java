@@ -25,6 +25,9 @@ public class BatchOptions
   
   private SetToPathMapper setToPathMapper;
   
+  public final Path expectedSetsList;
+
+  
   public PathMatcher getPathMatcher()
   { 
     return FileSystems.getDefault().getPathMatcher("glob:*.{dat,xml}");
@@ -40,6 +43,8 @@ public class BatchOptions
     datFolder = Paths.get("dats2/");
     forcedformat = DatType.LOGIQX;
 
+    expectedSetsList = Paths.get("dats2/profile.xml");
+    
     deleteLessRecentDats = true;
 
     datClassifier = sets -> {
