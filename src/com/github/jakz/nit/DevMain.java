@@ -40,11 +40,14 @@ import com.github.jakz.romlib.data.set.GameSet;
 import com.github.jakz.romlib.data.set.Provider;
 import com.github.jakz.romlib.parsers.LogiqxXMLHandler;
 import com.github.jakz.romlib.parsers.XMDBHandler;
+import com.github.jakz.romlib.support.header.Rule;
+import com.github.jakz.romlib.support.header.SkipHeaderHandle;
 import com.pixbits.lib.exceptions.FatalErrorException;
 import com.pixbits.lib.exceptions.FileNotFoundException;
 import com.pixbits.lib.functional.StreamException;
 import com.pixbits.lib.io.archive.HandleSet;
 import com.pixbits.lib.io.archive.ScannerOptions;
+import com.pixbits.lib.io.archive.handles.Handle;
 import com.pixbits.lib.log.Log;
 import com.pixbits.lib.log.Logger;
 import com.pixbits.lib.log.ProgressLoggerFactory;
@@ -69,13 +72,19 @@ public class DevMain
   
   public static void main(String[] args)
   {    
+    if (true)
+    {
+    
     try
     {
       Options mopt = new Options();  
       BatchOptions bopt = new BatchOptions();
+      
+      bopt.handleTransformers.put("Nintendo - Family Computer Disk System", handle -> new SkipHeaderHandle((Handle)handle, Rule.of("FDS", 16)));
+      bopt.handleTransformers.put("Atari - 7800", handle -> new SkipHeaderHandle((Handle)handle, Rule.of(new byte[] { 0x01, 'A', 'T', 'A', 'R', 'I', '7', '8', '0', '0', 0, 0, 0, 0, 0, 0 }, 128)));
+      
       BatchOperations.batchScanAndVerify(bopt, mopt);
-      if (true)
-        return;
+      return;
     }
     catch (Exception e)
     {
@@ -83,15 +92,17 @@ public class DevMain
       return;
     }
     
+    }
+    
     
     args = new String[] {
         "organize", 
-        "--dat-file", "dats/n64-with-clones.xml", 
+        "--dat-file", "dats3/Sega - PICO (20170401-091705).dat", 
         "--dat-format", "logiqx", 
-        "--clones-file", "dats/n64-with-clones.xmdb",
+        "--clones-file", "dats3/Sega - PICO (20170401-091705).xmdb",
         
-        "--roms-path", "/Volumes/RAMDisk/Organized", 
-        //"--roms-path", "/Volumes/RAMDisk/Organized/Nintendo - SNES - NoIntro 2017-10-03.zip",
+        //"--roms-path", "/Volumes/Vicky/Roms/sets/No Intro/new nointro/Sega - PICO", 
+        "--roms-path", "/Volumes/RAMDisk/Organized/Sega - PICO.zip",
         //"--roms-path", "/Volumes/Vicky/Movies HD/Nintendo - Nintendo 64 [Big Endian]", 
         
         "--fast", 
@@ -162,7 +173,7 @@ public class DevMain
       soptions.scanSubfolders = true;
       soptions.multithreaded = false;
       
-      HandleSet handles = Operations.scanEntriesForGameSet(set, Arrays.asList(options.dataPath), soptions, true);
+      HandleSet handles = Operations.scanEntriesForGameSet(set, Arrays.asList(options.dataPath), soptions, options.verifier.transformer == null);
 
       Operations.verifyGameSet(set, handles, options);
       

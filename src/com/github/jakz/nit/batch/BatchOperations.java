@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.xml.sax.SAXException;
@@ -34,6 +35,7 @@ import com.pixbits.lib.io.FileUtils;
 import com.pixbits.lib.io.FolderScanner;
 import com.pixbits.lib.io.archive.HandleSet;
 import com.pixbits.lib.io.archive.ScannerOptions;
+import com.pixbits.lib.io.archive.VerifierEntry;
 import com.pixbits.lib.io.xml.XMLParser;
 import com.pixbits.lib.lang.StringUtils;
 import com.pixbits.lib.log.Log;
@@ -188,15 +190,38 @@ public class BatchOperations
     
     if (hasExpectedMap)
     {
-      Map<String, GameSet> byNameMap = sets.stream().collect(Collectors.toMap(s -> s.info().getName(), s -> s, (u,v) -> u, TreeMap::new));
-      long missingCount = expected.stream().filter(s -> !byNameMap.containsKey(s.getName())).count();
+      final Map<String, GameSet> byNameMap = sets.stream().collect(Collectors.toMap(s -> s.info().getName(), s -> s, (u,v) -> u, TreeMap::new));
+
+
       
-      logger.i("Missing %d sets from expected sets:", missingCount);
-      
-      for (GameSetInfo set : expected)
       {
-        if (!byNameMap.containsKey(set.getName()))
-          logger.i("  %s (%s)", set.getName(), set.getVersion());
+        long outdatedCount = sets.stream()
+            .filter(s -> versionMap.containsKey(s.info().getName()))
+            .filter(s -> !s.info().getVersion().equals(versionMap.get(s.info().getName())))
+            .count();
+        
+        logger.i("Found %d outdated sets:", outdatedCount);
+
+        for (GameSet set : sets)
+        {
+          String version = versionMap.get(set.info().getName());
+          
+          if (version != null && !version.equals(set.info().getVersion()))
+            logger.i("  %s %s (last: %s)", set.info().getName(), set.info().getVersion(), version);        
+        }
+      }
+      
+      
+      {
+        long missingCount = expected.stream().filter(s -> !byNameMap.containsKey(s.getName())).count();
+        
+        logger.i("Missing %d sets from expected sets:", missingCount);
+        
+        for (GameSetInfo set : expected)
+        {
+          if (!byNameMap.containsKey(set.getName()))
+            logger.i("  %s (%s)", set.getName(), set.getVersion());
+        }
       }
     }
   }
@@ -266,9 +291,14 @@ public class BatchOperations
     {
       skipped = false;
       logger.i("Scanning entries for set %s" , set.info().getName());
+      
+      Function<VerifierEntry, VerifierEntry> transformer = boptions.handleTransformers.get(set.info().getName());
+      
+      if (transformer != null)
+        options.verifier.transformer = transformer;
  
       ScannerOptions soptions = new ScannerOptions();          
-      HandleSet handles = Operations.scanEntriesForGameSet(set, Collections.singletonList(path), soptions, true);
+      HandleSet handles = Operations.scanEntriesForGameSet(set, Collections.singletonList(path), soptions, transformer == null);
       
       Operations.verifyGameSet(set, handles, options);
     }
@@ -289,7 +319,7 @@ public class BatchOperations
 
     for (GameSet set : sets)
     {
-      BatchVerifyResult result = scanAndVerifySet(set, boptions, options);
+      BatchVerifyResult result = scanAndVerifySet(set, boptions, new Options(options));
       
       if (result != null)
       {

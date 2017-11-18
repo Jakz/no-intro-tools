@@ -13,6 +13,7 @@ import java.util.function.Function;
 
 import com.github.jakz.nit.DatType;
 import com.github.jakz.romlib.data.set.GameSet;
+import com.pixbits.lib.io.archive.VerifierEntry;
 
 public class BatchOptions
 {
@@ -20,6 +21,8 @@ public class BatchOptions
   public final DatType forcedformat;
   
   public final Function<List<GameSet>, BatchDatClassification> datClassifier;
+  
+  public final Map<String, Function<VerifierEntry, VerifierEntry>> handleTransformers;
   
   public final boolean deleteLessRecentDats;
   
@@ -40,7 +43,7 @@ public class BatchOptions
   
   public BatchOptions()
   {
-    datFolder = Paths.get("dats2/");
+    datFolder = Paths.get("dats3/");
     forcedformat = DatType.LOGIQX;
 
     expectedSetsList = Paths.get("dats2/profile.xml");
@@ -82,5 +85,7 @@ public class BatchOptions
     Path base = Paths.get("/Volumes/Vicky/Roms/sets/No Intro/new nointro/");
 
     setToPathMapper = SetToPathMapper.ofDefaultNamingInFolder(base);
+    
+    handleTransformers = new HashMap<>();
   }
 }
