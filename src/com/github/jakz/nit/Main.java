@@ -119,7 +119,7 @@ public class Main
           logger.i("Loaded '%s' romset, composed by %d roms in %d games", set.info().getName(), set.info().romCount(), set.info().gameCount());
           
           ScannerOptions soptions = new ScannerOptions();          
-          HandleSet handles = Operations.scanEntriesForGameSet(set, Arrays.asList(options.dataPath), soptions, options.verifier.transformer == null);
+          HandleSet handles = Operations.scanEntriesForGameSet(set, Arrays.asList(options.dataPath), soptions, !options.verifier.hasTransformer());
           
           if (set.hasFeature(Feature.SHARED_ROM_BETWEEN_GAMES))
             logger.w("Romset has roms which are shared between multiple games, this implies that multiple copies are expected");

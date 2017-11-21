@@ -119,7 +119,7 @@ public class Operations
       
       //FIXME: add option to force or skip this check
       String cloneVersion = clones.attributes().get("version");
-      if (set.info().getVersion() != null && cloneVersion != null && !set.info().getVersion().equals(cloneVersion))
+      if (set.info().getVersion() != null && cloneVersion != null && !set.info().getVersion().equals(cloneVersion) && !options.ignoreMismatchCloneVersion)
         logger.w("Skipping assigning clones for %s because clone set version doesn't match (%s != %s)", set.info().getName(), set.info().getVersion(), cloneVersion);
       else
         set.setClones(clones);
@@ -225,6 +225,7 @@ public class Operations
     AtomicInteger binaryCount = new AtomicInteger();
     AtomicInteger archiveCount = new AtomicInteger();
     AtomicInteger nestedCount = new AtomicInteger();
+    AtomicInteger extraCount = new AtomicInteger();
     AtomicInteger totalVerified = new AtomicInteger();
     
     final int totalCount = handles.size();
@@ -241,6 +242,8 @@ public class Operations
           archiveCount.getAndIncrement();
         else if (handle instanceof NestedArchiveHandle)
           nestedCount.getAndIncrement();
+        else
+          extraCount.getAndIncrement();
         
         int current = totalVerified.incrementAndGet();
         
@@ -281,7 +284,7 @@ public class Operations
     
     verifier.verify(handles);
     
-    logger.i1("Found %d verified roms", binaryCount.get() + archiveCount.get() + nestedCount.get());
+    logger.i1("Found %d verified roms", binaryCount.get() + archiveCount.get() + nestedCount.get() + extraCount.get());
   }
   
   public static void duplicateSharedRomsIfNeeded(GameSet set, Options options)

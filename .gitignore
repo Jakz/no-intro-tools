@@ -1,1 +1,5 @@
 target
+doc/**
+dats*/
+config.json
+*.log

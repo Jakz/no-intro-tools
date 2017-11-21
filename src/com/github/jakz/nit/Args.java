@@ -29,6 +29,7 @@ public class Args
   public final static String NO_MD5_CHECK = "no-md5";
   public final static String NO_SIZE_CHECK = "no-size";
   public final static String NO_NESTED_ARCHIVES = "no-nested";
+  public final static String CLONE_IGNORE_MISMATCH = "clone-ignore-mismatch";
   
   public final static String DATA_PATH = "data-path";
   public final static String DAT_FORMAT = "dat-format";
@@ -153,6 +154,13 @@ public class Args
       .dest(CLONE_PATH)
       .type(String.class)
       .help("path to clones definition file");
+    
+    parser.addArgument("--ignore-clones-mismatch")
+      .dest(CLONE_IGNORE_MISMATCH)
+      .help("accept mismatch of versions between game set and clone set")
+      .action(Arguments.storeConst())
+      .setConst(true)
+      .setDefault(false);
     
     parser.addArgument("--header-file", "--header")
       .dest(HEADER_PATH)

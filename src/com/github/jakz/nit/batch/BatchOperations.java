@@ -1,11 +1,17 @@
 package com.github.jakz.nit.batch;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,6 +24,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.xml.sax.SAXException;
 
@@ -136,7 +144,12 @@ public class BatchOperations
                   goodPath.toString(),
                   goodSet.info().getVersion()
               );
-              //TODO: add actual deletion
+              Files.delete(toDeletePath);
+              
+              Path toDeleteClonePath = toDeletePath.getParent().resolve(FileUtils.fileNameWithoutExtension(toDeletePath) + ".xmdb");
+              
+              if (Files.exists(toDeleteClonePath))
+                Files.delete(toDeleteClonePath);
             }
           }
         }
@@ -192,8 +205,6 @@ public class BatchOperations
     {
       final Map<String, GameSet> byNameMap = sets.stream().collect(Collectors.toMap(s -> s.info().getName(), s -> s, (u,v) -> u, TreeMap::new));
 
-
-      
       {
         long outdatedCount = sets.stream()
             .filter(s -> versionMap.containsKey(s.info().getName()))
@@ -278,6 +289,219 @@ public class BatchOperations
     }
   }
   
+  private static class ASCIITablePrinter
+  {
+    private final PrintWriter wrt;
+    
+    private enum Padding
+    {
+      LEFT,
+      RIGHT,
+      CENTER
+    };
+    
+    private class ColumnSpec
+    {
+      String name;
+      int width;
+      int margin;
+      
+      Padding titlePadding;
+      Padding rowPadding;
+    }
+    
+    private List<ColumnSpec> columns;
+    private List<List<String>> rows;
+    
+    public ASCIITablePrinter(Writer wrt)
+    { 
+      columns = new ArrayList<>();
+      rows = new ArrayList<>();
+      
+      this.wrt = new PrintWriter(wrt);
+    }
+   
+    private void recomputeWidths()
+    {
+      final int cols = columns.size();
+      
+      for (int i = 0; i < cols; ++i)
+      {
+        int j = i;
+               
+        Stream<List<String>> measurer = Stream.concat(Stream.of(columns.stream().map(c -> c.name).collect(Collectors.toList())), rows.stream());
+        columns.get(j).width = measurer.map(row -> row.get(j)).mapToInt(String::length).max().getAsInt();
+      }
+    }
+    
+    public void addRow(List<String> row)
+    {
+      rows.add(row);
+    }
+    
+    public void addColumn(String... names)
+    {
+      for (String name : names)
+      {
+        ColumnSpec column = new ColumnSpec();
+        column.name = name;
+        column.margin = 1;
+        column.titlePadding = Padding.LEFT;
+        column.rowPadding = Padding.RIGHT;
+        columns.add(column);
+      }
+    }
+    
+    public void setRowPadding(Padding... paddings)
+    {
+      if (paddings.length > columns.size())
+        throw new IndexOutOfBoundsException("column index is over total amount of columns");
+      
+      for (int i = 0; i < paddings.length; ++i)
+        columns.get(i).rowPadding = paddings[i];
+    }
+    
+    public void clear()
+    {
+      columns.clear();
+      rows.clear();
+    }
+    
+    public void printSeparator()
+    {
+      wrt.write('+');
+      for (int i = 0; i < columns.size(); ++i)
+      {
+        ColumnSpec col = columns.get(i);
+        
+        for (int j = 0; j < col.width + col.margin*2; ++j)
+          wrt.write("-");
+        wrt.write('+');
+      }
+      wrt.write('\n');
+    }
+    
+    final private Function<Integer, String> rightPadder = i -> "%1$" + i + "s";
+    final private Function<Integer, String> leftPadder = i -> "%1$-" + i + "s";
+    
+    private void pad(int width) { for (int m = 0; m < width; ++m) wrt.write(" "); }
+    private void ln() { wrt.write("\n"); }
+
+    
+    public void printTableRow(List<String> data, boolean isHeader) throws IOException
+    {
+      
+      
+      wrt.write("|");
+      for (int c = 0; c < columns.size(); ++c)
+      {
+        final ColumnSpec column = columns.get(c);
+        final Padding padding = isHeader ? column.titlePadding : column.rowPadding;
+        final int margin = column.margin;
+        final int width = column.width;
+
+        pad(margin);
+        
+        if (padding != Padding.CENTER)
+          wrt.write(String.format(padding == Padding.LEFT ? leftPadder.apply(width) : rightPadder.apply(width), data.get(c)));
+        else
+        {
+          int leftOver = width - data.get(c).length();
+          int leftPad = leftOver / 2 + (leftOver % 2 != 0 ? 1 : 0);
+          int rightPad = leftOver / 2;
+          pad(leftPad);
+          wrt.write(data.get(c));
+          pad(rightPad);
+        }
+        
+        pad(margin);
+        
+        wrt.write("|");
+      }
+      ln();
+    }
+    
+    public void printTable() throws IOException
+    {
+      recomputeWidths();
+      printSeparator();
+      printTableRow(columns.stream().map(c -> c.name).collect(Collectors.toList()), true);
+      printSeparator();
+      for (List<String> row : rows)
+        printTableRow(row, false);
+      printSeparator();
+    }
+  }
+  
+  private static class StatsWriter
+  {
+    private final PrintWriter wrt;
+    
+    StatsWriter(Writer writer)
+    {
+      this.wrt = new PrintWriter(writer);
+    }
+
+    void write(String s, Object... args) throws IOException
+    {
+      wrt.write(String.format(s, args));
+    }
+    
+    void writeln(String s, Object... args) throws IOException
+    {
+      wrt.write(String.format(s, args)+"\n");
+    }
+    
+    void ln() throws IOException { wrt.write("\n"); }
+  }
+  
+  private static void saveStatisticsOnFile(Set<GameSet> sets, Set<GameSetInfo> expected, Set<BatchVerifyResult> results, Path path) throws IOException
+  {
+    try (BufferedWriter wrt = Files.newBufferedWriter(path))
+    {
+      StatsWriter w = new StatsWriter(wrt);
+      ASCIITablePrinter tablePrinter = new ASCIITablePrinter(wrt);
+      
+      w.writeln("Statistics for scan done on "+DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).format(ZonedDateTime.now()));
+
+      w.writeln("\n\nSets: %d found, %d expected, %d missing, %d additional\n", sets.size(), expected.size(), 0, 0);
+      
+      tablePrinter.clear();
+      
+      tablePrinter.addColumn("NAME", "VERSION", "SIZE", "UNIQUE", "GAMES", "ROMS");
+      tablePrinter.setRowPadding(
+          ASCIITablePrinter.Padding.LEFT, 
+          ASCIITablePrinter.Padding.LEFT, 
+          ASCIITablePrinter.Padding.RIGHT,
+          ASCIITablePrinter.Padding.RIGHT,
+          ASCIITablePrinter.Padding.RIGHT,
+          ASCIITablePrinter.Padding.RIGHT
+      );
+      
+      sets.stream().map(set -> Arrays.asList(new String[] {
+          set.info().getName(),
+          set.info().getVersion(),
+          StringUtils.humanReadableByteCount(set.info().sizeInBytes()),
+          Integer.toString(set.info().uniqueGameCount()),
+          Integer.toString(set.info().gameCount()),
+          Integer.toString(set.info().romCount())
+      })).forEach(tablePrinter::addRow);
+      
+      tablePrinter.printTable();
+      
+
+      /*for (List<String> row : table)
+      {
+        w.write("|");
+        for (int c = 0; c < cols; ++c)
+        {
+          w.write(" %1$-" + (columnWidth[c]-2) +"s |" , row.get(c));
+        }
+        w.ln();
+      }*/
+    }
+  }
+  
   private static BatchVerifyResult scanAndVerifySet(GameSet set, BatchOptions boptions, Options options) throws IOException, NoSuchAlgorithmException
   {
     Path path = boptions.getRomPath(set);
@@ -292,10 +516,8 @@ public class BatchOperations
       skipped = false;
       logger.i("Scanning entries for set %s" , set.info().getName());
       
-      Function<VerifierEntry, VerifierEntry> transformer = boptions.handleTransformers.get(set.info().getName());
-      
-      if (transformer != null)
-        options.verifier.transformer = transformer;
+      Function<VerifierEntry, ? extends VerifierEntry> transformer = boptions.handleTransformers.get(set.info().getName());
+      options.verifier.setTransformer(transformer);
  
       ScannerOptions soptions = new ScannerOptions();          
       HandleSet handles = Operations.scanEntriesForGameSet(set, Collections.singletonList(path), soptions, transformer == null);
@@ -330,6 +552,8 @@ public class BatchOperations
     
     printStatisticsOnResults(results);
     printMissingRoms(results);
+    
+    saveStatisticsOnFile(sets, expected, results, boptions.datFolder.resolve("statistics.txt"));
         
     return sets;
   }

@@ -81,7 +81,7 @@ public class DevMain
       BatchOptions bopt = new BatchOptions();
       
       bopt.handleTransformers.put("Nintendo - Family Computer Disk System", handle -> new SkipHeaderHandle((Handle)handle, Rule.of("FDS", 16)));
-      bopt.handleTransformers.put("Atari - 7800", handle -> new SkipHeaderHandle((Handle)handle, Rule.of(new byte[] { 0x01, 'A', 'T', 'A', 'R', 'I', '7', '8', '0', '0', 0, 0, 0, 0, 0, 0 }, 128)));
+      bopt.handleTransformers.put("Atari - 7800", handle -> new SkipHeaderHandle((Handle)handle, Rule.of("ATARI7800", 1, 128)));
       
       BatchOperations.batchScanAndVerify(bopt, mopt);
       return;
@@ -97,12 +97,12 @@ public class DevMain
     
     args = new String[] {
         "organize", 
-        "--dat-file", "dats3/Sega - PICO (20170401-091705).dat", 
+        "--dat-file", "dats3/Nintendo - Game Boy Advance (20171120-075459).dat", 
         "--dat-format", "logiqx", 
-        "--clones-file", "dats3/Sega - PICO (20170401-091705).xmdb",
+        "--clones-file", "dats3/Nintendo - Game Boy Advance (20171120-075459).xmdb",
         
-        //"--roms-path", "/Volumes/Vicky/Roms/sets/No Intro/new nointro/Sega - PICO", 
-        "--roms-path", "/Volumes/RAMDisk/Organized/Sega - PICO.zip",
+        //"--roms-path", "/Volumes/Vicky/Roms/sets/No Intro/new nointro/Nintendo - Game Boy Advance", 
+        "--roms-path", "/Volumes/RAMDisk/Organized/",
         //"--roms-path", "/Volumes/Vicky/Movies HD/Nintendo - Nintendo 64 [Big Endian]", 
         
         "--fast", 
@@ -114,6 +114,8 @@ public class DevMain
         "--merge-mode", "archive-by-clone"
         //, "--force-folder-per-game"
         , "--auto-merge-clones"
+        , "--ignore-clones-mismatch"
+        , "--compression-level", "9"
     };
  
     try
@@ -173,7 +175,7 @@ public class DevMain
       soptions.scanSubfolders = true;
       soptions.multithreaded = false;
       
-      HandleSet handles = Operations.scanEntriesForGameSet(set, Arrays.asList(options.dataPath), soptions, options.verifier.transformer == null);
+      HandleSet handles = Operations.scanEntriesForGameSet(set, Arrays.asList(options.dataPath), soptions, !options.verifier.hasTransformer());
 
       Operations.verifyGameSet(set, handles, options);
       

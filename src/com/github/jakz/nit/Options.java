@@ -33,6 +33,7 @@ public class Options
   public Path datPath;
   public Path headerPath;
   public Path cloneDatPath;
+  public boolean ignoreMismatchCloneVersion;
   
   public Path[] dataPath;
   private Path mergePath;
@@ -70,6 +71,8 @@ public class Options
     headerPath = args.get(Args.HEADER_PATH) != null ? Paths.get(args.getString(Args.HEADER_PATH)) : null;
     cloneDatPath = args.get(Args.CLONE_PATH) != null ? Paths.get(args.getString(Args.CLONE_PATH)) : null;
     
+    ignoreMismatchCloneVersion = args.getBoolean(Args.CLONE_IGNORE_MISMATCH);
+    
     List<String> dataPaths = args.getList(Args.DATA_PATH);
     
     dataPath = dataPaths.stream().map(s -> Paths.get(s)).toArray(i -> new Path[i]);
@@ -96,6 +99,9 @@ public class Options
     datPath = null;
     headerPath = null;
     cloneDatPath = null;
+    
+    ignoreMismatchCloneVersion = true;
+
     
     dataPath = new Path[0];
     //dataPath = new Path[] { Paths.get("/Users/jack/Desktop/romset/gb") };
@@ -125,6 +131,9 @@ public class Options
     datPath = other.datPath;
     headerPath = other.headerPath;
     cloneDatPath = other.cloneDatPath;
+    
+    ignoreMismatchCloneVersion = other.ignoreMismatchCloneVersion;
+
     
     dataPath = Arrays.copyOf(other.dataPath, other.dataPath.length);
     mergePath = other.mergePath;

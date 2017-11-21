@@ -22,7 +22,7 @@ public class BatchOptions
   
   public final Function<List<GameSet>, BatchDatClassification> datClassifier;
   
-  public final Map<String, Function<VerifierEntry, VerifierEntry>> handleTransformers;
+  public final Map<String, Function<VerifierEntry, ? extends VerifierEntry>> handleTransformers;
   
   public final boolean deleteLessRecentDats;
   
