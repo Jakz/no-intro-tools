@@ -24,7 +24,7 @@ import com.github.jakz.nit.gui.GameSetComparePanel;
 import com.github.jakz.nit.gui.SimpleFrame;
 import com.github.jakz.nit.merger.Merger;
 import com.github.jakz.nit.scanner.Renamer;
-import com.github.jakz.romlib.data.cataloguers.NoIntroCataloguer;
+import com.github.jakz.romlib.data.cataloguers.impl.NoIntroCataloguer;
 import com.github.jakz.romlib.data.game.BiasSet;
 import com.github.jakz.romlib.data.game.Game;
 import com.github.jakz.romlib.data.game.GameClone;

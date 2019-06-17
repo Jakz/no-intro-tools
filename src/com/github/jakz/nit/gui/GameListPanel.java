@@ -93,7 +93,7 @@ public class GameListPanel extends JPanel
       else if (value instanceof RomNode)
       {
         Rom rom = (Rom)((RomNode)value).getUserObject();
-        label.setText(rom.name+" ["+StringUtils.humanReadableByteCount(rom.size.bytes())+"]");
+        label.setText(rom.name+" ["+StringUtils.humanReadableByteCount(rom.size())+"]");
         label.setIcon(Icon.ROM.getIcon());
       }
       else if (value instanceof CloneNode)

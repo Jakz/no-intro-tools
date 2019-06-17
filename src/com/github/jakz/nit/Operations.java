@@ -377,7 +377,7 @@ public class Operations
         boolean printCRC = !h.hasMultipleRoms();
         
         if (printCRC)
-          wrt.println(h.getTitle()+" CRC32: "+Long.toHexString(h.rom().crc32));
+          wrt.println(h.getTitle()+" CRC32: "+Long.toHexString(h.rom().crc()));
         else
           wrt.println(h.getTitle());
       }

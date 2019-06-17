@@ -282,7 +282,7 @@ public class BatchOperations
         logger.i("Missing %d roms for %s (%s):", set.info().romCount() - r.getFoundRomCount(), set.info().getName(), set.info().getVersion());
         for (Rom rom : r.missingRoms)
         {
-          logger.i("  %s (%s)", rom.name, Long.toHexString(rom.crc32));
+          logger.i("  %s (%s)", rom.name, Long.toHexString(rom.crc()));
         }
         
       }

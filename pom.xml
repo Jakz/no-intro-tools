@@ -11,7 +11,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jdk.version>1.8</jdk.version>
+    <jdk.version>10</jdk.version>
     <zip7.version>9.20-2.00beta</zip7.version>	
     <argparse4j.version>0.7.0</argparse4j.version>
     <jparsec.version>2.2.1</jparsec.version>
@@ -119,6 +119,11 @@
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
       <version>${gson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>2.1</version>
     </dependency>
   </dependencies>
 </project>

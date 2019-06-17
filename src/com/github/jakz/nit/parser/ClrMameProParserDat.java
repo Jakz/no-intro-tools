@@ -26,7 +26,7 @@ import com.github.jakz.nit.Options;
 import com.github.jakz.nit.data.header.Header;
 import com.github.jakz.nit.merger.TitleNormalizer;
 import com.github.jakz.romlib.data.cataloguers.GameCataloguer;
-import com.github.jakz.romlib.data.cataloguers.NoIntroCataloguer;
+import com.github.jakz.romlib.data.cataloguers.impl.NoIntroCataloguer;
 import com.github.jakz.romlib.data.game.Game;
 import com.github.jakz.romlib.data.game.Rom;
 import com.github.jakz.romlib.data.game.RomSize;

@@ -37,7 +37,7 @@ public class ClrMameProEmitter implements Emitter
         wrt.printf("\tdescription \"%s\"\n", game.getDescription());
         
         game.stream().sorted((r1,r2) -> r1.name.compareToIgnoreCase(r2.name)).forEach(rom -> {
-          wrt.printf("\trom ( name \"%s\" size %d crc %s md5 %s sha1 %s )\n", rom.name, rom.size, Integer.toHexString((int)rom.crc32 & 0xFFFFFFFF).toUpperCase(), hexConverter.marshal(rom.md5), hexConverter.marshal(rom.sha1));    
+          wrt.printf("\trom ( name \"%s\" size %d crc %s md5 %s sha1 %s )\n", rom.name, rom.size(), Integer.toHexString((int)rom.crc() & 0xFFFFFFFF).toUpperCase(), hexConverter.marshal(rom.md5()), hexConverter.marshal(rom.sha1()));    
         });
 
         wrt.print(")\n\n");
